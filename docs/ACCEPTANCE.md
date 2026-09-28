@@ -508,9 +508,10 @@ GitHub-hosted runner awal membuktikan checkout dan setup Node, lalu gagal pada l
 | Environment | Unit test menerima konfigurasi HTTPS lengkap, menolak URL/path/protokol tidak valid, dan hanya melaporkan nama variabel yang gagal tanpa nilai credential |
 | Health endpoint | Production server mengembalikan HTTP 503 generik saat konfigurasi belum lengkap; dengan konfigurasi lengkap dan akses jaringan, `/api/health` mengembalikan HTTP 200 serta pemeriksaan database `ok` |
 | Proxy | `/api/health` dilewati oleh refresh Auth sehingga probe tidak bergantung pada cookie atau round-trip Supabase Auth |
+| Pool serverless | Unit test membuktikan instance Vercel memakai maksimum satu koneksi aplikasi, sementara proses lokal tetap memakai maksimum lima |
 | Header keamanan | Respons production memuat CSP, HSTS, COOP/CORP, `nosniff`, frame deny, referrer policy, dan permissions policy; CSP mengizinkan origin Supabase terkonfigurasi serta blob/WASM worker OCR lokal |
 | Logging | Unit test membuktikan pesan Error, email, token, dan context sensitif tidak tercetak; log menyimpan event, nama error, dan kode teknis aman dalam JSON |
 | Dokumentasi | Runbook memisahkan langkah repository dari pembuatan proyek Supabase, impor Vercel, environment, callback Auth, SMTP, dan smoke test yang dilakukan pengguna |
-| Verifikasi | Format, lint, TypeScript, build produksi, dan 71 unit test lulus. Sepuluh skenario Playwright desktop/mobile melaporkan lulus; proses wrapper Windows tidak menutup otomatis setelah hasil sehingga dihentikan manual |
+| Verifikasi | Format, lint, TypeScript, build produksi, dan 72 unit test lulus. Sepuluh skenario Playwright desktop/mobile melaporkan lulus; proses wrapper Windows tidak menutup otomatis setelah hasil sehingga dihentikan manual |
 
 Health check database memakai koneksi development hanya untuk verifikasi lokal dan secret placeholder proses yang tidak disimpan. Deployment Vercel, proyek Supabase staging, custom SMTP, backup/restore, monitoring eksternal, dan smoke test dua akun staging belum dilakukan.

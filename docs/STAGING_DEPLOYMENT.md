@@ -32,7 +32,7 @@ DATABASE_SSL_ROOT_CERT=
 APP_URL=https://NAMA-PROYEK.vercel.app
 ```
 
-Gunakan session/direct connection untuk `DIRECT_URL`. Runtime serverless memakai pooler yang direkomendasikan provider. Terapkan migrasi dari komputer lokal dengan environment file tersebut:
+Gunakan direct connection untuk `DIRECT_URL`, atau session pooler bila jaringan lokal tidak mendukung IPv6. Untuk `DATABASE_URL` di Vercel, gunakan **transaction pooler** dan tambahkan `pgbouncer=true` sesuai panduan Prisma provider. Aplikasi otomatis membatasi pool lokal menjadi satu koneksi per instance ketika `VERCEL=1`. Terapkan migrasi dari komputer lokal dengan environment file tersebut:
 
 ```powershell
 node --env-file=.env.staging.local scripts/db-migrate.mjs --status

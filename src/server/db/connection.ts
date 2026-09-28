@@ -16,3 +16,9 @@ export function databaseConnectionUrl(value: string): string {
   }
   return url.toString();
 }
+
+export function databasePoolSize(
+  environment: Record<string, string | undefined> = process.env,
+) {
+  return environment.VERCEL === "1" ? 1 : 5;
+}
