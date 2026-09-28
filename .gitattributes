@@ -1,0 +1,5 @@
+* text=auto
+
+# Script dan migrasi harus memakai LF agar konsisten pada Windows dan runner Linux.
+*.sh text eol=lf
+*.sql text eol=lf

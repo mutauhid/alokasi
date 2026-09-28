@@ -1,0 +1,109 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  color-scheme: light;
+  --background: #f6f7f9;
+  --foreground: #182d30;
+  --card: #ffffff;
+  --card-foreground: #182d30;
+  --popover: #ffffff;
+  --popover-foreground: #182d30;
+  --primary: #176b56;
+  --primary-foreground: #ffffff;
+  --secondary: #e9f4ee;
+  --secondary-foreground: #176b56;
+  --muted: #f0f3f3;
+  --muted-foreground: #5e7073;
+  --accent: #e9f4ee;
+  --accent-foreground: #176b56;
+  --destructive: #ba4a43;
+  --border: #e4eae7;
+  --input: #ccd7d2;
+  --ring: #176b56;
+  --radius: 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --background: #131b20;
+    --foreground: #e7efec;
+    --card: #1b252b;
+    --card-foreground: #e7efec;
+    --popover: #1b252b;
+    --popover-foreground: #e7efec;
+    --primary: #73d5ae;
+    --primary-foreground: #142a21;
+    --secondary: #233f36;
+    --secondary-foreground: #73d5ae;
+    --muted: #233036;
+    --muted-foreground: #a6b5b8;
+    --accent: #233f36;
+    --accent-foreground: #73d5ae;
+    --destructive: #fba59a;
+    --border: #334047;
+    --input: #4b5d62;
+    --ring: #73d5ae;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 6px);
+  --radius-lg: calc(var(--radius) - 4px);
+  --radius-xl: var(--radius);
+  --font-sans: "Segoe UI", Arial, Helvetica, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans text-sm antialiased;
+  }
+  button:not(:disabled),
+  a,
+  select {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 4px;
+  }
+  ::selection {
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

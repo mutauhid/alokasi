@@ -1,0 +1,335 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["app"]
+}
+
+enum WorkspaceType {
+  personal
+  shared
+
+  @@schema("app")
+}
+
+enum MemberRole {
+  owner
+  editor
+  viewer
+
+  @@schema("app")
+}
+
+enum MemberStatus {
+  active
+  revoked
+
+  @@schema("app")
+}
+
+enum TransactionType {
+  income
+  expense
+  transfer
+
+  @@schema("app")
+}
+
+enum AccountType {
+  bank
+  cash
+  ewallet
+
+  @@schema("app")
+}
+
+enum ReceiptDraftStatus {
+  needs_review
+  submitted
+  cancelled
+
+  @@schema("app")
+}
+
+model User {
+  id                String       @id @default(uuid()) @db.Uuid
+  authSubject       String?      @unique @map("auth_subject") @db.Uuid
+  email             String?      @db.VarChar(320)
+  displayName       String?      @map("display_name") @db.VarChar(100)
+  disabledAt        DateTime?    @map("disabled_at") @db.Timestamptz(3)
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  memberships       Membership[]
+  personalWorkspace Workspace?
+
+  @@map("users")
+  @@schema("app")
+}
+
+model Workspace {
+  id                              String             @id @default(uuid()) @db.Uuid
+  name                            String             @db.VarChar(100)
+  type                            WorkspaceType
+  personalOwnerId                 String?            @unique @map("personal_owner_id") @db.Uuid
+  personalOwner                   User?              @relation(fields: [personalOwnerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  currency                        String             @default("IDR") @db.VarChar(3)
+  timezone                        String             @default("Asia/Jakarta") @db.VarChar(64)
+  version                         Int                @default(1)
+  ownershipTransferToMembershipId String?            @map("ownership_transfer_to_membership_id") @db.Uuid
+  ownershipTransferRequestedAt    DateTime?          @map("ownership_transfer_requested_at") @db.Timestamptz(3)
+  ownershipTransferExpiresAt      DateTime?          @map("ownership_transfer_expires_at") @db.Timestamptz(3)
+  createdAt                       DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                       DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  memberships                     Membership[]
+  invitations                     Invitation[]
+  accounts                        FinancialAccount[]
+  categories                      Category[]
+  periods                         BudgetPeriod[]
+  cycleSettings                   CycleSetting[]
+  auditEvents                     AuditEvent[]
+  receiptDrafts                   ReceiptDraft[]
+
+  @@map("workspaces")
+  @@schema("app")
+}
+
+model CycleSetting {
+  id            String         @id @default(uuid()) @db.Uuid
+  workspaceId   String         @map("workspace_id") @db.Uuid
+  startDay      Int            @map("start_day") @db.SmallInt
+  effectiveDate DateTime       @map("effective_date") @db.Date
+  version       Int
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  periods       BudgetPeriod[]
+
+  @@unique([workspaceId, version])
+  @@map("cycle_settings")
+  @@schema("app")
+}
+
+model Membership {
+  id                  String         @id @default(uuid()) @db.Uuid
+  workspaceId         String         @map("workspace_id") @db.Uuid
+  userId              String         @map("user_id") @db.Uuid
+  role                MemberRole
+  status              MemberStatus   @default(active)
+  version             Int            @default(1)
+  joinedAt            DateTime       @default(now()) @map("joined_at") @db.Timestamptz(3)
+  updatedAt           DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace           Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user                User           @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  createdTransactions Transaction[]  @relation("TransactionCreator")
+  updatedTransactions Transaction[]  @relation("TransactionUpdater")
+  invitations         Invitation[]   @relation("InvitationCreator")
+  receiptDrafts       ReceiptDraft[] @relation("ReceiptDraftCreator")
+
+  @@unique([workspaceId, userId])
+  @@unique([workspaceId, id])
+  @@index([userId, status])
+  @@map("memberships")
+  @@schema("app")
+}
+
+model Invitation {
+  id           String     @id @default(uuid()) @db.Uuid
+  workspaceId  String     @map("workspace_id") @db.Uuid
+  createdBy    String     @map("created_by") @db.Uuid
+  invitedEmail String     @map("invited_email") @db.VarChar(320)
+  role         MemberRole
+  tokenHash    String     @unique @map("token_hash") @db.VarChar(64)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  expiresAt    DateTime   @map("expires_at") @db.Timestamptz(3)
+  acceptedAt   DateTime?  @map("accepted_at") @db.Timestamptz(3)
+  revokedAt    DateTime?  @map("revoked_at") @db.Timestamptz(3)
+  workspace    Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  creator      Membership @relation("InvitationCreator", fields: [workspaceId, createdBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([workspaceId, invitedEmail])
+  @@map("invitations")
+  @@schema("app")
+}
+
+model FinancialAccount {
+  id             String         @id @default(uuid()) @db.Uuid
+  workspaceId    String         @map("workspace_id") @db.Uuid
+  name           String         @db.VarChar(100)
+  type           AccountType
+  openingBalance BigInt         @map("opening_balance")
+  openingDate    DateTime       @map("opening_date") @db.Date
+  archivedAt     DateTime?      @map("archived_at") @db.Timestamptz(3)
+  version        Int            @default(1)
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace      Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  outgoing       Transaction[]  @relation("SourceAccount")
+  incoming       Transaction[]  @relation("DestinationAccount")
+  receiptDrafts  ReceiptDraft[] @relation("ReceiptDraftAccount")
+
+  @@unique([workspaceId, id])
+  @@index([workspaceId, archivedAt])
+  @@map("financial_accounts")
+  @@schema("app")
+}
+
+model Category {
+  id              String          @id @default(uuid()) @db.Uuid
+  workspaceId     String          @map("workspace_id") @db.Uuid
+  name            String          @db.VarChar(50)
+  nameKey         String          @map("name_key") @db.VarChar(100)
+  type            TransactionType
+  archivedAt      DateTime?       @map("archived_at") @db.Timestamptz(3)
+  version         Int             @default(1)
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  transactions    Transaction[]
+  budgets         Budget[]
+  suggestedDrafts ReceiptDraft[]  @relation("ReceiptDraftSuggestedCategory")
+  selectedDrafts  ReceiptDraft[]  @relation("ReceiptDraftSelectedCategory")
+
+  @@unique([workspaceId, id, type])
+  @@unique([workspaceId, type, nameKey])
+  @@map("categories")
+  @@schema("app")
+}
+
+// A row represents a submitted transaction. ReceiptDraft stays financially inert until submit.
+model Transaction {
+  id                   String            @id @default(uuid()) @db.Uuid
+  workspaceId          String            @map("workspace_id") @db.Uuid
+  createdBy            String            @map("created_by") @db.Uuid
+  updatedBy            String            @map("updated_by") @db.Uuid
+  type                 TransactionType
+  amount               BigInt
+  transactionDate      DateTime          @map("transaction_date") @db.Date
+  accountId            String            @map("account_id") @db.Uuid
+  destinationAccountId String?           @map("destination_account_id") @db.Uuid
+  categoryId           String?           @map("category_id") @db.Uuid
+  note                 String?           @db.VarChar(1000)
+  idempotencyKey       String            @map("idempotency_key") @db.VarChar(128)
+  requestHash          String            @map("request_hash") @db.VarChar(64)
+  version              Int               @default(1)
+  createdAt            DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt            DateTime?         @map("deleted_at") @db.Timestamptz(3)
+  creator              Membership        @relation("TransactionCreator", fields: [workspaceId, createdBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  updater              Membership        @relation("TransactionUpdater", fields: [workspaceId, updatedBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  account              FinancialAccount  @relation("SourceAccount", fields: [workspaceId, accountId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  destinationAccount   FinancialAccount? @relation("DestinationAccount", fields: [workspaceId, destinationAccountId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  category             Category?         @relation(fields: [workspaceId, categoryId, type], references: [workspaceId, id, type], onDelete: Restrict, onUpdate: Restrict)
+  sourceReceiptDraft   ReceiptDraft?     @relation("ReceiptDraftTransaction")
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, createdBy, idempotencyKey])
+  @@index([workspaceId, transactionDate, id])
+  @@index([workspaceId, categoryId, transactionDate])
+  @@index([workspaceId, accountId, transactionDate])
+  @@index([workspaceId, destinationAccountId, transactionDate])
+  @@map("transactions")
+  @@schema("app")
+}
+
+model ReceiptDraft {
+  id                       String             @id @default(uuid()) @db.Uuid
+  workspaceId              String             @map("workspace_id") @db.Uuid
+  createdBy                String             @map("created_by") @db.Uuid
+  status                   ReceiptDraftStatus @default(needs_review)
+  sourceKind               String             @default("fixture") @map("source_kind") @db.VarChar(30)
+  extractedAmount          BigInt?            @map("extracted_amount")
+  extractedTransactionDate DateTime?          @map("extracted_transaction_date") @db.Date
+  extractedMerchant        String?            @map("extracted_merchant") @db.VarChar(200)
+  extractedNote            String?            @map("extracted_note") @db.VarChar(1000)
+  detectedInstitution      String?            @map("detected_institution") @db.VarChar(100)
+  evidenceKind             String?            @map("evidence_kind") @db.VarChar(20)
+  paymentRail              String?            @map("payment_rail") @db.VarChar(50)
+  ocrConfidence            Int?               @map("ocr_confidence") @db.SmallInt
+  institutionConfidence    Int?               @map("institution_confidence") @db.SmallInt
+  suggestedCategoryId      String?            @map("suggested_category_id") @db.Uuid
+  amountConfidence         Int?               @map("amount_confidence") @db.SmallInt
+  dateConfidence           Int?               @map("date_confidence") @db.SmallInt
+  merchantConfidence       Int?               @map("merchant_confidence") @db.SmallInt
+  categoryConfidence       Int?               @map("category_confidence") @db.SmallInt
+  correctedAmount          BigInt?            @map("corrected_amount")
+  correctedTransactionDate DateTime?          @map("corrected_transaction_date") @db.Date
+  correctedMerchant        String?            @map("corrected_merchant") @db.VarChar(200)
+  correctedNote            String?            @map("corrected_note") @db.VarChar(1000)
+  selectedAccountId        String?            @map("selected_account_id") @db.Uuid
+  selectedCategoryId       String?            @map("selected_category_id") @db.Uuid
+  categoryType             TransactionType    @default(expense) @map("category_type")
+  submittedTransactionId   String?            @map("submitted_transaction_id") @db.Uuid
+  version                  Int                @default(1)
+  createdAt                DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  submittedAt              DateTime?          @map("submitted_at") @db.Timestamptz(3)
+  cancelledAt              DateTime?          @map("cancelled_at") @db.Timestamptz(3)
+  workspace                Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  creator                  Membership         @relation("ReceiptDraftCreator", fields: [workspaceId, createdBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  suggestedCategory        Category?          @relation("ReceiptDraftSuggestedCategory", fields: [workspaceId, suggestedCategoryId, categoryType], references: [workspaceId, id, type], onDelete: Restrict, onUpdate: Restrict)
+  selectedCategory         Category?          @relation("ReceiptDraftSelectedCategory", fields: [workspaceId, selectedCategoryId, categoryType], references: [workspaceId, id, type], onDelete: Restrict, onUpdate: Restrict)
+  selectedAccount          FinancialAccount?  @relation("ReceiptDraftAccount", fields: [workspaceId, selectedAccountId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  submittedTransaction     Transaction?       @relation("ReceiptDraftTransaction", fields: [workspaceId, submittedTransactionId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, submittedTransactionId])
+  @@index([workspaceId, createdBy, status, createdAt])
+  @@map("receipt_drafts")
+  @@schema("app")
+}
+
+model BudgetPeriod {
+  id                  String       @id @default(uuid()) @db.Uuid
+  workspaceId         String       @map("workspace_id") @db.Uuid
+  startDate           DateTime     @map("start_date") @db.Date
+  endDateExclusive    DateTime     @map("end_date_exclusive") @db.Date
+  cycleSettingVersion Int          @default(1) @map("cycle_setting_version")
+  isTransition        Boolean      @default(false) @map("is_transition")
+  createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  workspace           Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  cycleSetting        CycleSetting @relation(fields: [workspaceId, cycleSettingVersion], references: [workspaceId, version], onDelete: Restrict, onUpdate: Restrict)
+  budgets             Budget[]
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, startDate])
+  @@map("budget_periods")
+  @@schema("app")
+}
+
+model Budget {
+  id           String          @id @default(uuid()) @db.Uuid
+  workspaceId  String          @map("workspace_id") @db.Uuid
+  categoryId   String          @map("category_id") @db.Uuid
+  categoryType TransactionType @default(expense) @map("category_type")
+  periodId     String          @map("period_id") @db.Uuid
+  limitAmount  BigInt          @map("limit_amount")
+  version      Int             @default(1)
+  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  category     Category        @relation(fields: [workspaceId, categoryId, categoryType], references: [workspaceId, id, type], onDelete: Restrict, onUpdate: Restrict)
+  period       BudgetPeriod    @relation(fields: [workspaceId, periodId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, categoryId, periodId])
+  @@index([workspaceId, periodId])
+  @@map("budgets")
+  @@schema("app")
+}
+
+model AuditEvent {
+  id            String    @id @default(uuid()) @db.Uuid
+  workspaceId   String    @map("workspace_id") @db.Uuid
+  actorId       String?   @map("actor_id") @db.Uuid
+  entityType    String    @map("entity_type") @db.VarChar(50)
+  entityId      String    @map("entity_id") @db.Uuid
+  action        String    @db.VarChar(50)
+  // Field names only, never free-text notes, credentials or complete payloads.
+  changedFields String[]  @map("changed_fields")
+  occurredAt    DateTime  @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([workspaceId, occurredAt, id])
+  @@map("audit_events")
+  @@schema("app")
+}
