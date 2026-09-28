@@ -55,6 +55,13 @@ Workflow [ci.yml](../.github/workflows/ci.yml) berjalan untuk pull request, push
 
 Database CI hanya hidup selama job dan tidak memakai Supabase development/production. Karena itu tidak ada credential Supabase atau database production yang perlu ditambahkan sebagai GitHub Actions secret untuk workflow ini.
 
+`package-lock.json` harus memuat optional dependency untuk Windows dan Linux. Jika dependency diubah, perbarui lockfile secara bersih dan validasi target runner sebelum commit:
+
+```powershell
+npm install --package-lock-only --include=optional --ignore-scripts
+npm ci --dry-run --ignore-scripts --include=optional --os=linux --cpu=x64
+```
+
 Setelah push pertama, buka tab **Actions** pada repository GitHub dan pastikan job `Quality` serta `Database` berwarna hijau. Jika gagal, buka job dan langkah merah; perbaiki akar masalah di branch, lalu push commit baru.
 
 ## 4. Branch dan perlindungan `main`
