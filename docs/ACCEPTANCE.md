@@ -494,9 +494,9 @@ Browser automation terautentikasi tidak dijalankan karena kontrol browser lokal 
 | Pemeriksaan | Bukti/status |
 |---|---|
 | Repo lokal | Repository diinisialisasi pada branch `main`; file environment, sertifikat, hasil build, dan laporan test tetap diabaikan Git |
-| Quality CI | Workflow menjalankan `npm ci`, format, lint, TypeScript, 67 unit test, dan build produksi pada Node dari `.nvmrc` |
-| Database CI | PostgreSQL 17 service menerapkan tujuh migrasi lalu menjalankan 33 integration test dengan database sementara |
+| Quality CI | Run GitHub pertama gagal pada `npm ci` karena entri optional dependency Linux tidak lengkap. Lockfile bersih sekarang lulus simulasi `npm ci` Linux, instalasi bersih Windows, format, lint, TypeScript, 67 unit test, dan build produksi; rerun GitHub menunggu PR |
+| Database CI | Run pertama berhenti pada akar masalah lockfile yang sama sebelum migrasi. PostgreSQL 17 service, tujuh migrasi, dan 33 integration test akan diverifikasi oleh rerun GitHub setelah PR perbaikan |
 | Batas secret | Workflow tidak memerlukan `DATABASE_URL`, `DIRECT_URL`, Supabase key, atau sertifikat milik development/production |
-| Remote | Panduan pembuatan repository private, push awal, dan perlindungan `main` tersedia; remote GitHub belum dibuat oleh agent |
+| Remote | `origin/main` tersedia pada repository GitHub, branch protection telah diaktifkan pengguna, dan panduan alur PR tersedia |
 
-GitHub-hosted runner belum dapat dibuktikan sebelum repository remote dibuat dan workflow pertama dijalankan. E2E terautentikasi, deploy, SMTP, backup/restore, dan observability belum menjadi bagian workflow ini.
+GitHub-hosted runner awal membuktikan checkout dan setup Node, lalu gagal pada lockfile sebelum test. Rerun setelah perbaikan masih diperlukan. E2E terautentikasi, deploy, SMTP, backup/restore, dan observability belum menjadi bagian workflow ini.
