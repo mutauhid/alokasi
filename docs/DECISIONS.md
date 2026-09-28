@@ -35,6 +35,7 @@ Diperbarui: 28 September 2026. Dokumen ini membedakan sumber keputusan agar agen
 | D29 | 28 Sep 2026 | Pengguna meminta melanjutkan ke tahap berikutnya setelah penghapusan ruang bersama | Lanjutkan F10 dengan penghapusan akun mandiri: selesaikan kepemilikan ruang bersama, autentikasi ulang, hapus ruang pribadi, anonimkan histori bersama, dan cabut sesi |
 | D30 | 28 Sep 2026 | Pengguna meminta Pengaturan dan Keluar berada pada kartu user sidebar, serta profil dan ganti password | Jadikan menu akun sebagai akses Profil & Pengaturan/Keluar pada desktop dan mobile; lengkapi F01 dengan nama tampilan, email baca saja, serta perubahan password yang mengeluarkan semua sesi |
 | D31 | 28 Sep 2026 | Pengguna meminta dibimbing membuat Git repository dan CI | Inisialisasi repository lokal pada branch `main`, siapkan GitHub Actions untuk pemeriksaan kualitas dan PostgreSQL sementara, serta dokumentasikan pembuatan remote GitHub tanpa memasukkan rahasia |
+| D32 | 28 Sep 2026 | Pengguna memilih melanjutkan setelah CI dan branch protection berhasil serta ingin mengerjakan sendiri langkah eksternal sambil belajar | Siapkan aplikasi untuk staging berbasis Vercel dan proyek Supabase terpisah: validasi runtime, health endpoint, security headers, logging aman, serta runbook yang memisahkan pekerjaan repository dari konfigurasi dashboard pengguna |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -110,6 +111,8 @@ D29 menghasilkan T29: penghapusan akun mandiri hanya tersedia dari ruang pribadi
 
 D30 menghasilkan T30: navigasi utama tetap berisi fitur finansial dan Anggota & akses. Kartu user di bagian bawah sidebar menjadi tombol menu akun yang menampilkan nama/email, tautan Profil & Pengaturan, serta Keluar; pola yang sama tersedia pada sheet mobile. Halaman Pengaturan menampilkan profil akun di atas pengaturan ruang. Nama tampilan diperbarui pada metadata Supabase dan profil aplikasi setelah identitas/membership dibaca ulang. Perubahan password memerlukan password saat ini, password baru berbeda minimal delapan karakter, konfirmasi cocok, lalu global sign-out agar semua sesi login ulang. Email ditampilkan baca saja; alur perubahan email/verifikasi ulang belum termasuk.
 
+D32 menghasilkan T31: build CI tetap tidak membutuhkan credential agar pemeriksaan source dapat berjalan aman, sedangkan readiness runtime diperiksa melalui `/api/health`. Endpoint hanya melaporkan konfigurasi/database `ok`, `failed`, atau `skipped`; nama variabel, host, URL, dan pesan driver tidak dikirim. Security header berlaku global dan CSP dibentuk saat build dari origin Supabase publik, dengan izin minimum untuk blob preview serta Web Worker/WASM OCR lokal. Vercel menjadi baseline hosting terkelola dan proyek Supabase staging harus terpisah; provisioning akun/provider tetap dilakukan pengguna melalui dashboard.
+
 ## Default kerja, bukan keputusan eksplisit pengguna
 
 Default di bawah cukup untuk menjaga rancangan konsisten. Gunakan selama tidak ada instruksi yang mengganti; jangan berhenti meminta persetujuan ulang pada tiap detail.
@@ -130,7 +133,7 @@ Default di bawah cukup untuk menjaga rancangan konsisten. Gunakan selama tidak a
 
 | Keputusan | Kapan dibutuhkan | Aturan sementara |
 |---|---|---|
-| Hosting aplikasi, region/paket Supabase, dan SMTP produksi | Sebelum deployment | Core stack mengikuti T01; biaya/kuota dan konfigurasi provider belum dipilih |
+| Region/paket Supabase dan SMTP produksi | Sebelum deployment | Hosting aplikasi memakai baseline Vercel; pilihan region/paket, domain, serta SMTP tetap ditentukan saat provisioning staging/production |
 | Provider OCR/vision fallback, biaya, dan consent | Jika OCR lokal tidak memenuhi target akurasi | OCR lokal tetap jalur privat; jangan kirim berkas nyata ke provider tanpa keputusan baru |
 | Retensi berkas scan/draf dan data residency | Sebelum upload/storage bukti | Implementasi lokal tidak menyimpan gambar; upload produksi memerlukan kebijakan lifecycle |
 | Lampiran bukti permanen pada transaksi | Jika diminta sebagai perluasan F18 | Baseline hanya pratinjau sumber draf; bukan sistem arsip bukti bersama |

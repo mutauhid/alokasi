@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { databaseConnectionUrl } from "../../src/server/db/connection";
+import {
+  databaseConnectionUrl,
+  databasePoolSize,
+} from "../../src/server/db/connection";
 import { signUpErrorKey } from "../../src/server/auth/errors";
 import {
   calculateAccountBalances,
@@ -53,6 +56,10 @@ describe("database connection boundary", () => {
     expect(() =>
       databaseConnectionUrl("https://secret@example.invalid"),
     ).toThrow("Format koneksi PostgreSQL tidak valid.");
+  });
+  it("limits each Vercel instance to one application-side connection", () => {
+    expect(databasePoolSize({ VERCEL: "1" })).toBe(1);
+    expect(databasePoolSize({})).toBe(5);
   });
 });
 

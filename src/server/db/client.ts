@@ -2,7 +2,7 @@ import "server-only";
 
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
-import { databaseConnectionUrl } from "./connection";
+import { databaseConnectionUrl, databasePoolSize } from "./connection";
 
 const globalDatabase = globalThis as unknown as {
   alokasiPrisma?: PrismaClient;
@@ -21,7 +21,7 @@ export function getDatabase(): PrismaClient {
   const adapter = new PrismaPg(
     {
       connectionString: databaseConnectionUrl(connectionString),
-      max: 5,
+      max: databasePoolSize(),
       connectionTimeoutMillis: 10_000,
     },
     { schema: "app" },

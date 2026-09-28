@@ -19,6 +19,8 @@ function startsWithPath(pathname: string, prefix: string) {
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
+  if (request.nextUrl.pathname === "/api/health") return response;
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   const isProtected = protectedPaths.some((path) =>
