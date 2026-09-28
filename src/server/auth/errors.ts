@@ -1,3 +1,5 @@
+import { reportServerFailure } from "@/server/observability/logger";
+
 type AuthFailure = {
   code?: string;
   status?: number;
@@ -21,8 +23,8 @@ export function signUpErrorKey(error: AuthFailure) {
 
 export function reportAuthFailure(operation: "signup", error: AuthFailure) {
   // Deliberately exclude message, form values, email, tokens, and provider body.
-  console.warn(`[auth:${operation}] provider request failed`, {
-    code: error.code ?? "unknown",
-    status: error.status ?? "unknown",
+  reportServerFailure(`auth.${operation}_provider_failed`, error, {
+    providerCode: error.code ?? "unknown",
+    providerStatus: error.status ?? "unknown",
   });
 }

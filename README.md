@@ -115,6 +115,7 @@ Auth, ruang pribadi/bersama, izin dan lifecycle anggota, akun, kategori, transak
 | [Setup database](docs/DATABASE_SETUP.md) | Migrasi, role runtime, CA/TLS, dan tes PostgreSQL |
 | [Setup autentikasi](docs/AUTH_SETUP.md) | Environment, callback, alur email/password, dan batas verifikasi |
 | [Git dan CI](docs/GIT_AND_CI_SETUP.md) | Repository GitHub, workflow GitHub Actions, dan perlindungan branch |
+| [Deployment staging](docs/STAGING_DEPLOYMENT.md) | Supabase staging, Vercel, health check, security headers, dan smoke test |
 
 ## Baseline per 22 September 2026
 
