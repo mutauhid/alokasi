@@ -536,11 +536,12 @@ Health check database awal memakai koneksi development hanya untuk verifikasi lo
 
 | Pemeriksaan | Bukti/status |
 |---|---|
-| RECUR-01/04/05 | Unit test memverifikasi normalisasi template, penolakan transfer/desimal/hari tidak valid, jadwal hari 31, dan pemilihan kejadian bulan ini/berikutnya. Test PostgreSQL telah ditulis untuk memastikan template tidak membuat transaksi, post membuat satu transaksi, dan skip tidak membuat transaksi |
-| RECUR-02/03/06 | Service memakai transaksi atomik, optimistic version, idempotency key per template/tanggal, dan unique constraint workspace/template/tanggal. Test PostgreSQL baru menunggu environment test sebelum dapat dilaporkan lulus |
-| RECUR-07/08/09 | Otorisasi dan validasi referensi diterapkan server; test PostgreSQL mencakup Editor terhadap template Owner serta blokir arsip akun/kategori aktif, tetapi belum dijalankan lokal pada sesi ini |
-| RECUR-10 | Export `schemaVersion: 2`, ringkasan penghapusan, dan cleanup workspace mencakup template/tautan kejadian; assertion integrasi tersedia dan menunggu database test |
+| RECUR-01/04/05 | Unit test memverifikasi normalisasi template, penolakan transfer/desimal/hari tidak valid, jadwal hari 31, dan pemilihan kejadian bulan ini/berikutnya. Test PostgreSQL memastikan template tidak membuat transaksi, post membuat satu transaksi, dan skip tidak membuat transaksi |
+| RECUR-02/03/06 | Service memakai transaksi atomik, optimistic version, idempotency key per template/tanggal, dan unique constraint workspace/template/tanggal; test konkurensi membuktikan satu dari dua konfirmasi paralel berhasil dan hanya satu transaksi terbentuk |
+| RECUR-07/08/09 | Otorisasi dan validasi referensi diterapkan server; test PostgreSQL mencakup Editor terhadap template Owner serta blokir arsip akun/kategori aktif |
+| RECUR-10 | Export `schemaVersion: 2`, ringkasan penghapusan, dan cleanup workspace mencakup template/tautan kejadian; assertion integrasi lulus di CI |
 | RECUR-11 | Dashboard membaca maksimal lima pengingat hingga tujuh hari dan halaman Transaksi menyediakan tindakan eksplisit; smoke browser terautentikasi belum dijalankan |
-| Verifikasi tersedia | Prisma validate, lint, TypeScript, build produksi, dan 76 unit test lulus |
+| Runtime database | Migrasi tabel dan grant role diterapkan; `db:check:runtime` melihat 13 tabel dengan TLS terverifikasi, tanpa DDL, superuser, atau BYPASSRLS |
+| Verifikasi tersedia | Job Quality dan Database PR lulus: Prisma validate, format, lint, TypeScript, build produksi, 76 unit test, dan 36 test PostgreSQL |
 
-`.env.test.local` tidak tersedia pada checkout saat verifikasi, sehingga migrasi dan suite PostgreSQL tidak diklaim lulus. Migrasi development juga belum diterapkan karena CA lokal `certs/prod-supabase.cer` tidak tersedia; verifikasi TLS tidak diturunkan sebagai jalan pintas. Pulihkan file lokal tersebut dan jalankan `npm run db:migrate`, lalu jalankan `npm run db:migrate:test` serta `npm run test:db`, atau gunakan job Database pada PR, sebelum merge dan deployment fitur.
+Suite PostgreSQL tidak dijalankan ulang ke database test Supabase lokal karena `.env.test.local` tidak tersedia, tetapi migrasi dan 36 test yang sama lulus pada PostgreSQL 17 sementara di CI. Migrasi production diterapkan melalui role migrasi, kemudian role runtime diverifikasi tanpa DDL/BYPASSRLS dan dengan TLS terverifikasi.
