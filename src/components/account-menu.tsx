@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import {
   ChevronUp,
   LogOut,
@@ -23,6 +23,7 @@ export function AccountMenu({
   userEmail: string;
   onNavigate?: () => void;
 }) {
+  const menuRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutFailed, setSignOutFailed] = useState(false);
@@ -51,14 +52,22 @@ export function AccountMenu({
 
   useEffect(() => {
     if (!open) return;
-    const close = () => setOpen(false);
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") close();
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        menuRef.current?.contains(event.target)
+      ) {
+        return;
+      }
+      setOpen(false);
     };
-    document.addEventListener("click", close);
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
     document.addEventListener("keydown", closeOnEscape);
     return () => {
-      document.removeEventListener("click", close);
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [open]);
@@ -71,7 +80,7 @@ export function AccountMenu({
         : "Viewer";
 
   return (
-    <div className="relative" onClick={(event) => event.stopPropagation()}>
+    <div ref={menuRef} className="relative">
       {open && (
         <div
           role="menu"
