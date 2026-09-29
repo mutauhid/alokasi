@@ -53,6 +53,11 @@ if (process.env.NODE_ENV === "production") {
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  // DATABASE_SSL_ROOT_CERT is resolved dynamically at runtime, so Next.js
+  // cannot discover the CA through static output tracing on its own.
+  outputFileTracingIncludes: {
+    "/*": ["certs/prod-supabase.cer"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

@@ -32,6 +32,14 @@ DATABASE_SSL_ROOT_CERT=
 APP_URL=https://NAMA-PROYEK.vercel.app
 ```
 
+Untuk koneksi Supabase yang memerlukan CA proyek, unduh root certificate dari
+proyek staging yang sama, simpan sebagai `certs/prod-supabase.cer`, commit
+sertifikat publik tersebut, lalu isi
+`DATABASE_SSL_ROOT_CERT=certs/prod-supabase.cer`. Konfigurasi Next.js secara
+eksplisit menyertakan file ini ke server trace Vercel; keberadaan file di Git
+saja tidak cukup ketika path dibaca dinamis dari environment variable. Jangan
+commit private key atau connection string.
+
 Gunakan direct connection untuk `DIRECT_URL`, atau session pooler bila jaringan lokal tidak mendukung IPv6. Untuk `DATABASE_URL` di Vercel, gunakan **transaction pooler** dan tambahkan `pgbouncer=true` sesuai panduan Prisma provider. Aplikasi otomatis membatasi pool lokal menjadi satu koneksi per instance ketika `VERCEL=1`. Terapkan migrasi dari komputer lokal dengan environment file tersebut:
 
 ```powershell
