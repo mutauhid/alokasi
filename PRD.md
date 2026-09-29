@@ -95,7 +95,7 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F08 | Riwayat dan laporan | P0 | Filter, pencarian, ringkasan bulanan, ekspor CSV |
 | F09 | Indikator budget | P0 | Peringatan di dalam aplikasi pada 80% dan 100% |
 | F10 | Kontrol data | P0 | Isolasi ruang dan izin anggota, ekspor, hapus akun dengan konfirmasi |
-| F11 | Transaksi berulang | P1 | Template dan pengingat gaji, sewa, langganan |
+| F11 | Transaksi berulang | P1 diimplementasikan | Template bulanan, pengingat, catat atau lewati secara eksplisit |
 | F12 | Target tabungan | P1 | Target nominal/tanggal dan alokasi dana |
 | F13 | Impor CSV | P1 | Pemetaan kolom, pratinjau, deteksi potensi duplikat |
 | F14 | Utang dan piutang pribadi | P1 | Catatan kewajiban, pembayaran, jatuh tempo |
@@ -107,7 +107,7 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F20 | Insight dan proyeksi | P2 | Insight berbasis data, proyeksi skenario, AI opsional |
 | F21 | Periode mengikuti gajian | P1 diimplementasikan | Hari mulai siklus per ruang; default tanggal 1; batas tanggal konsisten untuk budget, dashboard, dan laporan |
 
-F11–F16 tetap P1 kandidat. F18 dan F21 diprioritaskan sebelum kandidat tersebut bila pengguna meminta implementasi fitur lanjutan ini.
+F12–F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deployment produksi dilaporkan berhasil. F18 dan F21 telah lebih dahulu diimplementasikan atas instruksi pengguna.
 
 ## 6. Kebutuhan fungsional dan acceptance criteria
 
@@ -202,6 +202,22 @@ Dashboard menggunakan periode aktif sebagai default dan menyediakan pemilih peri
 - Usulan kebijakan: hapus data aktif dalam 7 hari, cadangan kedaluwarsa maksimal 30 hari. Kebijakan final dan prosedur penghapusan cadangan wajib ditetapkan sebelum rilis publik.
 
 **Diterima jika:** total laporan cocok dengan daftar transaksi; ekspor mempertahankan nominal dan karakter Indonesia; pengguna tidak dapat mengakses ruang tanpa keanggotaan aktif atau melakukan tindakan di luar perannya, termasuk melalui ID langsung.
+
+### F11 — Transaksi berulang
+
+**User story:** sebagai pengguna, saya dapat menyimpan pola pemasukan atau pengeluaran bulanan dan mendapat pengingat tanpa aplikasi membuat transaksi tanpa persetujuan saya.
+
+- Template menyimpan nama, jenis pemasukan/pengeluaran, nominal integer rupiah, akun, kategori, catatan opsional, hari 1–31, dan tanggal kejadian berikutnya.
+- Template dan pengingat tidak memengaruhi saldo, budget, dashboard, atau laporan. Pengguna harus memilih **Catat sekarang** untuk membuat transaksi jatuh tempo.
+- Pengguna dapat memilih **Lewati periode** untuk memajukan satu kejadian tanpa membuat transaksi.
+- Hari 29–31 memakai hari terakhir pada bulan pendek lalu kembali ke hari yang dikonfigurasi pada bulan berikutnya.
+- Kejadian yang terlambat diproses satu per satu agar tidak ada periode yang dibuat atau dilewati diam-diam.
+- Pencatatan transaksi dan kemajuan tanggal berikutnya atomik serta idempoten per template/tanggal jatuh tempo.
+- Owner dapat mengelola seluruh template ruang. Editor dapat membuat dan mengelola template miliknya sendiri. Viewer hanya dapat melihat.
+- Akun atau kategori yang dipakai template aktif tidak dapat diarsipkan sampai template diubah atau dinonaktifkan.
+- Dashboard menampilkan maksimal lima pengingat yang jatuh tempo atau akan jatuh tempo dalam tujuh hari; tidak ada email/push otomatis pada tahap ini.
+
+**Diterima jika:** membuat template tidak mengubah angka finansial; konfirmasi satu kejadian membuat tepat satu transaksi pada tanggal jatuh tempo; retry atau aksi konkuren tidak menduplikasi transaksi; melewati kejadian tidak membuat transaksi; isolasi workspace dan matriks Owner/Editor/Viewer tetap ditegakkan server.
 
 ### F17 — Ruang pribadi dan keuangan bersama
 
@@ -494,5 +510,6 @@ Jangan memasukkan semua kandidat ke rilis pertama. Prioritaskan bukti kebutuhan 
 - 0.8 — 27 September 2026: F17 dilengkapi dengan permintaan pengalihan kepemilikan dua langkah, penerimaan atomik, pembatalan, perlindungan konflik, dan keluar mandiri untuk Editor/Viewer.
 - 0.9 — 27 September 2026: atas instruksi pengguna, F21 berubah dari jadwal prospektif menjadi perubahan langsung pada periode aktif, dengan ID budget aktif tetap, histori transisi, versi same-day, dan perlindungan budget masa depan.
 - 1.2 — 28 September 2026: F01/UX dilengkapi menu akun pada sidebar desktop/mobile, akses Profil & Pengaturan/Keluar, perubahan nama tampilan, serta perubahan password dengan autentikasi ulang dan pencabutan sesi.
+- 1.3 — 29 September 2026: F11 diaktifkan dengan template bulanan, pengingat dashboard, pencatatan atau skip eksplisit, idempotensi per jatuh tempo, dan izin Owner/Editor/Viewer.
 - 1.1 — 28 September 2026: F10 dilengkapi penghapusan akun mandiri dengan blokir kepemilikan ruang bersama, konfirmasi email, autentikasi ulang, penghapusan ruang pribadi, pencabutan membership, anonimisasi histori bersama, dan cleanup identitas Auth server-only.
 - 1.0 — 28 September 2026: F10 dilengkapi alur penghapusan ruang bersama khusus Owner dengan ringkasan dampak, konfirmasi nama persis, autentikasi ulang password, penghapusan atomik, dan perlindungan ruang pribadi/akun anggota.

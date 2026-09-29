@@ -92,7 +92,11 @@ export async function createTransactionInTransaction(
     Parameters<ReturnType<typeof getDatabase>["$transaction"]>[0]
   >[0],
   context: TransactionContext,
-  input: TransactionInput & { idempotencyKey: string },
+  input: TransactionInput & {
+    idempotencyKey: string;
+    recurringTemplateId?: string;
+    recurringDueDate?: Date;
+  },
 ) {
   await validateReferences(tx, context, input);
   const transaction = await tx.transaction.create({
@@ -109,6 +113,8 @@ export async function createTransactionInTransaction(
       note: input.note,
       idempotencyKey: input.idempotencyKey,
       requestHash: requestHash(input),
+      recurringTemplateId: input.recurringTemplateId,
+      recurringDueDate: input.recurringDueDate,
     },
   });
   await tx.auditEvent.create({

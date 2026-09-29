@@ -5,6 +5,7 @@ import { getBudgetOverview } from "@/modules/budgets/service";
 import { buildCashFlowTrend } from "@/modules/dashboard/domain";
 import { getPeriodSelection } from "@/modules/periods/service";
 import { getDatabase } from "@/server/db/client";
+import { listRecurringReminders } from "@/modules/recurring/service";
 
 export async function getDashboardOverview(
   workspaceId: string,
@@ -12,10 +13,11 @@ export async function getDashboardOverview(
   selectedPeriodId?: string,
 ) {
   const db = getDatabase();
-  const [accounts, budget, selection] = await Promise.all([
+  const [accounts, budget, selection, recurringReminders] = await Promise.all([
     listAccounts(workspaceId),
     getBudgetOverview(workspaceId, today, selectedPeriodId),
     getPeriodSelection(workspaceId, today, selectedPeriodId),
+    listRecurringReminders(workspaceId, today),
   ]);
   const firstTrendPeriod =
     selection.trendPeriods[0] ?? selection.selectedPeriod;
@@ -84,5 +86,6 @@ export async function getDashboardOverview(
       )
       .slice(0, 5),
     budget,
+    recurringReminders,
   };
 }

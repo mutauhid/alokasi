@@ -164,7 +164,20 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 - Salin budget memakai periode tepat sebelumnya sebagai sumber, menampilkan kategori dan limit sebelum submit, serta hanya menyalin kategori aktif yang dipilih. Kategori yang sudah memiliki budget pada target dilewati pada pratinjau dan ditolak bila terjadi konflik saat submit; tidak ada overwrite diam-diam.
 - Tanggal transaksi yang dikoreksi memindahkan realisasi ke periode yang sesuai; batas periode tidak berubah.
 
-## 5. Kontrak lintas fitur
+## 5. F11 — transaksi berulang
+
+- Template adalah jadwal/pengingat dan tidak pernah dihitung sebagai transaksi. Hanya baris `Transaction` hasil konfirmasi eksplisit yang memengaruhi saldo, budget, dashboard, dan laporan.
+- Baseline hanya pemasukan atau pengeluaran bulanan. Transfer, interval mingguan/tahunan, auto-post, email, dan push notification berada di luar irisan ini.
+- Nominal memakai integer rupiah positif. Akun aktif serta kategori aktif dengan jenis yang sama wajib berada dalam workspace template.
+- `next_due_date` menyimpan satu kejadian berikutnya. Hari 29–31 dipotong ke akhir bulan tanpa mengubah `recurrence_day`, sehingga jadwal kembali ke hari asli pada bulan yang cukup panjang.
+- Kejadian overdue diproses satu per satu. **Catat sekarang** membuat transaksi memakai tanggal jatuh tempo lalu memajukan jadwal; **Lewati periode** hanya memajukan jadwal.
+- Pembuatan transaksi, penautan template/tanggal, audit, dan kemajuan jadwal berada dalam satu transaksi database. Kombinasi workspace, template, dan tanggal jatuh tempo unik agar retry/aksi paralel tidak membuat duplikat.
+- Owner dapat mengelola semua template. Editor hanya dapat mengubah, menonaktifkan, mencatat, atau melewati template yang dibuatnya. Viewer hanya membaca. Seluruh pembatasan diterapkan ulang pada service server.
+- Template yang dinonaktifkan tidak lagi menghasilkan pengingat, tetapi transaksi historis tetap menunjuk template tersebut. Karena itu template memakai arsip lunak dan tidak dihapus.
+- Akun/kategori dengan template aktif tidak dapat diarsipkan. Ubah referensi atau nonaktifkan template terlebih dahulu.
+- Mengubah hari jadwal menetapkan kejadian berikutnya pada tanggal terdekat yang sama dengan/lebih besar dari hari ini; perubahan lain mempertahankan jatuh tempo yang sudah ada.
+
+## 6. Kontrak lintas fitur
 
 - Scan tanggal 24 Sep yang disubmit 26 Sep tetap masuk periode yang mencakup 24 Sep, bukan periode tanggal submit.
 - Kategori baru dari form scan harus aktif dan berada di ruang yang sama; hanya Owner boleh membuatnya.

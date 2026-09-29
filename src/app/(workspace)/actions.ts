@@ -54,6 +54,18 @@ import {
   submitReceiptDraftInput,
 } from "@/modules/receipts/domain";
 import type { ReceiptDraftFormState } from "@/modules/receipts/form-state";
+import {
+  createRecurringTemplateInput,
+  recurringTemplateMutationInput,
+  updateRecurringTemplateInput,
+} from "@/modules/recurring/domain";
+import {
+  archiveRecurringTemplate,
+  createRecurringTemplate,
+  postRecurringOccurrence,
+  skipRecurringOccurrence,
+  updateRecurringTemplate,
+} from "@/modules/recurring/service";
 
 function text(form: FormData, name: string) {
   const value = form.get(name);
@@ -88,12 +100,14 @@ function localToday(timeZone = "Asia/Jakarta") {
 const accountErrors: Record<string, string> = {
   ACCOUNT_CONFLICT: "account-conflict",
   ACCOUNT_NOT_ZERO: "account-not-zero",
+  ACCOUNT_RECURRING_ACTIVE: "account-recurring-active",
 };
 
 const categoryErrors: Record<string, string> = {
   CATEGORY_CONFLICT: "category-conflict",
   CATEGORY_DUPLICATE: "category-duplicate",
   CATEGORY_ARCHIVED: "category-name-archived",
+  CATEGORY_RECURRING_ACTIVE: "category-recurring-active",
 };
 
 function domainErrorPath(
@@ -278,6 +292,23 @@ const transactionErrors: Record<string, string> = {
   TRANSACTION_CONFLICT: "transaction-conflict",
 };
 
+const recurringErrors: Record<string, string> = {
+  RECURRING_ACCESS_DENIED: "recurring-access",
+  RECURRING_ACCOUNT_INVALID: "recurring-account",
+  RECURRING_CATEGORY_INVALID: "recurring-category",
+  RECURRING_CONFLICT: "recurring-conflict",
+  RECURRING_NOT_DUE: "recurring-not-due",
+  TRANSACTION_ACCOUNT_INVALID: "recurring-account",
+  TRANSACTION_BEFORE_ACCOUNT: "recurring-before-account",
+  TRANSACTION_CATEGORY_INVALID: "recurring-category",
+};
+
+function recurringError(error: unknown) {
+  return error instanceof FinanceDomainError
+    ? (recurringErrors[error.code] ?? "recurring-failed")
+    : "recurring-failed";
+}
+
 function transactionError(error: unknown) {
   return error instanceof FinanceDomainError
     ? (transactionErrors[error.code] ?? "transaction-failed")
@@ -365,6 +396,87 @@ export async function deleteTransactionAction(form: FormData) {
     fail("/transactions", form, transactionError(error));
   }
   finish("/transactions", "transaction-deleted", context.workspaceId);
+}
+
+function recurringFields(form: FormData) {
+  return {
+    name: text(form, "name"),
+    type: text(form, "type"),
+    amount: text(form, "amount"),
+    accountId: text(form, "accountId"),
+    categoryId: text(form, "categoryId"),
+    note: text(form, "note"),
+    recurrenceDay: text(form, "recurrenceDay"),
+  };
+}
+
+export async function createRecurringTemplateAction(form: FormData) {
+  const input = createRecurringTemplateInput.safeParse(recurringFields(form));
+  if (!input.success) fail("/transactions", form, "recurring-invalid");
+  const context = await mutationContext(form, ["owner", "editor"]);
+  try {
+    await createRecurringTemplate(context, input.data);
+  } catch (error) {
+    fail("/transactions", form, recurringError(error));
+  }
+  finish("/transactions", "recurring-created", context.workspaceId);
+}
+
+export async function updateRecurringTemplateAction(form: FormData) {
+  const input = updateRecurringTemplateInput.safeParse({
+    ...recurringFields(form),
+    id: text(form, "id"),
+    version: text(form, "version"),
+  });
+  if (!input.success) fail("/transactions", form, "recurring-invalid");
+  const context = await mutationContext(form, ["owner", "editor"]);
+  try {
+    await updateRecurringTemplate(context, input.data);
+  } catch (error) {
+    fail("/transactions", form, recurringError(error));
+  }
+  finish("/transactions", "recurring-updated", context.workspaceId);
+}
+
+async function recurringMutation(
+  form: FormData,
+  operation: "archive" | "post" | "skip",
+) {
+  const input = recurringTemplateMutationInput.safeParse({
+    id: text(form, "id"),
+    version: text(form, "version"),
+  });
+  if (!input.success) fail("/transactions", form, "recurring-invalid");
+  const context = await mutationContext(form, ["owner", "editor"]);
+  try {
+    if (operation === "archive") {
+      await archiveRecurringTemplate(context, input.data);
+    } else if (operation === "post") {
+      await postRecurringOccurrence(context, input.data);
+    } else {
+      await skipRecurringOccurrence(context, input.data);
+    }
+  } catch (error) {
+    fail("/transactions", form, recurringError(error));
+  }
+  const messages = {
+    archive: "recurring-archived",
+    post: "recurring-posted",
+    skip: "recurring-skipped",
+  } as const;
+  finish("/transactions", messages[operation], context.workspaceId);
+}
+
+export async function archiveRecurringTemplateAction(form: FormData) {
+  return recurringMutation(form, "archive");
+}
+
+export async function postRecurringOccurrenceAction(form: FormData) {
+  return recurringMutation(form, "post");
+}
+
+export async function skipRecurringOccurrenceAction(form: FormData) {
+  return recurringMutation(form, "skip");
 }
 
 const receiptErrors: Record<string, string> = {
