@@ -112,7 +112,10 @@ export function AccountMenu({
                 {signingOut ? "Sedang keluar…" : "Keluar"}
               </button>
               {signOutFailed && (
-                <p role="alert" className="px-2.5 pb-1 pt-1 text-xs text-destructive">
+                <p
+                  role="alert"
+                  className="px-2.5 pb-1 pt-1 text-xs text-destructive"
+                >
                   Gagal keluar. Periksa koneksi lalu coba lagi.
                 </p>
               )}
