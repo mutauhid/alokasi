@@ -99,6 +99,17 @@ export async function archiveAccount(
       },
     });
     if (!account) throw new FinanceDomainError("ACCOUNT_CONFLICT");
+    const activeTemplate = await tx.recurringTransactionTemplate.findFirst({
+      where: {
+        workspaceId: context.workspaceId,
+        accountId: account.id,
+        archivedAt: null,
+      },
+      select: { id: true },
+    });
+    if (activeTemplate) {
+      throw new FinanceDomainError("ACCOUNT_RECURRING_ACTIVE");
+    }
     const transactions = await tx.transaction.findMany({
       where: { workspaceId: context.workspaceId, deletedAt: null },
       select: {

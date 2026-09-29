@@ -92,6 +92,22 @@ Ini spesifikasi pengujian, bukan laporan tes yang sudah lulus. Pilih skenario re
 | CAT-07 | Editor/Viewer mencoba membuat kategori via API | Ditolak |
 | CAT-08 | Ubah nama kategori terpakai | ID/nominal/relasi tetap; audit tercatat |
 
+## F11 — transaksi berulang
+
+| ID | Skenario | Hasil wajib |
+|---|---|---|
+| RECUR-01 | Buat template pemasukan/pengeluaran | Template dan pengingat tersimpan; tidak ada transaksi atau perubahan agregat |
+| RECUR-02 | Tanggal jatuh tempo tiba lalu pilih Catat sekarang | Tepat satu transaksi pada tanggal jatuh tempo; jadwal maju satu bulan secara atomik |
+| RECUR-03 | Double-click, retry, atau dua tab mencatat kejadian sama | Maksimal satu transaksi untuk template/tanggal tersebut |
+| RECUR-04 | Pilih Lewati periode | Jadwal maju satu kejadian; tidak ada transaksi |
+| RECUR-05 | Hari 31 melewati Jan–Feb–Mar | Jatuh tempo 31 Jan, akhir Februari, lalu kembali 31 Mar |
+| RECUR-06 | Beberapa kejadian sudah terlambat | Hanya satu kejadian diproses per tindakan; sisanya tetap terlihat overdue |
+| RECUR-07 | Editor mengubah template Owner/Editor lain atau Viewer melakukan mutasi | Ditolak server; Owner tetap dapat mengelola seluruh template ruang |
+| RECUR-08 | ID akun/kategori/template berasal dari ruang lain atau sudah arsip | Ditolak tanpa membuat transaksi atau mengubah jadwal |
+| RECUR-09 | Arsip akun/kategori yang dipakai template aktif | Ditolak sampai template diubah atau dinonaktifkan |
+| RECUR-10 | Ekspor lengkap dan hapus ruang/akun | Export v2 memuat template/link kejadian; cleanup tidak meninggalkan foreign key yatim |
+| RECUR-11 | Dashboard dibuka tujuh hari sebelum atau setelah jatuh tempo | Pengingat terlihat dan jelas menyatakan saldo belum berubah |
+
 ## F18 — scan draf pengeluaran (saat fase aktif)
 
 | ID | Skenario | Hasil wajib |
@@ -514,4 +530,17 @@ GitHub-hosted runner awal membuktikan checkout dan setup Node, lalu gagal pada l
 | Dokumentasi | Runbook memisahkan langkah repository dari pembuatan proyek Supabase, impor Vercel, environment, callback Auth, SMTP, dan smoke test yang dilakukan pengguna |
 | Verifikasi | Format, lint, TypeScript, build produksi, dan 72 unit test lulus. Sepuluh skenario Playwright desktop/mobile melaporkan lulus; proses wrapper Windows tidak menutup otomatis setelah hasil sehingga dihentikan manual |
 
-Health check database memakai koneksi development hanya untuk verifikasi lokal dan secret placeholder proses yang tidak disimpan. Deployment Vercel, proyek Supabase staging, custom SMTP, backup/restore, monitoring eksternal, dan smoke test dua akun staging belum dilakukan.
+Health check database awal memakai koneksi development hanya untuk verifikasi lokal dan secret placeholder proses yang tidak disimpan. Pada 29 September pengguna melaporkan deployment Vercel berhasil dan endpoint produksi diverifikasi mengembalikan HTTP 200 dengan konfigurasi/database `ok`. Custom SMTP/domain, backup/restore, monitoring eksternal, dan smoke test dua akun masih belum dibuktikan.
+
+## Hasil tahap 21 — transaksi berulang, 29 September 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| RECUR-01/04/05 | Unit test memverifikasi normalisasi template, penolakan transfer/desimal/hari tidak valid, jadwal hari 31, dan pemilihan kejadian bulan ini/berikutnya. Test PostgreSQL telah ditulis untuk memastikan template tidak membuat transaksi, post membuat satu transaksi, dan skip tidak membuat transaksi |
+| RECUR-02/03/06 | Service memakai transaksi atomik, optimistic version, idempotency key per template/tanggal, dan unique constraint workspace/template/tanggal. Test PostgreSQL baru menunggu environment test sebelum dapat dilaporkan lulus |
+| RECUR-07/08/09 | Otorisasi dan validasi referensi diterapkan server; test PostgreSQL mencakup Editor terhadap template Owner serta blokir arsip akun/kategori aktif, tetapi belum dijalankan lokal pada sesi ini |
+| RECUR-10 | Export `schemaVersion: 2`, ringkasan penghapusan, dan cleanup workspace mencakup template/tautan kejadian; assertion integrasi tersedia dan menunggu database test |
+| RECUR-11 | Dashboard membaca maksimal lima pengingat hingga tujuh hari dan halaman Transaksi menyediakan tindakan eksplisit; smoke browser terautentikasi belum dijalankan |
+| Verifikasi tersedia | Prisma validate, lint, TypeScript, build produksi, dan 76 unit test lulus |
+
+`.env.test.local` tidak tersedia pada checkout saat verifikasi, sehingga migrasi dan suite PostgreSQL tidak diklaim lulus. Migrasi development juga belum diterapkan karena CA lokal `certs/prod-supabase.cer` tidak tersedia; verifikasi TLS tidak diturunkan sebagai jalan pintas. Pulihkan file lokal tersebut dan jalankan `npm run db:migrate`, lalu jalankan `npm run db:migrate:test` serta `npm run test:db`, atau gunakan job Database pada PR, sebelum merge dan deployment fitur.

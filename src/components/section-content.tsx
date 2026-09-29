@@ -37,7 +37,12 @@ export function SectionContent({
       );
     case "transactions":
       return (
-        <TransactionsSection access={access} error={error} success={success} />
+        <TransactionsSection
+          access={access}
+          today={today}
+          error={error}
+          success={success}
+        />
       );
     case "budgets":
       return (

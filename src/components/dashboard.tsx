@@ -4,6 +4,7 @@ import {
   ArrowUpRight,
   ChartNoAxesCombined,
   ChartPie,
+  CalendarClock,
   ReceiptText,
   Wallet,
 } from "lucide-react";
@@ -12,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { budgetPercent, budgetStatus } from "@/modules/finance/domain";
 import { getDashboardOverview } from "@/modules/dashboard/service";
 import { sectionHref } from "@/lib/navigation";
+import { calendarDayDifference } from "@/modules/recurring/domain";
 
 function rupiah(value: bigint) {
   return new Intl.NumberFormat("id-ID", {
@@ -164,6 +166,62 @@ export async function Dashboard({
           saldo saat ini; kartu periode, grafik, budget, dan transaksi mengikuti
           periode yang dipilih.
         </p>
+      )}
+
+      {data.recurringReminders.length > 0 && (
+        <Card className="gap-0 border-primary/30 bg-primary/5 shadow-none">
+          <CardHeader className="flex flex-row items-center justify-between gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CalendarClock className="size-4 text-primary" />
+                Pengingat transaksi berulang
+              </CardTitle>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Jatuh tempo atau akan jatuh tempo dalam tujuh hari. Saldo belum
+                berubah.
+              </p>
+            </div>
+            <Link
+              className="text-xs font-medium text-primary hover:underline"
+              href={sectionHref("transactions", workspaceId)}
+            >
+              Periksa →
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y">
+              {data.recurringReminders.map((reminder) => {
+                const difference = calendarDayDifference(
+                  today,
+                  reminder.nextDueDate,
+                );
+                return (
+                  <li
+                    key={reminder.id}
+                    className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
+                  >
+                    <div>
+                      <p className="text-sm font-medium">{reminder.name}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {difference < 0
+                          ? `Terlambat ${Math.abs(difference)} hari`
+                          : difference === 0
+                            ? "Jatuh tempo hari ini"
+                            : `Dalam ${difference} hari`}
+                      </p>
+                    </div>
+                    <span
+                      className={`text-sm font-semibold ${reminder.type === "expense" ? "text-destructive" : "text-primary"}`}
+                    >
+                      {reminder.type === "expense" ? "−" : "+"}
+                      {rupiah(reminder.amount)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </CardContent>
+        </Card>
       )}
 
       <Card className="gap-0 shadow-none">

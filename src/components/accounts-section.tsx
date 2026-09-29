@@ -22,6 +22,8 @@ const messages: Record<string, string> = {
   "account-invalid": "Periksa nama, jenis, saldo awal, dan tanggal mulai.",
   "account-conflict": "Akun sudah berubah. Muat ulang lalu coba kembali.",
   "account-not-zero": "Akun hanya dapat diarsipkan ketika saldonya Rp0.",
+  "account-recurring-active":
+    "Nonaktifkan template transaksi berulang yang memakai akun ini terlebih dahulu.",
   "account-failed": "Perubahan akun belum dapat disimpan.",
   "account-created": "Akun berhasil dibuat.",
   "account-renamed": "Nama akun berhasil diperbarui.",

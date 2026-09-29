@@ -74,6 +74,15 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Nilai pemasukan, pengeluaran, kategori terbesar, dan transaksi terbaru menyediakan drill-down ke laporan dengan rentang serta filter sumber yang sama.
 - Pratinjau salin budget menampilkan kategori dan limit dari periode tepat sebelumnya. Kategori target yang sudah ada atau telah diarsipkan terlihat tetapi tidak dapat dipilih.
 
+## Perluasan F11 — transaksi berulang
+
+- Halaman Transaksi menempatkan kartu template berulang sebelum scan dan form manual. Teks selalu menjelaskan bahwa template belum mengubah saldo atau budget.
+- Form memakai nama, jenis, nominal, hari bulanan, akun, kategori, dan catatan. Pada layar lebar field membentuk grid; pada mobile semuanya ditumpuk tanpa scroll horizontal.
+- Setiap template menampilkan nominal, akun, kategori, hari asli, tanggal berikutnya, serta status “Dalam n hari”, “Hari ini”, atau “Terlambat n hari”. Status tidak bergantung pada warna saja.
+- Tindakan **Catat sekarang** dan **Lewati periode** hanya muncul ketika jatuh tempo. Edit/nonaktifkan berada pada disclosure sekunder agar tindakan keuangan utama tetap jelas.
+- Dashboard menampilkan ringkasan maksimal lima pengingat dalam tujuh hari dan tautan menuju Transaksi. Teks menegaskan bahwa saldo belum berubah.
+- Viewer melihat daftar tanpa kontrol. Editor tidak melihat kontrol pada template milik anggota lain; Owner melihat seluruh kontrol sesuai aturan server.
+
 ## Lifecycle ruang bersama
 
 - Owner melihat kartu “Alihkan kepemilikan” dengan calon Owner aktif, penjelasan bahwa penerima harus menyetujui, masa berlaku permintaan, dan tombol pembatalan.

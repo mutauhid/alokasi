@@ -1,6 +1,6 @@
 # Rencana implementasi dan status
 
-Diperbarui 28 September 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
+Diperbarui 29 September 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
 
 ## Status nyata
 
@@ -29,7 +29,8 @@ Diperbarui 28 September 2026. Setup UI dan fondasi database telah dibangun; apli
 | Tahap 17 percakapan: hapus akun pengguna | Diimplementasikan untuk F10: ringkasan dampak, blokir Owner ruang bersama, konfirmasi email, autentikasi ulang, penghapusan ruang pribadi, pencabutan membership, anonimisasi histori bersama, revoke session global, dan cleanup identitas Auth |
 | Tahap 18 percakapan: menu akun dan profil | Diimplementasikan untuk F01/UX: Pengaturan dan Keluar dipindahkan ke menu akun desktop/mobile; profil menampilkan email, mengubah nama tampilan, dan mengganti password dengan autentikasi ulang serta global sign-out |
 | Tahap 19 percakapan: Git repository dan CI | Selesai: repository `main`, remote GitHub, branch protection, workflow quality/build/unit dan PostgreSQL integration test tersedia; perbaikan lockfile lintas platform telah di-merge melalui PR #1 dan kedua job GitHub lulus |
-| Tahap 20 percakapan: kesiapan staging | Diimplementasikan pada `chore/staging-readiness`: validasi runtime, health endpoint dengan pemeriksaan database, security headers/CSP, logging teredaksi, dan runbook Vercel + Supabase staging. Provisioning provider dan smoke test staging menunggu langkah dashboard pengguna |
+| Tahap 20 percakapan: kesiapan staging/produksi | Diimplementasikan dan di-merge melalui PR #2. Pengguna melaporkan deployment Vercel berhasil; `/api/health` produksi diverifikasi eksternal mengembalikan HTTP 200 untuk konfigurasi dan database. SMTP/domain, backup/restore, monitoring, dan smoke dua akun tetap pekerjaan operasional |
+| Tahap 21 percakapan: transaksi berulang | Implementasi F11 tersedia pada `feat/recurring-transactions`: template bulanan, pengingat dashboard, catat/skip eksplisit, ACL, idempotensi, ekspor schema v2, serta perlindungan arsip akun/kategori. Migrasi dan test PostgreSQL menunggu pemulihan `.env.test.local` atau CI PR |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Upload/storage/provider OCR eksternal | Belum diimplementasikan; consent, retensi, biaya, callback, dan lifecycle file masih terbuka |
@@ -224,7 +225,7 @@ Pada penutupan tahap 13, penghapusan ruang dan autentikasi ulang masih terpisah;
 - Ekspor membaca satu snapshot `Repeatable Read` yang mencakup metadata ruang, seluruh versi aturan siklus, akun/kategori aktif maupun arsip, periode budget, budget, serta transaksi aktif dan soft-delete.
 - Nominal saldo awal, budget, dan transaksi ditulis sebagai string integer IDR. Tanggal bisnis memakai `YYYY-MM-DD`; timestamp memakai ISO 8601.
 - Transaksi menyertakan pencatat/pengubah untuk akuntabilitas ruang bersama. Auth subject, token, invitation token hash, idempotency key/request hash, gambar, draf receipt, dan teks OCR mentah tidak disertakan.
-- Dokumen memiliki penanda format dan `schemaVersion: 1`; respons memakai attachment JSON, `private, no-store`, dan `nosniff`.
+- Dokumen memiliki penanda format; `schemaVersion: 2` menambahkan template transaksi berulang dan tautan kejadian pada transaksi. Respons memakai attachment JSON, `private, no-store`, dan `nosniff`.
 - Test integrasi pada fixture finansial memverifikasi akun, kategori, periode, budget, transaksi, nominal presisi, data arsip/soft-delete, serta tidak adanya metadata idempotensi. Unit 63/63, PostgreSQL 31/31, lint, TypeScript, format, dan build produksi lulus.
 
 Ekspor masih dibangun di memori dan belum diuji dengan dataset besar; ini adalah salinan data pengguna, bukan backup database atau mekanisme restore. Penghapusan ruang/akun dengan autentikasi ulang tetap tahap berikutnya.
@@ -250,9 +251,18 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Tidak ada migrasi schema pada tahap ini. Penghapusan akun user, sesi seluruh perangkat, OAuth reauthentication, backup/restore, dan kebijakan kedaluwarsa cadangan tetap pekerjaan berikutnya.
 - Verifikasi akhir: 63 unit test dan 32 test PostgreSQL lulus; lint, TypeScript, format, dan build produksi juga lulus.
 
+## Hasil tahap 21 — transaksi berulang, 29 September 2026
+
+- Template bulanan mencakup pemasukan/pengeluaran, nominal integer, akun, kategori, catatan, hari 1–31, dan tanggal jatuh tempo berikutnya. Template tidak memengaruhi angka finansial sebelum tindakan eksplisit.
+- **Catat sekarang** membuat satu transaksi pada tanggal jatuh tempo dan memajukan jadwal dalam transaksi database yang sama. **Lewati periode** memajukan satu kejadian tanpa transaksi. Hari 31 dipotong pada Februari lalu kembali ke tanggal 31 pada Maret.
+- Dashboard menampilkan pengingat overdue atau tujuh hari mendatang. Halaman Transaksi menyediakan create, edit, nonaktifkan, catat, dan skip; Viewer baca saja, Editor mengelola template sendiri, dan Owner seluruh template ruang.
+- Kombinasi workspace/template/tanggal unik mencegah pencatatan ganda. Akun dan kategori yang masih dirujuk template aktif tidak dapat diarsipkan.
+- Ekspor lengkap ruang memakai `schemaVersion: 2` dan menyertakan template serta kaitan transaksi ke kejadian berulang. Ringkasan penghapusan dan urutan cleanup juga mencakup template.
+- Prisma validate, lint, TypeScript, build produksi, dan 76 unit test lulus. Migrasi/test PostgreSQL lokal belum dijalankan karena `.env.test.local` tidak tersedia; migrasi development juga tertahan karena CA lokal `certs/prod-supabase.cer` tidak tersedia. Suite integrasi baru dan migrasi harus lulus di database test atau CI sebelum merge/deploy.
+
 ## Backlog kandidat — bukan komitmen aktif
 
-F11 transaksi berulang, F12 target tabungan, F13 impor CSV, F14 utang/piutang, F15 rekonsiliasi, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.
+F11 transaksi berulang diaktifkan melalui D33. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, F14 utang/piutang, F15 rekonsiliasi, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.
 
 ## Format handoff setiap irisan pekerjaan
 

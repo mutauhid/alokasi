@@ -109,6 +109,19 @@ async function setCategoryArchiveState(
   archived: boolean,
 ) {
   return getDatabase().$transaction(async (tx) => {
+    if (archived) {
+      const activeTemplate = await tx.recurringTransactionTemplate.findFirst({
+        where: {
+          workspaceId: context.workspaceId,
+          categoryId: input.id,
+          archivedAt: null,
+        },
+        select: { id: true },
+      });
+      if (activeTemplate) {
+        throw new FinanceDomainError("CATEGORY_RECURRING_ACTIVE");
+      }
+    }
     const updated = await tx.category.updateMany({
       where: {
         id: input.id,

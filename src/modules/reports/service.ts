@@ -222,6 +222,7 @@ export async function exportWorkspaceJson(
         categories,
         periods,
         budgets,
+        recurringTemplates,
         transactions,
       ] = await Promise.all([
         tx.cycleSetting.findMany({
@@ -244,6 +245,10 @@ export async function exportWorkspaceJson(
           where: { workspaceId },
           orderBy: [{ periodId: "asc" }, { categoryId: "asc" }],
         }),
+        tx.recurringTransactionTemplate.findMany({
+          where: { workspaceId },
+          orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        }),
         tx.transaction.findMany({
           where: { workspaceId },
           select: {
@@ -259,6 +264,8 @@ export async function exportWorkspaceJson(
             createdAt: true,
             updatedAt: true,
             deletedAt: true,
+            recurringTemplateId: true,
+            recurringDueDate: true,
             creator: {
               select: {
                 userId: true,
@@ -286,6 +293,7 @@ export async function exportWorkspaceJson(
         categories,
         periods,
         budgets,
+        recurringTemplates,
         transactions,
       };
     },
@@ -295,7 +303,7 @@ export async function exportWorkspaceJson(
 
   const document = {
     format: "alokasi-workspace-export",
-    schemaVersion: 1,
+    schemaVersion: 2,
     exportedAt: exportedAt.toISOString(),
     workspace: {
       ...snapshot.workspace,
@@ -346,6 +354,24 @@ export async function exportWorkspaceJson(
       createdAt: budget.createdAt.toISOString(),
       updatedAt: budget.updatedAt.toISOString(),
     })),
+    recurringTransactionTemplates: snapshot.recurringTemplates.map(
+      (template) => ({
+        id: template.id,
+        createdBy: template.createdBy,
+        name: template.name,
+        type: template.type,
+        amount: template.amount.toString(),
+        accountId: template.accountId,
+        categoryId: template.categoryId,
+        note: template.note,
+        recurrenceDay: template.recurrenceDay,
+        nextDueDate: dateOnly(template.nextDueDate),
+        archivedAt: timestamp(template.archivedAt),
+        version: template.version,
+        createdAt: template.createdAt.toISOString(),
+        updatedAt: template.updatedAt.toISOString(),
+      }),
+    ),
     transactions: snapshot.transactions.map((transaction) => ({
       id: transaction.id,
       type: transaction.type,
@@ -369,6 +395,10 @@ export async function exportWorkspaceJson(
       createdAt: transaction.createdAt.toISOString(),
       updatedAt: transaction.updatedAt.toISOString(),
       deletedAt: timestamp(transaction.deletedAt),
+      recurringTemplateId: transaction.recurringTemplateId,
+      recurringDueDate: transaction.recurringDueDate
+        ? dateOnly(transaction.recurringDueDate)
+        : null,
     })),
   };
 

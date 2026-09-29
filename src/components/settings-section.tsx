@@ -43,6 +43,8 @@ const messages: Record<string, string> = {
   "category-name-archived":
     "Nama tersebut dimiliki kategori arsip. Pulihkan dari daftar arsip.",
   "category-conflict": "Kategori sudah berubah. Muat ulang lalu coba kembali.",
+  "category-recurring-active":
+    "Nonaktifkan template transaksi berulang yang memakai kategori ini terlebih dahulu.",
   "category-failed": "Perubahan kategori belum dapat disimpan.",
   "category-created": "Kategori berhasil dibuat.",
   "category-renamed": "Kategori berhasil diperbarui.",
@@ -384,6 +386,10 @@ export async function SettingsSection({
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 ["Transaksi pribadi", deletion.personal.transactions],
+                [
+                  "Template transaksi berulang",
+                  deletion.personal.recurringTemplates,
+                ],
                 ["Budget pribadi", deletion.personal.budgets],
                 ["Akun keuangan", deletion.personal.accounts],
                 ["Membership bersama", deletion.sharedMemberships],
