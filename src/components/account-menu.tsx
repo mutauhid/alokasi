@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import {
   ChevronUp,
   LogOut,
@@ -24,6 +24,30 @@ export function AccountMenu({
   onNavigate?: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutFailed, setSignOutFailed] = useState(false);
+
+  async function handleSignOut(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (signingOut) return;
+
+    setSigningOut(true);
+    setSignOutFailed(false);
+
+    try {
+      const response = await fetch(event.currentTarget.action, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { Accept: "text/html" },
+      });
+
+      if (!response.ok) throw new Error("Sign out request failed");
+      window.location.replace(response.url || "/login?signedOut=1");
+    } catch {
+      setSigningOut(false);
+      setSignOutFailed(true);
+    }
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -73,15 +97,25 @@ export function AccountMenu({
               <Settings2 className="size-4" aria-hidden="true" />
               Profil &amp; pengaturan
             </Link>
-            <form method="post" action="/auth/sign-out">
+            <form
+              method="post"
+              action="/auth/sign-out"
+              onSubmit={handleSignOut}
+            >
               <button
                 type="submit"
                 role="menuitem"
+                disabled={signingOut}
                 className="flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-sm text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <LogOut className="size-4" aria-hidden="true" />
-                Keluar
+                {signingOut ? "Sedang keluar…" : "Keluar"}
               </button>
+              {signOutFailed && (
+                <p role="alert" className="px-2.5 pb-1 pt-1 text-xs text-destructive">
+                  Gagal keluar. Periksa koneksi lalu coba lagi.
+                </p>
+              )}
             </form>
           </div>
         </div>
