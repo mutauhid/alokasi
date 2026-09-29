@@ -30,7 +30,7 @@ Diperbarui 29 September 2026. Setup UI dan fondasi database telah dibangun; apli
 | Tahap 18 percakapan: menu akun dan profil | Diimplementasikan untuk F01/UX: Pengaturan dan Keluar dipindahkan ke menu akun desktop/mobile; profil menampilkan email, mengubah nama tampilan, dan mengganti password dengan autentikasi ulang serta global sign-out |
 | Tahap 19 percakapan: Git repository dan CI | Selesai: repository `main`, remote GitHub, branch protection, workflow quality/build/unit dan PostgreSQL integration test tersedia; perbaikan lockfile lintas platform telah di-merge melalui PR #1 dan kedua job GitHub lulus |
 | Tahap 20 percakapan: kesiapan staging/produksi | Diimplementasikan dan di-merge melalui PR #2. Pengguna melaporkan deployment Vercel berhasil; `/api/health` produksi diverifikasi eksternal mengembalikan HTTP 200 untuk konfigurasi dan database. SMTP/domain, backup/restore, monitoring, dan smoke dua akun tetap pekerjaan operasional |
-| Tahap 21 percakapan: transaksi berulang | Implementasi F11 tersedia pada `feat/recurring-transactions`: template bulanan, pengingat dashboard, catat/skip eksplisit, ACL, idempotensi, ekspor schema v2, serta perlindungan arsip akun/kategori. Job Quality/Database PR lulus; migrasi tabel dan grant runtime telah diterapkan ke Supabase production |
+| Tahap 21 percakapan: transaksi berulang | Implementasi F11 tersedia pada `feat/recurring-transactions`: template bulanan, pengingat dashboard, catat/skip eksplisit, ACL, idempotensi, ekspor schema v2, serta perlindungan arsip akun/kategori. Migrasi dan test PostgreSQL menunggu pemulihan `.env.test.local` atau CI PR |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Upload/storage/provider OCR eksternal | Belum diimplementasikan; consent, retensi, biaya, callback, dan lifecycle file masih terbuka |
@@ -256,9 +256,9 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Template bulanan mencakup pemasukan/pengeluaran, nominal integer, akun, kategori, catatan, hari 1–31, dan tanggal jatuh tempo berikutnya. Template tidak memengaruhi angka finansial sebelum tindakan eksplisit.
 - **Catat sekarang** membuat satu transaksi pada tanggal jatuh tempo dan memajukan jadwal dalam transaksi database yang sama. **Lewati periode** memajukan satu kejadian tanpa transaksi. Hari 31 dipotong pada Februari lalu kembali ke tanggal 31 pada Maret.
 - Dashboard menampilkan pengingat overdue atau tujuh hari mendatang. Halaman Transaksi menyediakan create, edit, nonaktifkan, catat, dan skip; Viewer baca saja, Editor mengelola template sendiri, dan Owner seluruh template ruang.
-- Kombinasi workspace/template/tanggal unik mencegah pencatatan ganda. Akun dan kategori yang masih dirujuk template aktif tidak dapat diarsipkan. Migrasi lanjutan memberi CRUD eksplisit pada tabel baru hanya kepada role `alokasi_runtime`; role tersebut tetap tanpa DDL/BYPASSRLS.
+- Kombinasi workspace/template/tanggal unik mencegah pencatatan ganda. Akun dan kategori yang masih dirujuk template aktif tidak dapat diarsipkan.
 - Ekspor lengkap ruang memakai `schemaVersion: 2` dan menyertakan template serta kaitan transaksi ke kejadian berulang. Ringkasan penghapusan dan urutan cleanup juga mencakup template.
-- Prisma validate, lint, TypeScript, build produksi, 76 unit test, serta 36 test PostgreSQL pada CI lulus. Migrasi tabel dan grant runtime diterapkan ke Supabase dengan TLS terverifikasi; role runtime melihat 13 tabel dan tetap tanpa DDL/BYPASSRLS.
+- Prisma validate, lint, TypeScript, build produksi, dan 76 unit test lulus. Migrasi/test PostgreSQL lokal belum dijalankan karena `.env.test.local` tidak tersedia; migrasi development juga tertahan karena CA lokal `certs/prod-supabase.cer` tidak tersedia. Suite integrasi baru dan migrasi harus lulus di database test atau CI sebelum merge/deploy.
 
 ## Backlog kandidat — bukan komitmen aktif
 
