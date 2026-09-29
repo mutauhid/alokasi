@@ -22,7 +22,7 @@ import { exportWorkspaceJson } from "../../src/modules/reports/service";
 vi.mock("server-only", () => ({}));
 
 const connectionString = process.env.TEST_DATABASE_URL;
-const db = getDatabase();
+let db: ReturnType<typeof getDatabase>;
 let workspaceId: string;
 let ownerId: string;
 let editorId: string;
@@ -35,6 +35,10 @@ beforeAll(() => {
       "TEST_DATABASE_URL wajib menunjuk PostgreSQL khusus test yang sudah dimigrasi.",
     );
   }
+  // Services intentionally read DATABASE_URL at runtime. Point that runtime
+  // singleton at the already-validated dedicated test database explicitly.
+  process.env.DATABASE_URL = connectionString;
+  db = getDatabase();
 });
 
 beforeEach(async () => {
