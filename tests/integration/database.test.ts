@@ -46,6 +46,7 @@ async function transaction(overrides: Record<string, unknown> = {}) {
     created_by: user,
     updated_by: user,
     type: "expense",
+    title: "Transaksi fixture",
     amount: "150000",
     transaction_date: "2026-09-22",
     account_id: account,
