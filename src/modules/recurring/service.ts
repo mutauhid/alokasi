@@ -302,6 +302,7 @@ export async function postRecurringOccurrence(
       }
       const transaction = await createTransactionInTransaction(tx, context, {
         type: template.type as "income" | "expense",
+        title: template.name,
         amount: template.amount,
         transactionDate: dueDate,
         accountId: template.accountId,

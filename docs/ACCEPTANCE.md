@@ -92,6 +92,17 @@ Ini spesifikasi pengujian, bukan laporan tes yang sudah lulus. Pilih skenario re
 | CAT-07 | Editor/Viewer mencoba membuat kategori via API | Ditolak |
 | CAT-08 | Ubah nama kategori terpakai | ID/nominal/relasi tetap; audit tercatat |
 
+## F22 — saran pengisian transaksi
+
+| ID | Skenario | Hasil yang diharapkan |
+|---|---|---|
+| SUGGEST-01 | Ketik kurang dari dua karakter pada judul | Belum ada saran; tidak ada request autocomplete |
+| SUGGEST-02 | Ketik dua karakter yang cocok dengan riwayat ruang dan jenis aktif | Maksimal lima saran tampil, frekuensi lalu penggunaan terbaru menentukan urutan |
+| SUGGEST-03 | Pilih saran pemasukan/pengeluaran | Judul dan kategori aktif terisi; nominal, tanggal, dan akun tidak berubah |
+| SUGGEST-04 | Pilih saran transfer | Judul terisi tanpa kategori |
+| SUGGEST-05 | Riwayat berasal dari ruang lain atau kategori telah diarsipkan | Saran tidak ditampilkan |
+| SUGGEST-06 | Simpan transaksi manual, hasil OCR, atau pengingat berulang | Judul tersimpan terpisah dari catatan dan muncul konsisten di riwayat, dashboard, laporan, CSV, serta ekspor ruang |
+
 ## F11 — transaksi berulang
 
 | ID | Skenario | Hasil wajib |
@@ -546,3 +557,15 @@ Health check database awal memakai koneksi development hanya untuk verifikasi lo
 | Verifikasi tersedia | Prisma validate, lint, TypeScript, build produksi, dan 76 unit test lulus |
 
 `.env.test.local` tidak tersedia pada checkout saat verifikasi, sehingga migrasi dan suite PostgreSQL tidak diklaim lulus. Migrasi development juga belum diterapkan karena CA lokal `certs/prod-supabase.cer` tidak tersedia; verifikasi TLS tidak diturunkan sebagai jalan pintas. Pulihkan file lokal tersebut dan jalankan `npm run db:migrate`, lalu jalankan `npm run db:migrate:test` serta `npm run test:db`, atau gunakan job Database pada PR, sebelum merge dan deployment fitur.
+
+## Hasil tahap 22 — saran pengisian transaksi, 30 September 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| SUGGEST-01–SUGGEST-04 | Form memfilter kandidat di browser setelah dua karakter, membatasi lima hasil, dan klik hanya mengubah judul/kategori; transfer tidak memiliki kategori |
+| SUGGEST-05 | Kandidat dibentuk dari query transaksi yang sudah dibatasi workspace dan `deletedAt: null`; unit test membuktikan kategori arsip dikeluarkan |
+| Ranking/batas | Unit test membuktikan normalisasi spasi/case dan urutan frekuensi sebelum penggunaan terbaru; server membatasi 12 kandidat per jenis dari maksimal 100 transaksi yang sudah dimuat |
+| SUGGEST-06 | Judul masuk ke create/update/idempotency hash, OCR, transaksi berulang, riwayat, dashboard, pencarian laporan, CSV, dan ekspor ruang versi 3 |
+| Verifikasi | Prisma validate, lint, TypeScript, build produksi, 78 unit test, dan 10 smoke Playwright desktop/mobile lulus |
+
+Migrasi serta suite PostgreSQL belum dijalankan pada clone ini karena `.env.test.local` tidak tersedia. Smoke browser terautentikasi masih perlu dilakukan setelah migrasi diterapkan pada database uji.

@@ -46,6 +46,7 @@ async function transaction(overrides: Record<string, unknown> = {}) {
     created_by: user,
     updated_by: user,
     type: "expense",
+    title: "Transaksi fixture",
     amount: "150000",
     transaction_date: "2026-09-22",
     account_id: account,
@@ -238,6 +239,7 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
       };
       const incomeInput = {
         type: "income" as const,
+        title: "Bonus proyek",
         amount: 1000n,
         transactionDate: new Date("2026-09-23T00:00:00.000Z"),
         accountId: createdAccount.id,
@@ -265,6 +267,7 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
         transactionContext,
         {
           type: "expense",
+          title: "Pakan kucing",
           amount: 1000n,
           transactionDate: new Date("2026-09-23T00:00:00.000Z"),
           accountId: createdAccount.id,
@@ -338,6 +341,7 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
         id: expenseTransaction.id,
         version: expenseTransaction.version,
         type: "expense",
+        title: "Pakan bulanan",
         amount: 1000n,
         transactionDate: new Date("2026-09-23T00:00:00.000Z"),
         accountId: createdAccount.id,
@@ -507,6 +511,7 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
         },
         {
           type: "expense",
+          title: "Belanja bersama",
           amount: 25_000n,
           transactionDate: new Date("2026-09-24T00:00:00.000Z"),
           accountId: account.id,
@@ -524,6 +529,7 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
         },
         {
           type: "expense",
+          title: "Belanja pemilik",
           amount: 10_000n,
           transactionDate: new Date("2026-09-24T00:00:00.000Z"),
           accountId: account.id,
@@ -568,6 +574,7 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
           { ...viewerAccess, today: new Date("2026-09-24T00:00:00.000Z") },
           {
             type: "expense",
+            title: "Transaksi tanpa izin",
             amount: 1n,
             transactionDate: new Date("2026-09-24T00:00:00.000Z"),
             accountId: account.id,
@@ -963,6 +970,7 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
           createdBy: ownerId,
           updatedBy: ownerId,
           type: "expense",
+          title: "Pengeluaran ruang",
           amount: 25_000n,
           transactionDate: new Date("2026-09-28T00:00:00.000Z"),
           accountId: account.id,
@@ -1203,6 +1211,7 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
           createdBy: actorId,
           updatedBy: actorId,
           type: "expense",
+          title: "Pengeluaran bersama",
           amount: 25_000n,
           transactionDate: new Date("2026-09-28T00:00:00.000Z"),
           accountId: account.id,

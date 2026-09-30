@@ -176,7 +176,7 @@ export async function ReportsSection({
                   type="search"
                   name="query"
                   maxLength={100}
-                  placeholder="Catatan, akun, kategori"
+                  placeholder="Judul, catatan, akun, kategori"
                   defaultValue={report.filters.query ?? ""}
                 />
               </span>
@@ -335,9 +335,7 @@ export async function ReportsSection({
                       </span>
                       <div>
                         <p className="text-sm font-medium">
-                          {transaction.note ||
-                            transaction.category?.name ||
-                            detail.label}
+                          {transaction.title}
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {displayDate(transaction.transactionDate)} ·{" "}

@@ -40,6 +40,12 @@ function transactionWhere(workspaceId: string, filters: ReportFilters) {
           AND: {
             OR: [
               {
+                title: {
+                  contains: filters.query,
+                  mode: "insensitive" as const,
+                },
+              },
+              {
                 note: { contains: filters.query, mode: "insensitive" as const },
               },
               {
@@ -167,6 +173,7 @@ export async function exportTransactionsCsv(
     transaction.destinationAccount?.name ?? "",
     transaction.category?.name ?? "",
     transaction.amount.toString(),
+    transaction.title,
     transaction.note ?? "",
     transaction.creator.user.displayName ??
       transaction.creator.user.email ??
@@ -180,6 +187,7 @@ export async function exportTransactionsCsv(
       "Akun tujuan",
       "Kategori",
       "Nominal IDR",
+      "Judul",
       "Catatan",
       "Pencatat",
     ],
@@ -259,6 +267,7 @@ export async function exportWorkspaceJson(
             accountId: true,
             destinationAccountId: true,
             categoryId: true,
+            title: true,
             note: true,
             version: true,
             createdAt: true,
@@ -303,7 +312,7 @@ export async function exportWorkspaceJson(
 
   const document = {
     format: "alokasi-workspace-export",
-    schemaVersion: 2,
+    schemaVersion: 3,
     exportedAt: exportedAt.toISOString(),
     workspace: {
       ...snapshot.workspace,
@@ -380,6 +389,7 @@ export async function exportWorkspaceJson(
       accountId: transaction.accountId,
       destinationAccountId: transaction.destinationAccountId,
       categoryId: transaction.categoryId,
+      title: transaction.title,
       note: transaction.note,
       createdBy: {
         userId: transaction.creator.userId,

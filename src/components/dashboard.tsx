@@ -23,16 +23,8 @@ function rupiah(value: bigint) {
   }).format(value);
 }
 
-function transactionLabel(transaction: {
-  type: string;
-  account: { name: string };
-  destinationAccount: { name: string } | null;
-  category: { name: string } | null;
-}) {
-  if (transaction.type === "transfer") {
-    return `${transaction.account.name} → ${transaction.destinationAccount?.name ?? "Akun tujuan"}`;
-  }
-  return transaction.category?.name ?? transaction.account.name;
+function transactionLabel(transaction: { title: string }) {
+  return transaction.title;
 }
 
 function dateValue(date: Date) {

@@ -204,6 +204,7 @@ export async function submitReceiptDraft(
 
       const transaction = await createTransactionInTransaction(tx, context, {
         type: "expense",
+        title: (input.merchant || "Pengeluaran hasil scan").slice(0, 100),
         amount: input.amount,
         transactionDate: input.transactionDate,
         accountId: input.accountId,

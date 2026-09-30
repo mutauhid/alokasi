@@ -261,6 +261,14 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Ekspor lengkap ruang memakai `schemaVersion: 2` dan menyertakan template serta kaitan transaksi ke kejadian berulang. Ringkasan penghapusan dan urutan cleanup juga mencakup template.
 - Prisma validate, lint, TypeScript, build produksi, dan 76 unit test lulus. Migrasi/test PostgreSQL lokal belum dijalankan karena `.env.test.local` tidak tersedia; migrasi development juga tertahan karena CA lokal `certs/prod-supabase.cer` tidak tersedia. Suite integrasi baru dan migrasi harus lulus di database test atau CI sebelum merge/deploy.
 
+## Hasil tahap 22 — saran pengisian transaksi, 30 September 2026
+
+- Transaksi memiliki judul wajib yang terpisah dari catatan; migrasi mengisi judul histori tanpa mengubah nilai finansial. OCR memakai merchant dan transaksi berulang memakai nama template sebagai judul.
+- Halaman Transaksi membangun kandidat dari maksimal 100 baris riwayat yang sudah dimuat, memilih maksimal 12 kandidat per jenis, lalu memfilter maksimal lima chip di browser setelah dua karakter. Tidak ada query atau Server Action pada setiap ketikan.
+- Kandidat dibatasi workspace oleh query riwayat, jenis transaksi aktif, serta kategori yang belum diarsipkan. Klik saran mengubah judul dan kategori saja; transfer tidak memiliki kategori.
+- Pencarian laporan, tampilan dashboard/riwayat, CSV, dan ekspor lengkap ruang mencakup judul. Schema ekspor naik ke versi 3.
+- Prisma validate, lint, TypeScript, build produksi, 78 unit test, dan 10 smoke Playwright desktop/mobile lulus. Migrasi dan suite PostgreSQL belum dijalankan lokal karena `.env.test.local` tidak tersedia pada clone ini.
+
 ## Backlog kandidat — bukan komitmen aktif
 
 F11 transaksi berulang diaktifkan melalui D33. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, F14 utang/piutang, F15 rekonsiliasi, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.

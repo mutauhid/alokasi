@@ -208,6 +208,7 @@ model Transaction {
   createdBy            String                        @map("created_by") @db.Uuid
   updatedBy            String                        @map("updated_by") @db.Uuid
   type                 TransactionType
+  title                String                        @db.VarChar(100)
   amount               BigInt
   transactionDate      DateTime                      @map("transaction_date") @db.Date
   accountId            String                        @map("account_id") @db.Uuid
