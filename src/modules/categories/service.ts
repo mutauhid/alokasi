@@ -7,6 +7,22 @@ import { FinanceDomainError } from "@/modules/finance/errors";
 type OwnerContext = { workspaceId: string; actorId: string };
 type CategoryType = "income" | "expense";
 
+export async function listActiveCategoryOptions(workspaceId: string) {
+  const categories = await getDatabase().category.findMany({
+    where: {
+      workspaceId,
+      archivedAt: null,
+      type: { in: ["income", "expense"] },
+    },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, type: true },
+  });
+  return categories.filter(
+    (category): category is typeof category & { type: "income" | "expense" } =>
+      category.type === "income" || category.type === "expense",
+  );
+}
+
 export function listCategories(workspaceId: string) {
   return getDatabase().category.findMany({
     where: { workspaceId },

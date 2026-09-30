@@ -17,6 +17,7 @@ export function SectionContent({
   success,
   reportQuery,
   selectedPeriodId,
+  transactionView = "history",
 }: {
   section: Section;
   access: WorkspaceAccess;
@@ -25,6 +26,7 @@ export function SectionContent({
   success?: string;
   reportQuery: ReportQuery;
   selectedPeriodId: string;
+  transactionView?: "history" | "reminders";
 }) {
   switch (section) {
     case "dashboard":
@@ -42,6 +44,7 @@ export function SectionContent({
           today={today}
           error={error}
           success={success}
+          view={transactionView}
         />
       );
     case "budgets":

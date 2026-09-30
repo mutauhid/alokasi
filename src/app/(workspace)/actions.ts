@@ -124,7 +124,12 @@ function domainErrorPath(
 }
 
 function finish(
-  path: "/accounts" | "/settings" | "/transactions" | "/budgets",
+  path:
+    | "/accounts"
+    | "/settings"
+    | "/transactions"
+    | "/transactions/reminders"
+    | "/budgets",
   message: string,
   workspaceId: string,
 ): never {
@@ -133,7 +138,12 @@ function finish(
 }
 
 function fail(
-  path: "/accounts" | "/settings" | "/transactions" | "/budgets",
+  path:
+    | "/accounts"
+    | "/settings"
+    | "/transactions"
+    | "/transactions/reminders"
+    | "/budgets",
   form: FormData,
   message: string,
 ): never {
@@ -412,14 +422,15 @@ function recurringFields(form: FormData) {
 
 export async function createRecurringTemplateAction(form: FormData) {
   const input = createRecurringTemplateInput.safeParse(recurringFields(form));
-  if (!input.success) fail("/transactions", form, "recurring-invalid");
+  if (!input.success)
+    fail("/transactions/reminders", form, "recurring-invalid");
   const context = await mutationContext(form, ["owner", "editor"]);
   try {
     await createRecurringTemplate(context, input.data);
   } catch (error) {
-    fail("/transactions", form, recurringError(error));
+    fail("/transactions/reminders", form, recurringError(error));
   }
-  finish("/transactions", "recurring-created", context.workspaceId);
+  finish("/transactions/reminders", "recurring-created", context.workspaceId);
 }
 
 export async function updateRecurringTemplateAction(form: FormData) {
@@ -428,14 +439,15 @@ export async function updateRecurringTemplateAction(form: FormData) {
     id: text(form, "id"),
     version: text(form, "version"),
   });
-  if (!input.success) fail("/transactions", form, "recurring-invalid");
+  if (!input.success)
+    fail("/transactions/reminders", form, "recurring-invalid");
   const context = await mutationContext(form, ["owner", "editor"]);
   try {
     await updateRecurringTemplate(context, input.data);
   } catch (error) {
-    fail("/transactions", form, recurringError(error));
+    fail("/transactions/reminders", form, recurringError(error));
   }
-  finish("/transactions", "recurring-updated", context.workspaceId);
+  finish("/transactions/reminders", "recurring-updated", context.workspaceId);
 }
 
 async function recurringMutation(
@@ -446,7 +458,8 @@ async function recurringMutation(
     id: text(form, "id"),
     version: text(form, "version"),
   });
-  if (!input.success) fail("/transactions", form, "recurring-invalid");
+  if (!input.success)
+    fail("/transactions/reminders", form, "recurring-invalid");
   const context = await mutationContext(form, ["owner", "editor"]);
   try {
     if (operation === "archive") {
@@ -457,14 +470,14 @@ async function recurringMutation(
       await skipRecurringOccurrence(context, input.data);
     }
   } catch (error) {
-    fail("/transactions", form, recurringError(error));
+    fail("/transactions/reminders", form, recurringError(error));
   }
   const messages = {
     archive: "recurring-archived",
     post: "recurring-posted",
     skip: "recurring-skipped",
   } as const;
-  finish("/transactions", messages[operation], context.workspaceId);
+  finish("/transactions/reminders", messages[operation], context.workspaceId);
 }
 
 export async function archiveRecurringTemplateAction(form: FormData) {
