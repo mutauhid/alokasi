@@ -21,7 +21,6 @@ import { TransactionViewTabs } from "@/components/transaction-view-tabs";
 import { Button } from "@/components/ui/button";
 import type { WorkspaceAccess } from "@/modules/workspaces/service";
 import { sectionHref } from "@/lib/navigation";
-import { listRecurringTemplates } from "@/modules/recurring/service";
 import { buildTransactionSuggestions } from "@/modules/transactions/suggestions";
 
 const messages: Record<string, string> = {
@@ -95,26 +94,6 @@ export async function TransactionsSection({
   success?: string;
   view?: "history" | "reminders";
 }) {
-  const [allAccounts, allCategories, transactions, recurringTemplates] =
-    await Promise.all([
-      listAccounts(access.workspaceId),
-      listCategories(access.workspaceId),
-      listTransactions(access.workspaceId),
-      listRecurringTemplates(access.workspaceId),
-    ]);
-  const accounts = allAccounts
-    .filter((account) => !account.archivedAt)
-    .map(({ id, name }) => ({ id, name }));
-  const categories = allCategories
-    .filter(
-      (
-        category,
-      ): category is typeof category & { type: "income" | "expense" } =>
-        !category.archivedAt &&
-        (category.type === "income" || category.type === "expense"),
-    )
-    .map(({ id, name, type }) => ({ id, name, type }));
-  const suggestions = buildTransactionSuggestions(transactions);
   if (view === "reminders") {
     return (
       <RecurringTransactionsSection
@@ -131,6 +110,7 @@ export async function TransactionsSection({
     listActiveCategoryOptions(access.workspaceId),
     listTransactions(access.workspaceId),
   ]);
+  const suggestions = buildTransactionSuggestions(transactions);
   const status = error ?? success;
 
   return (
