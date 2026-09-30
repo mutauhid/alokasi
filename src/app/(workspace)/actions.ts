@@ -318,6 +318,7 @@ function transactionError(error: unknown) {
 function transactionFields(form: FormData) {
   return {
     type: text(form, "type"),
+    title: text(form, "title"),
     amount: text(form, "amount"),
     transactionDate: text(form, "transactionDate"),
     accountId: text(form, "accountId"),
@@ -329,6 +330,7 @@ function transactionFields(form: FormData) {
 
 function serviceTransactionInput(input: {
   type: "income" | "expense" | "transfer";
+  title: string;
   amount: bigint;
   transactionDate: string;
   accountId: string;

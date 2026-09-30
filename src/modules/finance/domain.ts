@@ -55,6 +55,7 @@ export const renameCategoryInput = renameInput.extend({
 
 const transactionFields = z.object({
   type: z.enum(transactionTypes),
+  title: normalizedName(100),
   amount: z
     .string()
     .trim()

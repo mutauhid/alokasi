@@ -13,6 +13,7 @@ export type TransactionContext = {
 };
 export type TransactionInput = {
   type: TransactionType;
+  title: string;
   amount: bigint;
   transactionDate: Date;
   accountId: string;
@@ -26,6 +27,7 @@ function requestHash(input: TransactionInput) {
     .update(
       JSON.stringify({
         type: input.type,
+        title: input.title,
         amount: input.amount.toString(),
         transactionDate: input.transactionDate.toISOString().slice(0, 10),
         accountId: input.accountId,
@@ -105,6 +107,7 @@ export async function createTransactionInTransaction(
       createdBy: context.actorId,
       updatedBy: context.actorId,
       type: input.type,
+      title: input.title,
       amount: input.amount,
       transactionDate: input.transactionDate,
       accountId: input.accountId,
@@ -126,6 +129,7 @@ export async function createTransactionInTransaction(
       action: "created",
       changedFields: [
         "type",
+        "title",
         "amount",
         "transaction_date",
         "account_id",
@@ -144,7 +148,7 @@ export function listTransactions(workspaceId: string) {
     include: {
       account: { select: { name: true } },
       destinationAccount: { select: { name: true } },
-      category: { select: { name: true } },
+      category: { select: { name: true, archivedAt: true } },
       creator: {
         select: { user: { select: { displayName: true, email: true } } },
       },
@@ -220,6 +224,7 @@ export async function updateTransaction(
       },
       data: {
         type: input.type,
+        title: input.title,
         amount: input.amount,
         transactionDate: input.transactionDate,
         accountId: input.accountId,
@@ -242,6 +247,7 @@ export async function updateTransaction(
         action: "updated",
         changedFields: [
           "type",
+          "title",
           "amount",
           "transaction_date",
           "account_id",

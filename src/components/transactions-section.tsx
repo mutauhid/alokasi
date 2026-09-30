@@ -13,9 +13,11 @@ import { RecurringTransactionsPanel } from "@/components/recurring-transactions-
 import type { WorkspaceAccess } from "@/modules/workspaces/service";
 import { sectionHref } from "@/lib/navigation";
 import { listRecurringTemplates } from "@/modules/recurring/service";
+import { buildTransactionSuggestions } from "@/modules/transactions/suggestions";
 
 const messages: Record<string, string> = {
-  "transaction-invalid": "Periksa jenis, nominal, tanggal, akun, dan kategori.",
+  "transaction-invalid":
+    "Periksa judul, jenis, nominal, tanggal, akun, dan kategori.",
   "transaction-future": "Tanggal transaksi tidak boleh berada di masa depan.",
   "transaction-shape":
     "Kombinasi akun dan kategori tidak sesuai jenis transaksi.",
@@ -117,6 +119,7 @@ export async function TransactionsSection({
         (category.type === "income" || category.type === "expense"),
     )
     .map(({ id, name, type }) => ({ id, name, type }));
+  const suggestions = buildTransactionSuggestions(transactions);
   const status = error ?? success;
 
   return (
@@ -187,6 +190,7 @@ export async function TransactionsSection({
                 categories={categories}
                 idempotencyKey={randomUUID()}
                 defaultDate={localToday(access.timezone)}
+                suggestions={suggestions}
               />
             )}
           </CardContent>
@@ -233,11 +237,7 @@ export async function TransactionsSection({
                         </span>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-medium">
-                              {transaction.note ||
-                                transaction.category?.name ||
-                                detail.label}
-                            </p>
+                            <p className="font-medium">{transaction.title}</p>
                             <Badge variant="outline">{detail.label}</Badge>
                           </div>
                           <p className="mt-1 text-xs text-muted-foreground">
@@ -253,6 +253,11 @@ export async function TransactionsSection({
                               ? ` · dicatat ${transaction.creator.user.displayName ?? transaction.creator.user.email ?? "anggota"}`
                               : ""}
                           </p>
+                          {transaction.note && (
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {transaction.note}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <p
@@ -278,6 +283,7 @@ export async function TransactionsSection({
                               id: transaction.id,
                               version: transaction.version,
                               type: transaction.type,
+                              title: transaction.title,
                               amount: transaction.amount.toString(),
                               transactionDate: dateValue(
                                 transaction.transactionDate,

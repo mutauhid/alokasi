@@ -81,6 +81,13 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Setiap template menampilkan nominal, akun, kategori, hari asli, tanggal berikutnya, serta status “Dalam n hari”, “Hari ini”, atau “Terlambat n hari”. Status tidak bergantung pada warna saja.
 - Tindakan **Catat sekarang** dan **Lewati periode** hanya muncul ketika jatuh tempo. Edit/nonaktifkan berada pada disclosure sekunder agar tindakan keuangan utama tetap jelas.
 - Dashboard menampilkan ringkasan maksimal lima pengingat dalam tujuh hari dan tautan menuju Transaksi. Teks menegaskan bahwa saldo belum berubah.
+
+## Perluasan F22 — saran transaksi
+
+- Form manual memiliki field **Judul transaksi** terpisah dari **Catatan opsional**.
+- Setelah pengguna mengetik minimal dua karakter, tampilkan maksimal lima chip yang cocok. Chip menampilkan judul dan nama kategori bila berlaku.
+- Klik chip mengisi judul dan kategori terkait tanpa menimpa nominal, tanggal, atau akun. Pada transfer, chip hanya mengisi judul.
+- Saran kategori arsip tidak ditampilkan. Tata letak chip membungkus pada mobile dan tidak menambah scroll horizontal.
 - Viewer melihat daftar tanpa kontrol. Editor tidak melihat kontrol pada template milik anggota lain; Owner melihat seluruh kontrol sesuai aturan server.
 
 ## Lifecycle ruang bersama

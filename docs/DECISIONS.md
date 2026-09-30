@@ -1,6 +1,6 @@
 # Catatan keputusan
 
-Diperbarui: 29 September 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
+Diperbarui: 30 September 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
 
 ## Keputusan dan kebutuhan pengguna
 
@@ -37,6 +37,7 @@ Diperbarui: 29 September 2026. Dokumen ini membedakan sumber keputusan agar agen
 | D31 | 28 Sep 2026 | Pengguna meminta dibimbing membuat Git repository dan CI | Inisialisasi repository lokal pada branch `main`, siapkan GitHub Actions untuk pemeriksaan kualitas dan PostgreSQL sementara, serta dokumentasikan pembuatan remote GitHub tanpa memasukkan rahasia |
 | D32 | 28 Sep 2026 | Pengguna memilih melanjutkan setelah CI dan branch protection berhasil serta ingin mengerjakan sendiri langkah eksternal sambil belajar | Siapkan aplikasi untuk staging berbasis Vercel dan proyek Supabase terpisah: validasi runtime, health endpoint, security headers, logging aman, serta runbook yang memisahkan pekerjaan repository dari konfigurasi dashboard pengguna |
 | D33 | 29 Sep 2026 | Pengguna melaporkan deployment produksi berhasil dan meminta melanjutkan fitur yang belum ada | Aktifkan F11 transaksi berulang sebagai kandidat P1 pertama: template bulanan dan pengingat dalam aplikasi, tanpa posting otomatis |
+| D34 | 30 Sep 2026 | Pengguna meminta saran judul/kategori dari input yang pernah dan sering dipakai, lalu menyetujui rekomendasi implementasi yang ringan | Aktifkan F22: simpan judul terpisah dari catatan dan tampilkan saran berbasis riwayat ruang yang sama tanpa request server per ketikan |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -115,6 +116,8 @@ D30 menghasilkan T30: navigasi utama tetap berisi fitur finansial dan Anggota & 
 D32 menghasilkan T31: build CI tetap tidak membutuhkan credential agar pemeriksaan source dapat berjalan aman, sedangkan readiness runtime diperiksa melalui `/api/health`. Endpoint hanya melaporkan konfigurasi/database `ok`, `failed`, atau `skipped`; nama variabel, host, URL, dan pesan driver tidak dikirim. Security header berlaku global dan CSP dibentuk saat build dari origin Supabase publik, dengan izin minimum untuk blob preview serta Web Worker/WASM OCR lokal. Vercel menjadi baseline hosting terkelola dan proyek Supabase staging harus terpisah; provisioning akun/provider tetap dilakukan pengguna melalui dashboard.
 
 D33 menghasilkan T32: F11 tahap 21 memakai template pemasukan/pengeluaran bulanan dengan nominal integer, akun, kategori, catatan, hari 1–31, dan satu tanggal jatuh tempo berikutnya. Template hanya menghasilkan pengingat; saldo, budget, dashboard, dan laporan baru berubah setelah Owner atau Editor yang berwenang memilih **Catat sekarang**. Pengguna dapat melewati satu kejadian tanpa transaksi. Hari 29–31 dipotong ke akhir bulan dan kembali ke hari aslinya pada bulan berikutnya. Owner dapat mengelola semua template ruang, Editor hanya template buatannya, dan Viewer hanya membaca. Pencatatan serta kemajuan jadwal terjadi atomik dengan kunci unik template/tanggal; akun atau kategori yang masih dipakai template aktif tidak dapat diarsipkan.
+
+D34 menghasilkan T33: F22 memakai field `title` maksimal 100 karakter yang terpisah dari `note`. Kandidat diringkas dari maksimal 100 transaksi terbaru yang sudah dibaca halaman, dibatasi 12 per jenis, lalu maksimal lima kecocokan difilter di browser setelah dua karakter; tidak ada endpoint atau query pada setiap ketikan. Kandidat selalu dibatasi workspace, jenis transaksi, dan kategori aktif. Klik saran hanya mengisi judul serta kategori; nominal, tanggal, dan akun tidak berubah. Transfer boleh menyarankan judul tanpa kategori.
 
 ## Default kerja, bukan keputusan eksplisit pengguna
 

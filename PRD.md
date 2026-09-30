@@ -1,7 +1,7 @@
 # PRD — Aplikasi Manajemen Keuangan & Budgeting
 
-**Versi:** 1.2 — baseline produk, profil, dan kontrol data ruang/akun  
-**Diperbarui:** 28 September 2026  
+**Versi:** 1.3 — saran pengisian transaksi
+**Diperbarui:** 30 September 2026
 **Status:** Arah produk dan mockup diterima; status implementasi serta keputusan terbuka dilacak di [IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dan [DECISIONS.md](docs/DECISIONS.md)  
 **Nama produk sementara:** Alokasi
 
@@ -106,8 +106,9 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F19 | Integrasi bank dan e-wallet | P2 | Penelitian akses API, biaya, izin, keamanan, dan rekonsiliasi |
 | F20 | Insight dan proyeksi | P2 | Insight berbasis data, proyeksi skenario, AI opsional |
 | F21 | Periode mengikuti gajian | P1 diimplementasikan | Hari mulai siklus per ruang; default tanggal 1; batas tanggal konsisten untuk budget, dashboard, dan laporan |
+| F22 | Saran pengisian transaksi | P1 diimplementasikan | Judul dan kategori dari riwayat ruang yang sama; pemfilteran lokal tanpa request per ketikan |
 
-F12–F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deployment produksi dilaporkan berhasil. F18 dan F21 telah lebih dahulu diimplementasikan atas instruksi pengguna.
+F12–F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deployment produksi dilaporkan berhasil. F22 diaktifkan pada 30 September 2026. F18 dan F21 telah lebih dahulu diimplementasikan atas instruksi pengguna.
 
 ## 6. Kebutuhan fungsional dan acceptance criteria
 
@@ -138,7 +139,8 @@ F12–F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deplo
 
 ### F04–F05 — Transaksi dan kategori
 
-- Transaksi memuat jenis, nominal, tanggal, akun, kategori sesuai jenis, serta catatan opsional.
+- Transaksi memuat judul, jenis, nominal, tanggal, akun, kategori sesuai jenis, serta catatan opsional.
+- Setelah minimal dua karakter judul, form dapat menampilkan maksimal lima saran dari transaksi terbaru ruang dan jenis yang sama. Memilih saran mengisi judul serta kategori aktif terkait; nominal, tanggal, dan akun tidak ditimpa.
 - Nominal harus bilangan bulat rupiah lebih dari nol; nilai negatif dan input tidak valid ditolak.
 - Transfer memilih akun asal dan tujuan yang berbeda, tanpa kategori pemasukan/pengeluaran.
 - Biaya transfer dicatat sebagai pengeluaran terpisah; bukan bagian nominal yang diterima akun tujuan.

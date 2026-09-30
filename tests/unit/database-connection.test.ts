@@ -205,6 +205,7 @@ describe("account and category domain", () => {
   it("accepts only positive integer transaction amounts and calendar dates", () => {
     const base = {
       type: "expense",
+      title: "  Makan   siang  ",
       amount: "125000",
       transactionDate: "2026-09-23",
       accountId: "11111111-1111-4111-8111-111111111111",
@@ -215,6 +216,7 @@ describe("account and category domain", () => {
     };
     const parsed = createTransactionInput.parse(base);
     expect(parsed.amount).toBe(125000n);
+    expect(parsed.title).toBe("Makan siang");
     expect(parsed.note).toBe("Makan siang");
     expect(
       createTransactionInput.safeParse({ ...base, amount: "1.5" }).success,
