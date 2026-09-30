@@ -6,6 +6,14 @@ import { FinanceDomainError } from "@/modules/finance/errors";
 
 type OwnerContext = { workspaceId: string; actorId: string };
 
+export function listActiveAccountOptions(workspaceId: string) {
+  return getDatabase().financialAccount.findMany({
+    where: { workspaceId, archivedAt: null },
+    orderBy: { createdAt: "asc" },
+    select: { id: true, name: true },
+  });
+}
+
 export async function listAccounts(workspaceId: string) {
   const db = getDatabase();
   const [accounts, transactions] = await Promise.all([

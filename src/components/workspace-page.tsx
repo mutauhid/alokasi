@@ -27,9 +27,11 @@ export type WorkspaceSearchParams = Promise<{
 export async function WorkspacePage({
   section,
   searchParams,
+  transactionView = "history",
 }: {
   section: Section;
   searchParams: WorkspaceSearchParams;
+  transactionView?: "history" | "reminders";
 }) {
   const current = navigation.find((item) => item.slug === section)!;
   const query = await searchParams;
@@ -181,6 +183,7 @@ export async function WorkspacePage({
           query: typeof query.query === "string" ? query.query : undefined,
         }}
         selectedPeriodId={periodSelection?.selectedPeriod.id ?? activePeriod.id}
+        transactionView={transactionView}
       />
     </AppShell>
   );

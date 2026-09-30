@@ -107,6 +107,8 @@ Ini spesifikasi pengujian, bukan laporan tes yang sudah lulus. Pilih skenario re
 | RECUR-09 | Arsip akun/kategori yang dipakai template aktif | Ditolak sampai template diubah atau dinonaktifkan |
 | RECUR-10 | Ekspor lengkap dan hapus ruang/akun | Export v2 memuat template/link kejadian; cleanup tidak meninggalkan foreign key yatim |
 | RECUR-11 | Dashboard dibuka tujuh hari sebelum atau setelah jatuh tempo | Pengingat terlihat dan jelas menyatakan saldo belum berubah |
+| RECUR-12 | Pengguna membuka menu Transaksi | Scan struk dan Tambah transaksi menjadi aksi utama; query/list template tidak dimuat pada tampilan Riwayat |
+| RECUR-13 | Pengguna membuka tab Pengingat lalu membuat, mengubah, mencatat, melewati, atau menonaktifkan template | Aksi tetap berada di `/transactions/reminders`, menampilkan hasil yang sesuai, dan tab Transaksi tetap aktif |
 
 ## F18 — scan draf pengeluaran (saat fase aktif)
 

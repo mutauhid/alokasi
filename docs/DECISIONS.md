@@ -37,6 +37,7 @@ Diperbarui: 29 September 2026. Dokumen ini membedakan sumber keputusan agar agen
 | D31 | 28 Sep 2026 | Pengguna meminta dibimbing membuat Git repository dan CI | Inisialisasi repository lokal pada branch `main`, siapkan GitHub Actions untuk pemeriksaan kualitas dan PostgreSQL sementara, serta dokumentasikan pembuatan remote GitHub tanpa memasukkan rahasia |
 | D32 | 28 Sep 2026 | Pengguna memilih melanjutkan setelah CI dan branch protection berhasil serta ingin mengerjakan sendiri langkah eksternal sambil belajar | Siapkan aplikasi untuk staging berbasis Vercel dan proyek Supabase terpisah: validasi runtime, health endpoint, security headers, logging aman, serta runbook yang memisahkan pekerjaan repository dari konfigurasi dashboard pengguna |
 | D33 | 29 Sep 2026 | Pengguna melaporkan deployment produksi berhasil dan meminta melanjutkan fitur yang belum ada | Aktifkan F11 transaksi berulang sebagai kandidat P1 pertama: template bulanan dan pengingat dalam aplikasi, tanpa posting otomatis |
+| D34 | 30 Sep 2026 | Pengguna meminta Scan OCR dan tambah transaksi menjadi fokus menu Transaksi, lalu menyetujui saran pemisahan pengingat | Pertahankan Transaksi sebagai menu utama; tempatkan Riwayat dan Pengingat sebagai tampilan terpisah, prioritaskan aksi Scan struk/Tambah transaksi, dan jangan memuat query template pada halaman riwayat |
 
 ## Pilihan teknis hasil delegasi D07
 
