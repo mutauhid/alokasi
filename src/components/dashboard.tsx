@@ -175,7 +175,7 @@ export async function Dashboard({
             </div>
             <Link
               className="text-xs font-medium text-primary hover:underline"
-              href={sectionHref("transactions", workspaceId)}
+              href={`/transactions/reminders?workspaceId=${encodeURIComponent(workspaceId)}`}
             >
               Periksa →
             </Link>

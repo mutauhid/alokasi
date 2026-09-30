@@ -1,15 +1,24 @@
 import { randomUUID } from "node:crypto";
 import Link from "next/link";
-import { ArrowDown, ArrowLeftRight, ArrowUp, ReceiptText } from "lucide-react";
-import { listAccounts } from "@/modules/accounts/service";
-import { listCategories } from "@/modules/categories/service";
+import {
+  ArrowDown,
+  ArrowLeftRight,
+  ArrowUp,
+  Camera,
+  Plus,
+  ReceiptText,
+} from "lucide-react";
+import { listActiveAccountOptions } from "@/modules/accounts/service";
+import { listActiveCategoryOptions } from "@/modules/categories/service";
 import { listTransactions } from "@/modules/transactions/service";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TransactionForm } from "@/components/transaction-form";
 import { DeleteTransactionButton } from "@/components/delete-transaction-button";
 import { ReceiptScanPanel } from "@/components/receipt-scan-panel";
-import { RecurringTransactionsPanel } from "@/components/recurring-transactions-panel";
+import { RecurringTransactionsSection } from "@/components/recurring-transactions-section";
+import { TransactionViewTabs } from "@/components/transaction-view-tabs";
+import { Button } from "@/components/ui/button";
 import type { WorkspaceAccess } from "@/modules/workspaces/service";
 import { sectionHref } from "@/lib/navigation";
 import { listRecurringTemplates } from "@/modules/recurring/service";
@@ -35,22 +44,6 @@ const messages: Record<string, string> = {
     "Transaksi berhasil dihapus dan saldo telah diperbarui.",
   "receipt-submitted":
     "Draf struk telah diperiksa dan disimpan sebagai satu pengeluaran.",
-  "recurring-invalid": "Periksa nama, nominal, akun, kategori, dan tanggal.",
-  "recurring-access": "Peranmu tidak dapat mengubah template ini.",
-  "recurring-account": "Akun template tidak tersedia atau sudah diarsipkan.",
-  "recurring-before-account": "Jadwal transaksi mendahului tanggal mulai akun.",
-  "recurring-category": "Kategori template tidak sesuai atau sudah diarsipkan.",
-  "recurring-conflict":
-    "Template atau jadwalnya sudah berubah. Muat ulang lalu coba kembali.",
-  "recurring-not-due": "Pengingat ini belum jatuh tempo.",
-  "recurring-failed": "Template transaksi berulang belum dapat disimpan.",
-  "recurring-created": "Pengingat transaksi berulang berhasil dibuat.",
-  "recurring-updated": "Template transaksi berulang berhasil diperbarui.",
-  "recurring-archived": "Template transaksi berulang dinonaktifkan.",
-  "recurring-posted":
-    "Transaksi jatuh tempo berhasil dicatat dan pengingat dimajukan.",
-  "recurring-skipped":
-    "Periode dilewati tanpa membuat transaksi dan pengingat dimajukan.",
 };
 
 const typeDetails = {
@@ -94,11 +87,13 @@ export async function TransactionsSection({
   today,
   error,
   success,
+  view = "history",
 }: {
   access: WorkspaceAccess;
   today: Date;
   error?: string;
   success?: string;
+  view?: "history" | "reminders";
 }) {
   const [allAccounts, allCategories, transactions, recurringTemplates] =
     await Promise.all([
@@ -120,10 +115,27 @@ export async function TransactionsSection({
     )
     .map(({ id, name, type }) => ({ id, name, type }));
   const suggestions = buildTransactionSuggestions(transactions);
+  if (view === "reminders") {
+    return (
+      <RecurringTransactionsSection
+        access={access}
+        today={today}
+        error={error}
+        success={success}
+      />
+    );
+  }
+
+  const [accounts, categories, transactions] = await Promise.all([
+    listActiveAccountOptions(access.workspaceId),
+    listActiveCategoryOptions(access.workspaceId),
+    listTransactions(access.workspaceId),
+  ]);
   const status = error ?? success;
 
   return (
     <div className="space-y-5">
+      <TransactionViewTabs workspaceId={access.workspaceId} current="history" />
       {status && messages[status] && (
         <p
           role={error ? "alert" : "status"}
@@ -136,24 +148,35 @@ export async function TransactionsSection({
           {messages[status]}
         </p>
       )}
-      <RecurringTransactionsPanel
-        access={access}
-        today={today}
-        accounts={accounts}
-        categories={categories}
-        templates={recurringTemplates}
-      />
       {access.role !== "viewer" && (
-        <ReceiptScanPanel
-          workspaceId={access.workspaceId}
-          accounts={accounts}
-          categories={categories
-            .filter((category) => category.type === "expense")
-            .map(({ id, name }) => ({ id, name }))}
-        />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Button asChild size="lg" className="min-h-12">
+            <Link href="#scan-struk">
+              <Camera className="size-5" />
+              Scan struk
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="min-h-12">
+            <Link href="#tambah-transaksi">
+              <Plus className="size-5" />
+              Tambah transaksi
+            </Link>
+          </Button>
+        </div>
       )}
       {access.role !== "viewer" && (
-        <Card className="shadow-none">
+        <section id="scan-struk" className="scroll-mt-5">
+          <ReceiptScanPanel
+            workspaceId={access.workspaceId}
+            accounts={accounts}
+            categories={categories
+              .filter((category) => category.type === "expense")
+              .map(({ id, name }) => ({ id, name }))}
+          />
+        </section>
+      )}
+      {access.role !== "viewer" && (
+        <Card id="tambah-transaksi" className="scroll-mt-5 shadow-none">
           <CardHeader>
             <CardTitle>Tambah transaksi</CardTitle>
             <p className="text-sm text-muted-foreground">

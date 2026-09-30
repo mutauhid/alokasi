@@ -76,7 +76,7 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 
 ## Perluasan F11 — transaksi berulang
 
-- Halaman Transaksi menempatkan kartu template berulang sebelum scan dan form manual. Teks selalu menjelaskan bahwa template belum mengubah saldo atau budget.
+- Halaman Transaksi memprioritaskan aksi **Scan struk** dan **Tambah transaksi**, lalu riwayat. Pengingat berada pada subhalaman/tab tersendiri di dalam Transaksi; halaman riwayat hanya menampilkan pengingat kontekstual melalui Dashboard. Teks pengingat selalu menjelaskan bahwa template belum mengubah saldo atau budget.
 - Form memakai nama, jenis, nominal, hari bulanan, akun, kategori, dan catatan. Pada layar lebar field membentuk grid; pada mobile semuanya ditumpuk tanpa scroll horizontal.
 - Setiap template menampilkan nominal, akun, kategori, hari asli, tanggal berikutnya, serta status “Dalam n hari”, “Hari ini”, atau “Terlambat n hari”. Status tidak bergantung pada warna saja.
 - Tindakan **Catat sekarang** dan **Lewati periode** hanya muncul ketika jatuh tempo. Edit/nonaktifkan berada pada disclosure sekunder agar tindakan keuangan utama tetap jelas.
