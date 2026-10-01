@@ -1,6 +1,6 @@
 # Catatan keputusan
 
-Diperbarui: 30 September 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
+Diperbarui: 1 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
 
 ## Keputusan dan kebutuhan pengguna
 
@@ -39,6 +39,7 @@ Diperbarui: 30 September 2026. Dokumen ini membedakan sumber keputusan agar agen
 | D33 | 29 Sep 2026 | Pengguna melaporkan deployment produksi berhasil dan meminta melanjutkan fitur yang belum ada | Aktifkan F11 transaksi berulang sebagai kandidat P1 pertama: template bulanan dan pengingat dalam aplikasi, tanpa posting otomatis |
 | D34 | 30 Sep 2026 | Pengguna meminta saran judul/kategori dari input yang pernah dan sering dipakai, lalu menyetujui rekomendasi implementasi yang ringan | Aktifkan F22: simpan judul terpisah dari catatan dan tampilkan saran berbasis riwayat ruang yang sama tanpa request server per ketikan |
 | D34 | 30 Sep 2026 | Pengguna meminta Scan OCR dan tambah transaksi menjadi fokus menu Transaksi, lalu menyetujui saran pemisahan pengingat | Pertahankan Transaksi sebagai menu utama; tempatkan Riwayat dan Pengingat sebagai tampilan terpisah, prioritaskan aksi Scan struk/Tambah transaksi, dan jangan memuat query template pada halaman riwayat |
+| D35 | 1 Okt 2026 | Pengguna meminta nominal transaksi langsung tampil dalam format rupiah saat diisi | Form transaksi manual, koreksi OCR, dan template pengingat menampilkan awalan Rp serta pemisah ribuan lokal; server tetap menerima string digit integer tanpa request tambahan |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -119,6 +120,8 @@ D32 menghasilkan T31: build CI tetap tidak membutuhkan credential agar pemeriksa
 D33 menghasilkan T32: F11 tahap 21 memakai template pemasukan/pengeluaran bulanan dengan nominal integer, akun, kategori, catatan, hari 1–31, dan satu tanggal jatuh tempo berikutnya. Template hanya menghasilkan pengingat; saldo, budget, dashboard, dan laporan baru berubah setelah Owner atau Editor yang berwenang memilih **Catat sekarang**. Pengguna dapat melewati satu kejadian tanpa transaksi. Hari 29–31 dipotong ke akhir bulan dan kembali ke hari aslinya pada bulan berikutnya. Owner dapat mengelola semua template ruang, Editor hanya template buatannya, dan Viewer hanya membaca. Pencatatan serta kemajuan jadwal terjadi atomik dengan kunci unik template/tanggal; akun atau kategori yang masih dipakai template aktif tidak dapat diarsipkan.
 
 D34 menghasilkan T33: F22 memakai field `title` maksimal 100 karakter yang terpisah dari `note`. Kandidat diringkas dari maksimal 100 transaksi terbaru yang sudah dibaca halaman, dibatasi 12 per jenis, lalu maksimal lima kecocokan difilter di browser setelah dua karakter; tidak ada endpoint atau query pada setiap ketikan. Kandidat selalu dibatasi workspace, jenis transaksi, dan kategori aktif. Klik saran hanya mengisi judul serta kategori; nominal, tanggal, dan akun tidak berubah. Transfer boleh menyarankan judul tanpa kategori.
+
+D35 menghasilkan T34: satu komponen input Rupiah memformat digit di browser untuk tiga alur pembentukan transaksi. Nilai yang dikirim ke Server Action tetap string digit mentah agar validasi `bigint`, idempotensi, dan penyimpanan `BIGINT` tidak berubah. Komponen tidak membaca database, tidak memanggil endpoint, dan menolak nilai di atas batas PostgreSQL `BIGINT`.
 
 ## Default kerja, bukan keputusan eksplisit pengguna
 

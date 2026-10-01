@@ -6,6 +6,7 @@ import {
   updateRecurringTemplateAction,
 } from "@/app/(workspace)/actions";
 import { Button } from "@/components/ui/button";
+import { RupiahInput } from "@/components/ui/rupiah-input";
 
 type Option = { id: string; name: string };
 type CategoryOption = Option & { type: "income" | "expense" };
@@ -84,14 +85,10 @@ export function RecurringTemplateForm({
       </label>
       <label className="text-sm font-medium">
         Nominal
-        <input
+        <RupiahInput
           name="amount"
-          type="number"
-          min="1"
-          step="1"
           required
           defaultValue={initial?.amount}
-          placeholder="0"
           className={inputClass}
         />
       </label>

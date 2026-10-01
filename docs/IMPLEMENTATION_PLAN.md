@@ -1,6 +1,6 @@
 # Rencana implementasi dan status
 
-Diperbarui 29 September 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
+Diperbarui 1 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
 
 ## Status nyata
 
@@ -32,6 +32,7 @@ Diperbarui 29 September 2026. Setup UI dan fondasi database telah dibangun; apli
 | Tahap 20 percakapan: kesiapan staging/produksi | Diimplementasikan dan di-merge melalui PR #2. Pengguna melaporkan deployment Vercel berhasil; `/api/health` produksi diverifikasi eksternal mengembalikan HTTP 200 untuk konfigurasi dan database. SMTP/domain, backup/restore, monitoring, dan smoke dua akun tetap pekerjaan operasional |
 | Tahap 21 percakapan: transaksi berulang | Implementasi F11 tersedia pada `feat/recurring-transactions`: template bulanan, pengingat dashboard, catat/skip eksplisit, ACL, idempotensi, ekspor schema v2, serta perlindungan arsip akun/kategori. Migrasi dan test PostgreSQL menunggu pemulihan `.env.test.local` atau CI PR |
 | Tahap 22 percakapan: fokus navigasi Transaksi | Diimplementasikan pada `feat/transaction-reminders-navigation`: Riwayat/Pengingat dipisah, Scan struk dan Tambah transaksi menjadi aksi utama, redirect mutasi kembali ke Pengingat, dan query opsi akun tidak lagi menghitung saldo dari seluruh transaksi |
+| Tahap 23 percakapan: input nominal Rupiah | Diimplementasikan pada `feat/rupiah-amount-input`: transaksi manual, koreksi OCR, dan template pengingat memformat ribuan di browser tetapi mengirim string digit integer yang sama ke server; tidak ada query, request, atau migrasi baru |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Upload/storage/provider OCR eksternal | Belum diimplementasikan; consent, retensi, biaya, callback, dan lifecycle file masih terbuka |

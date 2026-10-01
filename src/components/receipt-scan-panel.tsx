@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RupiahInput } from "@/components/ui/rupiah-input";
 
 type Option = { id: string; name: string };
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -276,11 +277,8 @@ export function ReceiptScanPanel({
                 <input type="hidden" name="version" value={draft.version} />
                 <label className="text-sm font-medium">
                   Nominal
-                  <input
+                  <RupiahInput
                     name="amount"
-                    type="number"
-                    min="1"
-                    step="1"
                     required
                     defaultValue={draft.amount}
                     className={inputClass}
