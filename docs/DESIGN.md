@@ -90,6 +90,13 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Saran kategori arsip tidak ditampilkan. Tata letak chip membungkus pada mobile dan tidak menambah scroll horizontal.
 - Viewer melihat daftar tanpa kontrol. Editor tidak melihat kontrol pada template milik anggota lain; Owner melihat seluruh kontrol sesuai aturan server.
 
+## Input nominal Rupiah
+
+- Form transaksi manual, koreksi hasil OCR, dan template pengingat menampilkan awalan `Rp` tetap serta pemisah ribuan titik saat pengguna mengetik.
+- Pengguna mengetik digit tanpa perlu menulis pemisah; `12000` tampil sebagai `Rp 12.000` dan paste `Rp 2.000.000` dinormalisasi dengan hasil yang sama.
+- Pemformatan hanya presentasi browser. Nilai form yang dikirim tetap digit integer rupiah, tanpa pecahan dan tanpa konversi ke floating point.
+- Keyboard mobile memakai mode numerik dan kontrol tetap memiliki tinggi target sentuh minimal 44 px.
+
 ## Lifecycle ruang bersama
 
 - Owner melihat kartu “Alihkan kepemilikan” dengan calon Owner aktif, penjelasan bahwa penerima harus menyetujui, masa berlaku permintaan, dan tombol pembatalan.

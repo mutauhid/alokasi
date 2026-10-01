@@ -13,6 +13,10 @@ Ini spesifikasi pengujian, bukan laporan tes yang sudah lulus. Pilih skenario re
 | CORE-05 | Ubah tanggal, akun, nominal, kategori, atau hapus transaksi | Semua saldo, budget, laporan, dan cache lama/baru konsisten |
 | CORE-06 | Budget 1.000.000, realisasi 800.000/1.000.000/1.100.000 | Hampir habis 80% / habis 100% / terlampaui 110%, sisa boleh negatif |
 | CORE-07 | Pengeluaran kategori tanpa budget | Masuk total pengeluaran dan kelompok belum dianggarkan |
+| MONEY-01 | Ketik `12000`, `200000`, atau `2000000` pada nominal transaksi | Tampilan menjadi `Rp 12.000`, `Rp 200.000`, atau `Rp 2.000.000`; server menerima `12000`, `200000`, atau `2000000` |
+| MONEY-02 | Paste nominal yang sudah berformat, misalnya `Rp 200.000` | Input dinormalisasi menjadi satu nilai integer rupiah tanpa menggandakan digit |
+| MONEY-03 | Kosong, nol, karakter tanpa digit, atau nilai melebihi batas `BIGINT` | Tidak dapat menghasilkan transaksi; validasi server tetap menjadi batas akhir |
+| MONEY-04 | Buka transaksi manual, koreksi OCR, dan template pengingat pada mobile | Ketiganya memakai format Rupiah yang sama dan keyboard numerik tanpa request jaringan per ketikan |
 | ACL-01 | Pengguna mengakses ruang orang lain melalui ID/API/file/export | Ditolak; tidak membocorkan data |
 | ACL-02 | Viewer memanggil API write; Editor mengubah transaksi orang lain | Ditolak walau tombol di UI disembunyikan |
 | ACL-03 | Membership dicabut ketika halaman masih terbuka | Permintaan berikutnya ditolak; histori/saldo tetap |
@@ -569,3 +573,14 @@ Health check database awal memakai koneksi development hanya untuk verifikasi lo
 | Verifikasi | Prisma validate, lint, TypeScript, build produksi, 78 unit test, dan 10 smoke Playwright desktop/mobile lulus |
 
 Migrasi serta suite PostgreSQL belum dijalankan pada clone ini karena `.env.test.local` tidak tersedia. Smoke browser terautentikasi masih perlu dilakukan setelah migrasi diterapkan pada database uji.
+
+## Hasil tahap 23 - input nominal Rupiah, 1 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| MONEY-01/02 | Unit test membuktikan `12000`, `200000`, dan `2000000` diformat dengan pemisah ribuan Indonesia serta paste berawalan `Rp` dinormalisasi menjadi digit mentah |
+| MONEY-03 | Unit test membuktikan batas maksimum PostgreSQL `BIGINT` diterima dan nilai yang lebih besar ditolak; validasi domain server untuk integer positif tidak diubah |
+| MONEY-04 | Satu komponen dipakai form manual, koreksi OCR, dan template pengingat; implementasi memakai state browser tanpa fetch, Server Action, query, atau migrasi |
+| Verifikasi | 89 unit test, lint, TypeScript, dan build produksi lulus |
+
+Smoke browser terautentikasi untuk keyboard numerik serta tampilan 360 px belum dijalankan pada sesi ini.
