@@ -1,6 +1,6 @@
 # Aturan domain — kontrak implementasi
 
-Status: diperbarui 27 September 2026. Kebutuhan eksplisit dan default kerja dibedakan di [DECISIONS.md](DECISIONS.md). Rumus dasar, matriks peran, dan kebijakan akun mengikuti [PRD](../PRD.md). Dokumen ini memiliki rincian kategori, scan, dan periode.
+Status: diperbarui 5 Oktober 2026. Kebutuhan eksplisit dan default kerja dibedakan di [DECISIONS.md](DECISIONS.md). Rumus dasar, matriks peran, dan kebijakan akun mengikuti [PRD](../PRD.md). Dokumen ini memiliki rincian kategori, scan, periode, dan batas penyimpanan PWA.
 
 ## 1. Ruang, uang, dan transaksi
 
@@ -177,7 +177,15 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 - Akun/kategori dengan template aktif tidak dapat diarsipkan. Ubah referensi atau nonaktifkan template terlebih dahulu.
 - Mengubah hari jadwal menetapkan kejadian berikutnya pada tanggal terdekat yang sama dengan/lebih besar dari hari ini; perubahan lain mempertahankan jatuh tempo yang sudah ada.
 
-## 6. Kontrak lintas fitur
+## 6. F23 — batas PWA installable
+
+- Instalasi PWA tidak mengubah sumber kebenaran keuangan. Hanya transaksi yang telah diterima service server dan disimpan PostgreSQL yang memengaruhi saldo, budget, dashboard, atau laporan.
+- Service worker tidak boleh mencache respons terautentikasi, payload RSC, endpoint API, ekspor, dashboard, transaksi, atau laporan. Precache hanya berisi halaman offline dan aset publik PWA.
+- Halaman offline tidak menampilkan snapshot data finansial atau identitas pengguna. Kegagalan jaringan tidak boleh disamarkan sebagai data nol atau keberhasilan simpan.
+- Input transaksi saat offline tidak diantrikan pada fase ini. Jangan menampilkan status “tersimpan”, memperbarui agregat, atau melakukan retry tersembunyi.
+- Dukungan transaksi offline kelak memerlukan keputusan baru untuk IndexedDB, isolasi user/workspace pada perangkat bersama, logout/cleanup, idempotensi, auth kedaluwarsa, konflik referensi arsip, dan status sinkronisasi.
+
+## 7. Kontrak lintas fitur
 
 - Scan tanggal 24 Sep yang disubmit 26 Sep tetap masuk periode yang mencakup 24 Sep, bukan periode tanggal submit.
 - Kategori baru dari form scan harus aktif dan berada di ruang yang sama; hanya Owner boleh membuatnya.

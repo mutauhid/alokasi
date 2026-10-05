@@ -97,6 +97,14 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Pemformatan hanya presentasi browser. Nilai form yang dikirim tetap digit integer rupiah, tanpa pecahan dan tanpa konversi ke floating point.
 - Keyboard mobile memakai mode numerik dan kontrol tetap memiliki tinggi target sentuh minimal 44 px.
 
+## PWA dan keadaan offline
+
+- Ikon PWA mempertahankan logo lapisan dan warna forest Alokasi, dengan versi standar serta maskable agar aman pada bentuk ikon perangkat yang berbeda.
+- Saat dipasang, aplikasi memakai nama pendek “Alokasi”, mode standalone, dan warna tema forest; navigasi serta hierarchy aplikasi tidak berubah.
+- Halaman offline berdiri sendiri, ringkas, dan tidak menampilkan saldo, transaksi terakhir, nama ruang, atau identitas pengguna dari cache.
+- Pesan offline menjelaskan bahwa transaksi belum dapat disimpan tanpa koneksi dan menyediakan tindakan “Coba lagi”. Jangan menampilkan toast sukses atau angka nol.
+- Custom install prompt bukan syarat baseline; browser/perangkat boleh menyediakan alur pemasangannya sendiri.
+
 ## Lifecycle ruang bersama
 
 - Owner melihat kartu “Alihkan kepemilikan” dengan calon Owner aktif, penjelasan bahwa penerima harus menyetujui, masa berlaku permintaan, dan tombol pembatalan.

@@ -134,6 +134,8 @@ Struktur dapat disesuaikan tanpa mengubah batas tanggung jawab. Hindari reposito
 
 - Tailwind mengimplementasikan token DESIGN.md. shadcn/ui untuk dialog, select, form, dan komponen yang dibutuhkan; jangan memasang seluruh katalog.
 - React state lokal untuk input sementara; parameter URL untuk ruang/periode/filter yang perlu dapat ditautkan. Data server tetap bersumber dari backend.
+- PWA installable memakai manifest App Router dan service worker kecil yang diregistrasikan dari Client Component. Service worker hanya menyediakan fallback navigasi ke halaman offline dan tidak mencache data terautentikasi atau mutasi finansial.
+- F23 tidak memakai IndexedDB, Background Sync, push notification, atau antrean transaksi. Server/PostgreSQL tetap satu-satunya sumber transaksi tersimpan.
 - Zod memvalidasi data di boundary server. Validasi browser adalah bantuan UX, bukan jaminan integritas.
 - Vitest: uang, periode, aturan peran, dan validasi. Integrasi memakai PostgreSQL sungguhan khusus test untuk constraint, rollback, concurrency, dan workspace isolation; jangan menggantinya dengan SQLite lalu mengklaim perilaku sama.
 - Playwright: login, pindah ruang, transaksi, kategori, budget, serta akses peran pada alur UI.
