@@ -1,7 +1,7 @@
 # PRD — Aplikasi Manajemen Keuangan & Budgeting
 
-**Versi:** 1.3 — saran pengisian transaksi
-**Diperbarui:** 30 September 2026
+**Versi:** 1.4 — PWA installable
+**Diperbarui:** 5 Oktober 2026
 **Status:** Arah produk dan mockup diterima; status implementasi serta keputusan terbuka dilacak di [IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dan [DECISIONS.md](docs/DECISIONS.md)  
 **Nama produk sementara:** Alokasi
 
@@ -107,8 +107,9 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F20 | Insight dan proyeksi | P2 | Insight berbasis data, proyeksi skenario, AI opsional |
 | F21 | Periode mengikuti gajian | P1 diimplementasikan | Hari mulai siklus per ruang; default tanggal 1; batas tanggal konsisten untuk budget, dashboard, dan laporan |
 | F22 | Saran pengisian transaksi | P1 diimplementasikan | Judul dan kategori dari riwayat ruang yang sama; pemfilteran lokal tanpa request per ketikan |
+| F23 | PWA installable | P1 diimplementasikan | Manifest, ikon, tampilan standalone, service worker aman, dan halaman offline; belum menyimpan atau menyinkronkan transaksi offline |
 
-F12–F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deployment produksi dilaporkan berhasil. F22 diaktifkan pada 30 September 2026. F18 dan F21 telah lebih dahulu diimplementasikan atas instruksi pengguna.
+F12–F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deployment produksi dilaporkan berhasil. F22 diaktifkan pada 30 September 2026. F23 diaktifkan pada 5 Oktober 2026 setelah pengguna memilih menunda F12. F18 dan F21 telah lebih dahulu diimplementasikan atas instruksi pengguna.
 
 ## 6. Kebutuhan fungsional dan acceptance criteria
 
@@ -282,6 +283,16 @@ Tahap 11 membaca gambar di browser memakai OCR lokal. Parser mengisi nominal, ta
 - Filter tanggal bebas pada riwayat/laporan tidak mengubah batas siklus atau membuat budget baru.
 
 **Diterima jika:** mengubah hari 1 menjadi 25 pada 27 September langsung membuat periode aktif 25 September–24 Oktober; transaksi 24 September berada pada histori transisi dan transaksi 25 September masuk periode aktif. Hari 31 bekerja pada Februari dan tahun kabisat tanpa celah atau overlap. Data tanggal transaksi tetap utuh.
+
+### F23 — PWA installable
+
+- Aplikasi menyediakan manifest valid, ikon standar dan maskable, serta dapat dibuka dalam mode standalone setelah dipasang dari deployment HTTPS.
+- Service worker menyediakan halaman offline generik tanpa menampilkan saldo, transaksi, identitas, atau data finansial yang pernah dibuka.
+- Halaman dan respons terautentikasi, API, RSC, dashboard, laporan, serta mutasi finansial tidak dicache oleh service worker.
+- Fase ini tidak menyediakan transaksi offline. Input hanya dinyatakan tersimpan setelah server mengonfirmasi transaksi di PostgreSQL.
+- Push notification, Background Sync, IndexedDB, antrean mutasi, dan konflik sinkronisasi berada di luar scope F23.
+
+**Diterima jika:** manifest dan ikon dapat dimuat, service worker aktif dari scope root, aplikasi dapat dipasang pada browser yang mendukung, navigasi tanpa jaringan menampilkan halaman offline, dan submit transaksi tanpa koneksi tidak ditampilkan sebagai transaksi tersimpan.
 
 ## 7. Aturan perhitungan dan integritas data
 
@@ -502,6 +513,7 @@ Jangan memasukkan semua kandidat ke rilis pertama. Prioritaskan bukti kebutuhan 
 
 ## 17. Riwayat revisi
 
+- 1.4 — 5 Oktober 2026: F23 PWA installable diaktifkan dengan manifest, ikon, service worker network-first, dan halaman offline. Data finansial tidak dicache dan transaksi offline belum didukung.
 - 0.1 — 21 September 2026: PRD awal, ruang pribadi dan bersama.
 - 0.2 — 22 September 2026: arah mockup Alokasi diterima; F05 diperjelas; F18 dipromosikan dari eksplorasi menjadi fitur lanjutan direncanakan; F21 ditambahkan; aturan agent, domain, desain, pengujian, dan keputusan didokumentasikan. Belum ada aplikasi produksi atau fitur baru yang diimplementasikan.
 - 0.3 — 22 September 2026: core stack dan arsitektur dipilih atas delegasi pengguna, dengan mempertimbangkan dasar JS/TS dan PostgreSQL. Scope fitur dan desain tetap; aplikasi belum diimplementasikan.

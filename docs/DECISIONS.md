@@ -1,6 +1,6 @@
 # Catatan keputusan
 
-Diperbarui: 1 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
+Diperbarui: 5 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
 
 ## Keputusan dan kebutuhan pengguna
 
@@ -40,6 +40,7 @@ Diperbarui: 1 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent t
 | D34 | 30 Sep 2026 | Pengguna meminta saran judul/kategori dari input yang pernah dan sering dipakai, lalu menyetujui rekomendasi implementasi yang ringan | Aktifkan F22: simpan judul terpisah dari catatan dan tampilkan saran berbasis riwayat ruang yang sama tanpa request server per ketikan |
 | D34 | 30 Sep 2026 | Pengguna meminta Scan OCR dan tambah transaksi menjadi fokus menu Transaksi, lalu menyetujui saran pemisahan pengingat | Pertahankan Transaksi sebagai menu utama; tempatkan Riwayat dan Pengingat sebagai tampilan terpisah, prioritaskan aksi Scan struk/Tambah transaksi, dan jangan memuat query template pada halaman riwayat |
 | D35 | 1 Okt 2026 | Pengguna meminta nominal transaksi langsung tampil dalam format rupiah saat diisi | Form transaksi manual, koreksi OCR, dan template pengingat menampilkan awalan Rp serta pemisah ribuan lokal; server tetap menerima string digit integer tanpa request tambahan |
+| D36 | 5 Okt 2026 | Pengguna memilih menunda target tabungan dan meminta PWA installable saja | Aktifkan F23 sebagai PWA yang dapat dipasang dengan manifest, ikon, service worker, dan halaman offline; transaksi tetap memerlukan submit server dan tidak diantrikan atau dianggap tersimpan saat offline |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -122,6 +123,8 @@ D33 menghasilkan T32: F11 tahap 21 memakai template pemasukan/pengeluaran bulana
 D34 menghasilkan T33: F22 memakai field `title` maksimal 100 karakter yang terpisah dari `note`. Kandidat diringkas dari maksimal 100 transaksi terbaru yang sudah dibaca halaman, dibatasi 12 per jenis, lalu maksimal lima kecocokan difilter di browser setelah dua karakter; tidak ada endpoint atau query pada setiap ketikan. Kandidat selalu dibatasi workspace, jenis transaksi, dan kategori aktif. Klik saran hanya mengisi judul serta kategori; nominal, tanggal, dan akun tidak berubah. Transfer boleh menyarankan judul tanpa kategori.
 
 D35 menghasilkan T34: satu komponen input Rupiah memformat digit di browser untuk tiga alur pembentukan transaksi. Nilai yang dikirim ke Server Action tetap string digit mentah agar validasi `bigint`, idempotensi, dan penyimpanan `BIGINT` tidak berubah. Komponen tidak membaca database, tidak memanggil endpoint, dan menolak nilai di atas batas PostgreSQL `BIGINT`.
+
+D36 menghasilkan T35: PWA memakai manifest App Router, ikon standar/maskable, registrasi service worker, dan fallback `/offline`. Service worker memakai network-first hanya untuk navigasi dan hanya melakukan precache atas halaman offline, manifest, serta ikon publik. Respons terautentikasi, RSC, API, transaksi, dashboard, laporan, dan data finansial tidak dimasukkan ke cache. Fase ini tidak memakai IndexedDB, Background Sync, antrean mutasi, push notification, atau penyimpanan transaksi offline.
 
 ## Default kerja, bukan keputusan eksplisit pengguna
 

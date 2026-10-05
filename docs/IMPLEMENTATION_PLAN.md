@@ -1,6 +1,6 @@
 # Rencana implementasi dan status
 
-Diperbarui 1 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
+Diperbarui 5 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
 
 ## Status nyata
 
@@ -33,6 +33,7 @@ Diperbarui 1 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikas
 | Tahap 21 percakapan: transaksi berulang | Implementasi F11 tersedia pada `feat/recurring-transactions`: template bulanan, pengingat dashboard, catat/skip eksplisit, ACL, idempotensi, ekspor schema v2, serta perlindungan arsip akun/kategori. Migrasi dan test PostgreSQL menunggu pemulihan `.env.test.local` atau CI PR |
 | Tahap 22 percakapan: fokus navigasi Transaksi | Diimplementasikan pada `feat/transaction-reminders-navigation`: Riwayat/Pengingat dipisah, Scan struk dan Tambah transaksi menjadi aksi utama, redirect mutasi kembali ke Pengingat, dan query opsi akun tidak lagi menghitung saldo dari seluruh transaksi |
 | Tahap 23 percakapan: input nominal Rupiah | Diimplementasikan pada `feat/rupiah-amount-input`: transaksi manual, koreksi OCR, dan template pengingat memformat ribuan di browser tetapi mengirim string digit integer yang sama ke server; tidak ada query, request, atau migrasi baru |
+| Tahap 24 percakapan: PWA installable | Diimplementasikan untuk F23: manifest App Router, ikon standar/maskable/Apple, registrasi service worker, header keamanan, dan fallback offline tanpa cache data finansial atau transaksi offline |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Upload/storage/provider OCR eksternal | Belum diimplementasikan; consent, retensi, biaya, callback, dan lifecycle file masih terbuka |
@@ -269,6 +270,15 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Kandidat dibatasi workspace oleh query riwayat, jenis transaksi aktif, serta kategori yang belum diarsipkan. Klik saran mengubah judul dan kategori saja; transfer tidak memiliki kategori.
 - Pencarian laporan, tampilan dashboard/riwayat, CSV, dan ekspor lengkap ruang mencakup judul. Schema ekspor naik ke versi 3.
 - Prisma validate, lint, TypeScript, build produksi, 78 unit test, dan 10 smoke Playwright desktop/mobile lulus. Migrasi dan suite PostgreSQL belum dijalankan lokal karena `.env.test.local` tidak tersedia pada clone ini.
+
+## Hasil tahap 24 — PWA installable, 5 Oktober 2026
+
+- Manifest App Router menyediakan identitas Alokasi, start URL Dashboard, mode standalone, warna tema, serta ikon PNG 192, 512, maskable, dan Apple.
+- Client Component global mendaftarkan `/sw.js` pada scope root. Worker memakai network-first untuk navigasi dan fallback ke halaman `/offline`.
+- Cache worker hanya berisi halaman offline, manifest, dan tiga ikon manifest. Tidak ada cache runtime untuk dashboard, transaksi, laporan, API, RSC, session, atau data finansial.
+- Header worker menetapkan tipe JavaScript, `no-cache, no-store`, CSP self-only, dan `Service-Worker-Allowed: /`.
+- Fase ini sengaja tidak memakai IndexedDB, Background Sync, push notification, atau antrean transaksi. Submit offline tidak dinyatakan berhasil.
+- Verifikasi: lint, TypeScript, build produksi, 91 unit test, dan 10 smoke Playwright desktop/mobile lulus. Browser Edge headless menemukan manifest tanpa error, worker mengontrol scope root, isi cache tepat lima aset publik, serta navigasi Dashboard saat offline menampilkan halaman fallback pada viewport 390×844.
 
 ## Backlog kandidat — bukan komitmen aktif
 

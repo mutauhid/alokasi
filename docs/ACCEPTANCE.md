@@ -178,6 +178,17 @@ Ini spesifikasi pengujian, bukan laporan tes yang sudah lulus. Pilih skenario re
 | HISTORY-05 | Kategori target sudah ada/arsip, retry, sumber/target tidak sah | Tidak ada overwrite atau duplikasi; submit ditolak jelas |
 | HISTORY-06 | Buka budget historis sebagai Owner | Limit/realisasi terlihat, tetapi kontrol create/update/delete tidak tersedia dan service menolak form lama |
 
+## F23 — PWA installable
+
+| ID | Skenario | Hasil wajib |
+|---|---|---|
+| PWA-01 | Browser memuat manifest pada deployment HTTPS | Nama, start URL, mode standalone, warna, serta ikon 192/512 dan maskable valid |
+| PWA-02 | Service worker diregistrasikan dari halaman aplikasi | Scope root aktif dan file worker memakai header JavaScript, no-cache, CSP ketat, serta `Service-Worker-Allowed: /` |
+| PWA-03 | Pengguna membuka navigasi ketika jaringan putus setelah instalasi | Halaman offline generik tampil tanpa saldo, transaksi, ruang, atau identitas dari cache |
+| PWA-04 | Periksa Cache Storage setelah memakai dashboard/transaksi/laporan | Hanya halaman offline, manifest, dan ikon publik yang diprecache; respons finansial/API/RSC tidak ada |
+| PWA-05 | Pengguna mencoba menyimpan transaksi tanpa jaringan | Tidak dinyatakan tersimpan dan tidak mengubah agregat; retry dilakukan pengguna setelah koneksi kembali |
+| PWA-06 | Versi service worker berubah | Cache shell publik versi lama dibersihkan tanpa menghapus atau menyentuh data server |
+
 ## UX dan operasional
 
 - Desktop dan mobile minimal 360 px: tidak ada clipping, horizontal scroll yang tidak perlu, atau tombol utama tak terjangkau.
@@ -584,3 +595,17 @@ Migrasi serta suite PostgreSQL belum dijalankan pada clone ini karena `.env.test
 | Verifikasi | 89 unit test, lint, TypeScript, dan build produksi lulus |
 
 Smoke browser terautentikasi untuk keyboard numerik serta tampilan 360 px belum dijalankan pada sesi ini.
+
+## Hasil tahap 24 — PWA installable, 5 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| PWA-01 | Build menghasilkan `/manifest.webmanifest`; inspeksi Chromium melaporkan tanpa manifest error dan empat ikon PNG merespons 200 |
+| PWA-02 | Edge headless membuktikan worker aktif dengan scope root; respons `/sw.js` memuat Content-Type JavaScript, no-cache/no-store, CSP self-only, dan Service-Worker-Allowed root |
+| PWA-03 | Setelah worker aktif dan jaringan browser dimatikan, navigasi ke `/dashboard` menampilkan halaman “Koneksi internet terputus” pada 390×844 |
+| PWA-04 | Cache Storage hanya berisi `/offline`, manifest, serta ikon 192/512/maskable; worker tidak memiliki `cache.put` atau pola cache API/transaksi |
+| PWA-05 | UI offline menyatakan transaksi belum disimpan; tidak ada IndexedDB, Background Sync, antrean mutasi, atau perubahan agregat |
+| PWA-06 | Worker memakai prefix dan versi cache; activation menghapus versi shell publik lama saja |
+| Verifikasi | 91 unit test, 10 smoke Playwright desktop/mobile, lint, TypeScript, targeted Prettier check, build produksi, pemeriksaan HTTP, dan browser headless lulus |
+
+`npm run format:check` seluruh repository masih melaporkan perbedaan style pada 141 file lama di checkout Windows. Seluruh file kode PWA yang disentuh lulus pemeriksaan Prettier terarah dan `git diff --check` tidak menemukan whitespace error; file lama tidak ditulis ulang sebagai bagian F23.

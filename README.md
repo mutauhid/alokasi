@@ -1,6 +1,6 @@
 # Alokasi — Financial Management
 
-Aplikasi pengelolaan keuangan pribadi dan bersama dengan transaksi, budgeting, dashboard, dan laporan. **Fondasi UI, database, autentikasi, ruang pribadi/bersama, peran dan lifecycle anggota, akun, kategori, transaksi inti, budget, dashboard berbasis data, laporan terfilter, ekspor, siklus budget berdasarkan tanggal gajian, OCR lokal, serta kontrol penghapusan ruang dan akun telah diimplementasikan.** Status verifikasi terbaru ada di [ACCEPTANCE.md](docs/ACCEPTANCE.md).
+Aplikasi pengelolaan keuangan pribadi dan bersama dengan transaksi, budgeting, dashboard, dan laporan. **Fondasi UI, database, autentikasi, ruang pribadi/bersama, peran dan lifecycle anggota, akun, kategori, transaksi inti, budget, dashboard berbasis data, laporan terfilter, ekspor, siklus budget berdasarkan tanggal gajian, OCR lokal, PWA installable, serta kontrol penghapusan ruang dan akun telah diimplementasikan.** Status verifikasi terbaru ada di [ACCEPTANCE.md](docs/ACCEPTANCE.md).
 
 ## Menjalankan lokal
 
@@ -26,6 +26,7 @@ Jika dependency sudah terpasang pada workspace ini, cukup jalankan `npm run dev`
 - Prisma Client server-only, migrasi schema `app`, constraint lintas ruang, role runtime terpisah, dan tes PostgreSQL. Ikuti [panduan database](docs/DATABASE_SETUP.md) untuk koneksi, sertifikat CA/TLS, migrasi, dan pengujian.
 - Registrasi/login email-password, verifikasi callback, lupa/reset password, logout, session cookie SSR, serta provisioning ruang pribadi. Ikuti [panduan autentikasi](docs/AUTH_SETUP.md).
 - Menu akun desktop/mobile berisi Profil & Pengaturan dan Keluar; profil mendukung perubahan nama tampilan serta password dengan autentikasi ulang.
+- Manifest, ikon standar/maskable/Apple, service worker, dan halaman offline untuk pemasangan aplikasi sebagai PWA.
 
 Ruang pribadi/bersama, login, akun, kategori, transaksi inti, budget, dashboard, laporan, peran anggota, undangan berbasis tautan, transfer kepemilikan, ekspor transaksi/ruang, siklus gajian, draf OCR, serta penghapusan ruang/akun sudah terhubung ke PostgreSQL melalui service server. OCR berjalan lokal di browser dan mendeteksi total, tanggal, penerima, transfer/QRIS, serta bank/e-wallet; gambar dan teks mentah tidak diunggah. Pengiriman email undangan otomatis, provider OCR eksternal, penyimpanan bukti, backup/pemulihan, dan konfigurasi deployment produksi belum tersedia.
 
@@ -80,6 +81,12 @@ npm run test:e2e
 ```
 
 Lima skenario dijalankan pada viewport desktop 1366 px dan mobile 360 px (10 pemeriksaan): render tanpa credential/error runtime, navigasi dan pergantian ruang, status fitur/izin yang jujur, keyboard/menu mobile, serta 404 dan tautan kembali. Mobile menggunakan emulasi viewport Chromium, bukan perangkat fisik. Hasil berada di `playwright-report/` dan `test-results/` (diabaikan Git).
+
+### PWA installable
+
+Build HTTPS menyediakan manifest dan service worker sehingga browser yang mendukung dapat memasang Alokasi ke home screen atau desktop. Service worker hanya menyimpan halaman offline, manifest, dan ikon publik; dashboard, transaksi, laporan, API, RSC, dan data terautentikasi tidak dicache.
+
+Fase ini belum mendukung transaksi offline. Transaksi hanya dianggap tersimpan setelah submit server berhasil dan PostgreSQL mengonfirmasinya. Jika jaringan terputus, halaman offline menjelaskan batas tersebut dan pengguna mencoba kembali setelah koneksi pulih.
 
 ## Struktur kode saat ini
 
