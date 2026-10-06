@@ -54,6 +54,13 @@ enum ReceiptDraftStatus {
   @@schema("app")
 }
 
+enum ReconciliationResolution {
+  matched
+  adjusted
+
+  @@schema("app")
+}
+
 model User {
   id                String       @id @default(uuid()) @db.Uuid
   authSubject       String?      @unique @map("auth_subject") @db.Uuid
@@ -92,6 +99,7 @@ model Workspace {
   auditEvents                     AuditEvent[]
   receiptDrafts                   ReceiptDraft[]
   recurringTransactionTemplates   RecurringTransactionTemplate[]
+  balanceReconciliations          BalanceReconciliation[]
 
   @@map("workspaces")
   @@schema("app")
@@ -128,6 +136,7 @@ model Membership {
   invitations         Invitation[]                   @relation("InvitationCreator")
   receiptDrafts       ReceiptDraft[]                 @relation("ReceiptDraftCreator")
   recurringTemplates  RecurringTransactionTemplate[] @relation("RecurringTemplateCreator")
+  reconciliations     BalanceReconciliation[]        @relation("ReconciliationCreator")
 
   @@unique([workspaceId, userId])
   @@unique([workspaceId, id])
@@ -171,10 +180,40 @@ model FinancialAccount {
   incoming           Transaction[]                  @relation("DestinationAccount")
   receiptDrafts      ReceiptDraft[]                 @relation("ReceiptDraftAccount")
   recurringTemplates RecurringTransactionTemplate[]
+  reconciliations    BalanceReconciliation[]
 
   @@unique([workspaceId, id])
   @@index([workspaceId, archivedAt])
   @@map("financial_accounts")
+  @@schema("app")
+}
+
+// A completed reconciliation is an immutable balance snapshot. Only an
+// explicitly confirmed adjustment affects account balance; it never becomes
+// income, expense, transfer, or budget realization.
+model BalanceReconciliation {
+  id                 String                   @id @default(uuid()) @db.Uuid
+  workspaceId        String                   @map("workspace_id") @db.Uuid
+  accountId          String                   @map("account_id") @db.Uuid
+  createdBy          String                   @map("created_by") @db.Uuid
+  reconciliationDate DateTime                 @map("reconciliation_date") @db.Date
+  recordedBalance    BigInt                   @map("recorded_balance")
+  actualBalance      BigInt                   @map("actual_balance")
+  difference         BigInt
+  adjustmentAmount   BigInt                   @default(0) @map("adjustment_amount")
+  resolution         ReconciliationResolution
+  note               String?                  @db.VarChar(500)
+  idempotencyKey     String                   @map("idempotency_key") @db.VarChar(128)
+  requestHash        String                   @map("request_hash") @db.VarChar(64)
+  createdAt          DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  workspace          Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  account            FinancialAccount         @relation(fields: [workspaceId, accountId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  creator            Membership               @relation("ReconciliationCreator", fields: [workspaceId, createdBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, createdBy, idempotencyKey])
+  @@index([workspaceId, accountId, reconciliationDate, createdAt])
+  @@map("balance_reconciliations")
   @@schema("app")
 }
 

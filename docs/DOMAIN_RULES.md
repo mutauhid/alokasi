@@ -187,6 +187,17 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 
 ## 7. Kontrak lintas fitur
 
+### F15 — rekonsiliasi saldo
+
+- Saldo catatan pada tanggal rekonsiliasi adalah saldo awal ditambah pemasukan, dikurangi pengeluaran/transfer keluar, ditambah transfer masuk, dan ditambah penyesuaian rekonsiliasi sampai tanggal tersebut.
+- Snapshot hanya dapat dibuat pada akun aktif, dalam workspace yang sama, sejak tanggal mulai akun sampai hari ini menurut zona waktu ruang.
+- Snapshot cocok memiliki selisih dan penyesuaian nol. Snapshot disesuaikan wajib memiliki selisih bukan nol dan `adjustment_amount = actual_balance - recorded_balance`.
+- Penyesuaian mengubah saldo akun tetapi tidak masuk tabel transaksi, pemasukan, pengeluaran, transfer, budget, tren, atau laporan arus kas.
+- Rekonsiliasi immutable dan idempoten per workspace, pembuat, serta kunci permintaan. Audit hanya menyimpan metadata field, bukan catatan bebas atau nominal.
+- Owner/Editor dapat membuat rekonsiliasi; Viewer baca saja. Service selalu memeriksa ulang membership, workspace, dan akun.
+- Transaksi yang dibuat atau diubah setelah snapshot dengan tanggal transaksi pada/sebelum tanggal rekonsiliasi menandai snapshot perlu diperiksa kembali; sistem tidak menulis ulang snapshot lama.
+- Saldo awal tidak boleh ditimpa untuk menyelesaikan selisih rutin. Perbaiki transaksi yang diketahui; gunakan penyesuaian hanya ketika penyebab tidak ditemukan.
+
 - Scan tanggal 24 Sep yang disubmit 26 Sep tetap masuk periode yang mencakup 24 Sep, bukan periode tanggal submit.
 - Kategori baru dari form scan harus aktif dan berada di ruang yang sama; hanya Owner boleh membuatnya.
 - Kategori diarsipkan, akun diarsipkan, atau izin berubah saat OCR berjalan: minta perbaikan/menolak submit; jangan posting diam-diam.

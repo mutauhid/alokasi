@@ -17,6 +17,8 @@ export function SectionContent({
   success,
   reportQuery,
   selectedPeriodId,
+  reconcileAccountId,
+  reconcileDate,
   transactionView = "history",
 }: {
   section: Section;
@@ -26,6 +28,8 @@ export function SectionContent({
   success?: string;
   reportQuery: ReportQuery;
   selectedPeriodId: string;
+  reconcileAccountId?: string;
+  reconcileDate?: string;
   transactionView?: "history" | "reminders";
 }) {
   switch (section) {
@@ -64,7 +68,10 @@ export function SectionContent({
         <AccountsSection
           workspaceId={access.workspaceId}
           canManage={access.role === "owner"}
-          timezone={access.timezone}
+          role={access.role}
+          today={today}
+          reconcileAccountId={reconcileAccountId}
+          reconcileDate={reconcileDate}
           error={error}
           success={success}
         />

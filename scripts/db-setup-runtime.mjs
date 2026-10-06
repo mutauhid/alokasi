@@ -34,7 +34,8 @@ try {
     GRANT USAGE ON SCHEMA app TO alokasi_runtime;
     GRANT SELECT,INSERT,UPDATE,DELETE ON app.users,app.workspaces,app.memberships,
       app.invitations,app.financial_accounts,app.categories,app.transactions,
-      app.cycle_settings,app.budget_periods,app.budgets,app.receipt_drafts TO alokasi_runtime;
+      app.cycle_settings,app.budget_periods,app.budgets,app.receipt_drafts,
+      app.balance_reconciliations TO alokasi_runtime;
     GRANT SELECT,INSERT ON app.audit_events TO alokasi_runtime;
     GRANT EXECUTE ON FUNCTION app.lock_workspace(),app.check_workspace_owner(),
       app.check_period_contiguity() TO alokasi_runtime;

@@ -386,6 +386,7 @@ export async function SettingsSection({
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 ["Transaksi pribadi", deletion.personal.transactions],
+                ["Rekonsiliasi saldo", deletion.personal.reconciliations],
                 [
                   "Template transaksi berulang",
                   deletion.personal.recurringTemplates,
@@ -436,7 +437,8 @@ export async function SettingsSection({
           <CardTitle>Ekspor data ruang</CardTitle>
           <p className="text-sm text-muted-foreground">
             Unduh salinan terstruktur berisi akun, kategori, aturan periode,
-            budget, dan seluruh transaksi termasuk data arsip.
+            budget, rekonsiliasi saldo, dan seluruh transaksi termasuk data
+            arsip.
           </p>
         </CardHeader>
         <CardContent>

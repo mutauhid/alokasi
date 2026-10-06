@@ -280,9 +280,17 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Fase ini sengaja tidak memakai IndexedDB, Background Sync, push notification, atau antrean transaksi. Submit offline tidak dinyatakan berhasil.
 - Verifikasi: lint, TypeScript, build produksi, 91 unit test, dan 10 smoke Playwright desktop/mobile lulus. Browser Edge headless menemukan manifest tanpa error, worker mengontrol scope root, isi cache tepat lima aset publik, serta navigasi Dashboard saat offline menampilkan halaman fallback pada viewport 390×844.
 
+## Hasil tahap 25 — rekonsiliasi saldo, 6 Oktober 2026
+
+- F15 menyimpan snapshot immutable per akun/tanggal dengan saldo catatan, saldo aktual, selisih, resolusi, catatan, pembuat, idempotensi, dan audit.
+- Penyesuaian eksplisit menjadi bagian perhitungan saldo akun, tetapi query transaksi, arus kas, budget, dashboard periode, dan CSV tetap tidak memasukkannya.
+- Halaman Akun menyediakan pemilihan tanggal, perbandingan langsung, tautan pemeriksaan transaksi, konfirmasi cocok/penyesuaian, status terakhir, dan riwayat. Owner/Editor dapat membuat; Viewer baca saja.
+- Ekspor lengkap naik ke `schemaVersion: 4`; cleanup serta ringkasan penghapusan ruang/akun mencakup rekonsiliasi.
+- Prisma schema/Client, lint, TypeScript, build produksi, 98 unit test, serta 10 smoke Playwright Edge desktop/mobile lulus. Migrasi dan suite PostgreSQL belum dijalankan lokal karena `.env.test.local` tidak tersedia; test integrasi F15 sudah disiapkan untuk CI/database test.
+
 ## Backlog kandidat — bukan komitmen aktif
 
-F11 transaksi berulang diaktifkan melalui D33. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, F14 utang/piutang, F15 rekonsiliasi, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.
+F11 transaksi berulang diaktifkan melalui D33 dan F15 rekonsiliasi melalui D37. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, F14 utang/piutang, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.
 
 ## Format handoff setiap irisan pekerjaan
 

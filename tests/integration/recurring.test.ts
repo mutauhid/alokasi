@@ -179,7 +179,7 @@ describe("recurring transaction service", () => {
         recurringDueDate: string | null;
       }>;
     };
-    expect(exported.schemaVersion).toBe(3);
+    expect(exported.schemaVersion).toBe(4);
     expect(exported.recurringTransactionTemplates).toEqual([
       expect.objectContaining({
         id: template.id,

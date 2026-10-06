@@ -22,6 +22,8 @@ export type WorkspaceSearchParams = Promise<{
   categoryId?: string | string[];
   query?: string | string[];
   periodId?: string | string[];
+  reconcileAccountId?: string | string[];
+  reconcileDate?: string | string[];
 }>;
 
 export async function WorkspacePage({
@@ -183,6 +185,16 @@ export async function WorkspacePage({
           query: typeof query.query === "string" ? query.query : undefined,
         }}
         selectedPeriodId={periodSelection?.selectedPeriod.id ?? activePeriod.id}
+        reconcileAccountId={
+          typeof query.reconcileAccountId === "string"
+            ? query.reconcileAccountId
+            : undefined
+        }
+        reconcileDate={
+          typeof query.reconcileDate === "string"
+            ? query.reconcileDate
+            : undefined
+        }
         transactionView={transactionView}
       />
     </AppShell>

@@ -105,6 +105,14 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Pesan offline menjelaskan bahwa transaksi belum dapat disimpan tanpa koneksi dan menyediakan tindakan “Coba lagi”. Jangan menampilkan toast sukses atau angka nol.
 - Custom install prompt bukan syarat baseline; browser/perangkat boleh menyediakan alur pemasangannya sendiri.
 
+## Rekonsiliasi saldo
+
+- Setiap kartu akun menampilkan status rekonsiliasi terakhir dan tindakan “Cocokkan saldo” bagi Owner/Editor atau “Lihat rekonsiliasi” bagi Viewer.
+- Panel rekonsiliasi menampilkan akun, tanggal pengecekan, saldo menurut Alokasi, input saldo aktual, selisih bertanda, serta catatan opsional.
+- Saat selisih nol, tindakan utama adalah “Simpan saldo cocok”. Saat berbeda, arahkan ke pemeriksaan transaksi dan tampilkan “Sesuaikan saldo dan simpan” sebagai tindakan eksplisit, bukan otomatis.
+- Riwayat menampilkan saldo catatan, saldo aktual, selisih, penyesuaian, pembuat, dan status “Cocok”, “Disesuaikan”, atau “Perlu diperiksa kembali”.
+- Nilai negatif tetap didukung. Informasi selisih tidak bergantung pada warna, dan layout menumpuk pada mobile tanpa scroll horizontal.
+
 ## Lifecycle ruang bersama
 
 - Owner melihat kartu “Alihkan kepemilikan” dengan calon Owner aktif, penjelasan bahwa penerima harus menyetujui, masa berlaku permintaan, dan tombol pembatalan.

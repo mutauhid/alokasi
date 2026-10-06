@@ -231,6 +231,7 @@ export async function exportWorkspaceJson(
         periods,
         budgets,
         recurringTemplates,
+        reconciliations,
         transactions,
       ] = await Promise.all([
         tx.cycleSetting.findMany({
@@ -256,6 +257,32 @@ export async function exportWorkspaceJson(
         tx.recurringTransactionTemplate.findMany({
           where: { workspaceId },
           orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        }),
+        tx.balanceReconciliation.findMany({
+          where: { workspaceId },
+          select: {
+            id: true,
+            accountId: true,
+            reconciliationDate: true,
+            recordedBalance: true,
+            actualBalance: true,
+            difference: true,
+            adjustmentAmount: true,
+            resolution: true,
+            note: true,
+            createdAt: true,
+            creator: {
+              select: {
+                userId: true,
+                user: { select: { displayName: true, email: true } },
+              },
+            },
+          },
+          orderBy: [
+            { reconciliationDate: "asc" },
+            { createdAt: "asc" },
+            { id: "asc" },
+          ],
         }),
         tx.transaction.findMany({
           where: { workspaceId },
@@ -303,6 +330,7 @@ export async function exportWorkspaceJson(
         periods,
         budgets,
         recurringTemplates,
+        reconciliations,
         transactions,
       };
     },
@@ -312,7 +340,7 @@ export async function exportWorkspaceJson(
 
   const document = {
     format: "alokasi-workspace-export",
-    schemaVersion: 3,
+    schemaVersion: 4,
     exportedAt: exportedAt.toISOString(),
     workspace: {
       ...snapshot.workspace,
@@ -381,6 +409,23 @@ export async function exportWorkspaceJson(
         updatedAt: template.updatedAt.toISOString(),
       }),
     ),
+    balanceReconciliations: snapshot.reconciliations.map((item) => ({
+      id: item.id,
+      accountId: item.accountId,
+      reconciliationDate: dateOnly(item.reconciliationDate),
+      recordedBalance: item.recordedBalance.toString(),
+      actualBalance: item.actualBalance.toString(),
+      difference: item.difference.toString(),
+      adjustmentAmount: item.adjustmentAmount.toString(),
+      resolution: item.resolution,
+      note: item.note,
+      createdBy: {
+        userId: item.creator.userId,
+        displayName: item.creator.user.displayName,
+        email: item.creator.user.email,
+      },
+      createdAt: item.createdAt.toISOString(),
+    })),
     transactions: snapshot.transactions.map((transaction) => ({
       id: transaction.id,
       type: transaction.type,

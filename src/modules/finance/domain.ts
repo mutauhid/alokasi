@@ -3,6 +3,14 @@ import { z } from "zod";
 export const accountTypes = ["bank", "cash", "ewallet"] as const;
 export const categoryTypes = ["income", "expense"] as const;
 export const transactionTypes = ["income", "expense", "transfer"] as const;
+export const reconciliationResolutions = ["matched", "adjusted"] as const;
+
+export const MIN_DATABASE_BIGINT = -9223372036854775808n;
+export const MAX_DATABASE_BIGINT = 9223372036854775807n;
+
+export function isDatabaseBigInt(value: bigint) {
+  return value >= MIN_DATABASE_BIGINT && value <= MAX_DATABASE_BIGINT;
+}
 
 const normalizedName = (maximum: number) =>
   z
@@ -42,6 +50,32 @@ export const renameInput = z.object({
 export const versionedInput = z.object({
   id: z.uuid(),
   version: z.coerce.number().int().positive(),
+});
+
+export const createReconciliationInput = z.object({
+  accountId: z.uuid(),
+  actualBalance: z
+    .string()
+    .trim()
+    .regex(/^-?\d+$/u)
+    .transform((value) => BigInt(value))
+    .refine(isDatabaseBigInt),
+  reconciliationDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/u)
+    .refine((value) => {
+      const date = new Date(`${value}T00:00:00.000Z`);
+      return (
+        !Number.isNaN(date.valueOf()) && date.toISOString().startsWith(value)
+      );
+    }),
+  resolution: z.enum(reconciliationResolutions),
+  note: z
+    .string()
+    .trim()
+    .max(500)
+    .transform((value) => value || null),
+  idempotencyKey: z.string().trim().min(1).max(128),
 });
 
 export const createCategoryInput = z.object({
@@ -148,9 +182,15 @@ export type BalanceTransaction = {
   destinationAccountId: string | null;
 };
 
+export type AccountBalanceAdjustment = {
+  accountId: string;
+  amount: bigint;
+};
+
 export function calculateAccountBalances(
   accounts: Array<{ id: string; openingBalance: bigint }>,
   transactions: BalanceTransaction[],
+  adjustments: AccountBalanceAdjustment[] = [],
 ) {
   const balances = new Map(
     accounts.map((account) => [account.id, account.openingBalance]),
@@ -175,5 +215,22 @@ export function calculateAccountBalances(
       }
     }
   }
+  for (const adjustment of adjustments) {
+    const balance = balances.get(adjustment.accountId);
+    if (balance !== undefined) {
+      balances.set(adjustment.accountId, balance + adjustment.amount);
+    }
+  }
   return balances;
+}
+
+export function reconciliationDifference(
+  recordedBalance: bigint,
+  actualBalance: bigint,
+) {
+  const difference = actualBalance - recordedBalance;
+  if (!isDatabaseBigInt(recordedBalance) || !isDatabaseBigInt(difference)) {
+    throw new RangeError("Balance reconciliation exceeds BIGINT range");
+  }
+  return difference;
 }

@@ -18,6 +18,7 @@ import {
   createBudgetInput,
   createAccountInput,
   createCategoryInput,
+  createReconciliationInput,
   createTransactionInput,
   renameCategoryInput,
   renameInput,
@@ -66,6 +67,7 @@ import {
   skipRecurringOccurrence,
   updateRecurringTemplate,
 } from "@/modules/recurring/service";
+import { createBalanceReconciliation } from "@/modules/reconciliations/service";
 
 function text(form: FormData, name: string) {
   const value = form.get(name);
@@ -219,6 +221,43 @@ export async function archiveAccountAction(form: FormData) {
     );
   }
   finish("/accounts", "account-archived", context.workspaceId);
+}
+
+const reconciliationErrors: Record<string, string> = {
+  RECONCILIATION_ACCESS_DENIED: "reconciliation-access",
+  RECONCILIATION_ACCOUNT_INVALID: "reconciliation-account",
+  RECONCILIATION_FUTURE_DATE: "reconciliation-future",
+  RECONCILIATION_BEFORE_ACCOUNT: "reconciliation-before-account",
+  RECONCILIATION_DIFFERENCE: "reconciliation-difference",
+  RECONCILIATION_ALREADY_MATCHES: "reconciliation-already-matches",
+  RECONCILIATION_AMOUNT_RANGE: "reconciliation-range",
+  RECONCILIATION_IDEMPOTENCY_CONFLICT: "reconciliation-idempotency",
+};
+
+export async function createBalanceReconciliationAction(form: FormData) {
+  const input = createReconciliationInput.safeParse({
+    accountId: text(form, "accountId"),
+    actualBalance: text(form, "actualBalance"),
+    reconciliationDate: text(form, "reconciliationDate"),
+    resolution: text(form, "resolution"),
+    note: text(form, "note"),
+    idempotencyKey: text(form, "idempotencyKey"),
+  });
+  if (!input.success) fail("/accounts", form, "reconciliation-invalid");
+  const context = await mutationContext(form, ["owner", "editor"]);
+  try {
+    await createBalanceReconciliation(context, {
+      ...input.data,
+      reconciliationDate: toDatabaseDate(input.data.reconciliationDate),
+    });
+  } catch (error) {
+    const message =
+      error instanceof FinanceDomainError
+        ? (reconciliationErrors[error.code] ?? "reconciliation-failed")
+        : "reconciliation-failed";
+    fail("/accounts", form, message);
+  }
+  finish("/accounts", "reconciliation-created", context.workspaceId);
 }
 
 export async function createCategoryAction(form: FormData) {
