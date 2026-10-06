@@ -232,6 +232,7 @@ export async function exportWorkspaceJson(
         budgets,
         recurringTemplates,
         reconciliations,
+        importBatches,
         transactions,
       ] = await Promise.all([
         tx.cycleSetting.findMany({
@@ -284,6 +285,25 @@ export async function exportWorkspaceJson(
             { id: "asc" },
           ],
         }),
+        tx.transactionImportBatch.findMany({
+          where: { workspaceId },
+          select: {
+            id: true,
+            accountId: true,
+            sourceFileName: true,
+            sourceRowCount: true,
+            importedRowCount: true,
+            skippedRowCount: true,
+            createdAt: true,
+            creator: {
+              select: {
+                userId: true,
+                user: { select: { displayName: true, email: true } },
+              },
+            },
+          },
+          orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        }),
         tx.transaction.findMany({
           where: { workspaceId },
           select: {
@@ -302,6 +322,8 @@ export async function exportWorkspaceJson(
             deletedAt: true,
             recurringTemplateId: true,
             recurringDueDate: true,
+            importBatchId: true,
+            importRowNumber: true,
             creator: {
               select: {
                 userId: true,
@@ -331,6 +353,7 @@ export async function exportWorkspaceJson(
         budgets,
         recurringTemplates,
         reconciliations,
+        importBatches,
         transactions,
       };
     },
@@ -340,7 +363,7 @@ export async function exportWorkspaceJson(
 
   const document = {
     format: "alokasi-workspace-export",
-    schemaVersion: 4,
+    schemaVersion: 5,
     exportedAt: exportedAt.toISOString(),
     workspace: {
       ...snapshot.workspace,
@@ -426,6 +449,20 @@ export async function exportWorkspaceJson(
       },
       createdAt: item.createdAt.toISOString(),
     })),
+    transactionImportBatches: snapshot.importBatches.map((item) => ({
+      id: item.id,
+      accountId: item.accountId,
+      sourceFileName: item.sourceFileName,
+      sourceRowCount: item.sourceRowCount,
+      importedRowCount: item.importedRowCount,
+      skippedRowCount: item.skippedRowCount,
+      createdBy: {
+        userId: item.creator.userId,
+        displayName: item.creator.user.displayName,
+        email: item.creator.user.email,
+      },
+      createdAt: item.createdAt.toISOString(),
+    })),
     transactions: snapshot.transactions.map((transaction) => ({
       id: transaction.id,
       type: transaction.type,
@@ -454,6 +491,8 @@ export async function exportWorkspaceJson(
       recurringDueDate: transaction.recurringDueDate
         ? dateOnly(transaction.recurringDueDate)
         : null,
+      importBatchId: transaction.importBatchId,
+      importRowNumber: transaction.importRowNumber,
     })),
   };
 

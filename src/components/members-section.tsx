@@ -545,6 +545,7 @@ export async function MembersSection({
                 <li>{deletionSummary.categories} kategori</li>
                 <li>{deletionSummary.transactions} transaksi</li>
                 <li>{deletionSummary.reconciliations} rekonsiliasi saldo</li>
+                <li>{deletionSummary.importBatches} batch impor CSV</li>
                 <li>
                   {deletionSummary.recurringTemplates} template transaksi
                   berulang

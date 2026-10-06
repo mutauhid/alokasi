@@ -387,6 +387,7 @@ export async function SettingsSection({
               {[
                 ["Transaksi pribadi", deletion.personal.transactions],
                 ["Rekonsiliasi saldo", deletion.personal.reconciliations],
+                ["Batch impor CSV", deletion.personal.importBatches],
                 [
                   "Template transaksi berulang",
                   deletion.personal.recurringTemplates,

@@ -33,7 +33,7 @@ export async function WorkspacePage({
 }: {
   section: Section;
   searchParams: WorkspaceSearchParams;
-  transactionView?: "history" | "reminders";
+  transactionView?: "history" | "reminders" | "import";
 }) {
   const current = navigation.find((item) => item.slug === section)!;
   const query = await searchParams;

@@ -1,6 +1,6 @@
 # Rencana implementasi dan status
 
-Diperbarui 5 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
+Diperbarui 6 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
 
 ## Status nyata
 
@@ -34,6 +34,8 @@ Diperbarui 5 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikas
 | Tahap 22 percakapan: fokus navigasi Transaksi | Diimplementasikan pada `feat/transaction-reminders-navigation`: Riwayat/Pengingat dipisah, Scan struk dan Tambah transaksi menjadi aksi utama, redirect mutasi kembali ke Pengingat, dan query opsi akun tidak lagi menghitung saldo dari seluruh transaksi |
 | Tahap 23 percakapan: input nominal Rupiah | Diimplementasikan pada `feat/rupiah-amount-input`: transaksi manual, koreksi OCR, dan template pengingat memformat ribuan di browser tetapi mengirim string digit integer yang sama ke server; tidak ada query, request, atau migrasi baru |
 | Tahap 24 percakapan: PWA installable | Diimplementasikan untuk F23: manifest App Router, ikon standar/maskable/Apple, registrasi service worker, header keamanan, dan fallback offline tanpa cache data finansial atau transaksi offline |
+| Tahap 25 percakapan: rekonsiliasi saldo | Implementasi F15 tersedia pada `feat/balance-reconciliation`: snapshot immutable, perbandingan saldo, penyesuaian eksplisit, status stale, audit, ACL, dan pengujian domain/integrasi |
+| Tahap 26 percakapan: impor CSV | Implementasi F13 tersedia pada `feat/csv-import`: parsing file lokal, pemetaan kolom, pratinjau, kandidat duplikat, commit batch atomik/idempoten, histori, ekspor schema v5, ACL, dan pengujian domain/integrasi |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Upload/storage/provider OCR eksternal | Belum diimplementasikan; consent, retensi, biaya, callback, dan lifecycle file masih terbuka |
@@ -288,9 +290,17 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Ekspor lengkap naik ke `schemaVersion: 4`; cleanup serta ringkasan penghapusan ruang/akun mencakup rekonsiliasi.
 - Prisma schema/Client, lint, TypeScript, build produksi, 98 unit test, serta 10 smoke Playwright Edge desktop/mobile lulus. Migrasi dan suite PostgreSQL belum dijalankan lokal karena `.env.test.local` tidak tersedia; test integrasi F15 sudah disiapkan untuk CI/database test.
 
+## Hasil tahap 26 — impor CSV, 6 Oktober 2026
+
+- F13 tersedia sebagai tab Transaksi terpisah untuk Owner/Editor; Viewer dapat melihat histori batch tanpa kontrol impor.
+- File CSV maksimal 500 KB/300 baris dibaca lokal. Pengguna memetakan tanggal, deskripsi, catatan, nominal bertanda atau kolom masuk/keluar, akun, dan kategori default.
+- Pratinjau server menampilkan masalah per baris serta kandidat duplikat database/dalam file. Duplikat tidak dipilih otomatis dan dapat dikonfirmasi eksplisit.
+- Commit serializable/idempoten membuat satu batch beserta transaksi terpilih. Setiap transaksi tertaut ke nomor baris; histori, ekspor schema v5, ringkasan penghapusan, dan cleanup mencakup batch tanpa menyimpan file mentah.
+- Prisma validate/generate, lint, TypeScript, build produksi, 103 unit test, 10 smoke Playwright Edge desktop/mobile, targeted Prettier, dan `git diff --check` lulus. Migrasi/test PostgreSQL serta smoke browser terautentikasi menunggu environment test.
+
 ## Backlog kandidat — bukan komitmen aktif
 
-F11 transaksi berulang diaktifkan melalui D33 dan F15 rekonsiliasi melalui D37. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, F14 utang/piutang, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.
+F11 transaksi berulang diaktifkan melalui D33, F15 rekonsiliasi melalui D37, dan F13 impor CSV melalui D38. Kandidat yang belum aktif: F12 target tabungan, F14 utang/piutang, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.
 
 ## Format handoff setiap irisan pekerjaan
 

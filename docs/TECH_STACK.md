@@ -128,6 +128,7 @@ Struktur dapat disesuaikan tanpa mengubah batas tanggung jawab. Hindari reposito
 - Gunakan foreign key gabungan workspace dan object ID atau constraint setara untuk mencegah relasi lintas ruang, selain pemeriksaan service.
 - Transfer, perubahan transaksi, audit terkait, dan submit draf dijalankan dalam transaksi database yang singkat; network OCR/email tidak berada di dalam transaksi tersebut.
 - Rekonsiliasi saldo memakai tabel snapshot immutable terpisah. `adjustment_amount` ikut rumus saldo akun tetapi tidak masuk tabel transaksi, arus kas, budget, atau CSV transaksi; ekspor lengkap tetap menyertakannya.
+- Impor CSV memakai parser browser tanpa penyimpanan file mentah. Server menerima maksimal 300 baris terstruktur, memvalidasi ulang referensi/tanggal/nominal, lalu menyimpan `TransactionImportBatch` dan transaksi terpilih secara atomik. Transaksi menyimpan pasangan `import_batch_id`/`import_row_number` untuk audit dan idempotensi.
 - Version checks/locking dan retry konflik database harus mempertahankan idempotensi. Saldo awal dan transaksi tetap sumber kebenaran; agregat laporan tidak boleh memiliki rumus duplikat yang berbeda.
 - Query historis menggunakan BudgetPeriod sejak MVP. Pemilihan stack tidak mengaktifkan F21 atau mengubah batas fase produk.
 

@@ -113,6 +113,14 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Riwayat menampilkan saldo catatan, saldo aktual, selisih, penyesuaian, pembuat, dan status “Cocok”, “Disesuaikan”, atau “Perlu diperiksa kembali”.
 - Nilai negatif tetap didukung. Informasi selisih tidak bergantung pada warna, dan layout menumpuk pada mobile tanpa scroll horizontal.
 
+## Impor CSV
+
+- “Impor CSV” menjadi tab ketiga di Transaksi setelah Riwayat dan Pengingat, sehingga fitur tidak menambah menu utama baru.
+- Panel awal memakai area pilih file, pilihan akun, pemetaan kolom, mode nominal, dan kategori default. File asli tetap lokal; teks bantuan menyebut batas ukuran/baris dengan jelas.
+- Pratinjau memakai daftar kartu yang tetap terbaca pada mobile: checkbox, nomor baris, jenis, tanggal, judul, nominal, dan label “Kemungkinan duplikat”. Kandidat duplikat tidak dicentang otomatis.
+- Baris invalid ditampilkan terpisah dengan nomor dan alasan. Error satu baris tidak menyamar sebagai kegagalan seluruh file sebelum pengguna mengonfirmasi.
+- Histori batch menampilkan nama file, akun, waktu, pembuat, jumlah diimpor/dilewati/total. Viewer melihat histori tanpa kontrol upload.
+
 ## Lifecycle ruang bersama
 
 - Owner melihat kartu “Alihkan kepemilikan” dengan calon Owner aktif, penjelasan bahwa penerima harus menyetujui, masa berlaku permintaan, dan tombol pembatalan.

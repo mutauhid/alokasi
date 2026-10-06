@@ -1,6 +1,6 @@
 # Aturan domain — kontrak implementasi
 
-Status: diperbarui 5 Oktober 2026. Kebutuhan eksplisit dan default kerja dibedakan di [DECISIONS.md](DECISIONS.md). Rumus dasar, matriks peran, dan kebijakan akun mengikuti [PRD](../PRD.md). Dokumen ini memiliki rincian kategori, scan, periode, dan batas penyimpanan PWA.
+Status: diperbarui 6 Oktober 2026. Kebutuhan eksplisit dan default kerja dibedakan di [DECISIONS.md](DECISIONS.md). Rumus dasar, matriks peran, dan kebijakan akun mengikuti [PRD](../PRD.md). Dokumen ini memiliki rincian kategori, scan, periode, PWA, rekonsiliasi, dan impor CSV.
 
 ## 1. Ruang, uang, dan transaksi
 
@@ -185,7 +185,19 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 - Input transaksi saat offline tidak diantrikan pada fase ini. Jangan menampilkan status “tersimpan”, memperbarui agregat, atau melakukan retry tersembunyi.
 - Dukungan transaksi offline kelak memerlukan keputusan baru untuk IndexedDB, isolasi user/workspace pada perangkat bersama, logout/cleanup, idempotensi, auth kedaluwarsa, konflik referensi arsip, dan status sinkronisasi.
 
-## 7. Kontrak lintas fitur
+## 7. F13 — impor transaksi CSV
+
+- File dibaca dan diurai di browser. File mentah tidak diunggah atau disimpan; server hanya menerima pemetaan dan sel terstruktur untuk validasi/pratinjau.
+- Satu batch memilih tepat satu akun aktif. Baseline hanya mengimpor pemasukan dan pengeluaran; transfer tidak ditebak dari pasangan baris.
+- Tanggal kalender, nominal integer rupiah, judul, kategori aktif, tanggal mulai akun, hari ini menurut zona waktu ruang, role, dan workspace divalidasi ulang server.
+- Deteksi kandidat duplikat memakai akun, tanggal, jenis, nominal, dan judul yang dinormalisasi. Peringatan bersifat konservatif; kandidat dilewati secara default dan hanya diimpor bila dipilih eksplisit.
+- Duplikat di dalam file diperlakukan sama dengan duplikat database. Commit memeriksa ulang keadaan database agar transaksi yang muncul setelah pratinjau tidak masuk diam-diam.
+- Batch dan transaksi terpilih dibuat atomik dalam transaksi serializable. Kunci idempotensi batch serta nomor baris memastikan retry tidak menggandakan transaksi.
+- Histori batch menyimpan metadata ringkas, bukan isi CSV. Audit hanya menyimpan nama field; request hash dan idempotency key tidak diekspor.
+- Transaksi impor mengikuti rumus saldo, laporan, budget, rekonsiliasi, edit, dan hapus yang sama dengan transaksi manual. Transaksi bertanggal mundur dapat membuat snapshot rekonsiliasi lama perlu diperiksa kembali.
+- Owner/Editor dapat pratinjau dan commit. Viewer dapat melihat histori batch tetapi tidak memutasi. Seluruh query dan foreign key tetap dibatasi workspace.
+
+## 8. Kontrak lintas fitur
 
 ### F15 — rekonsiliasi saldo
 

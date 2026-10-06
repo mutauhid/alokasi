@@ -1,6 +1,6 @@
 # Alokasi — Financial Management
 
-Aplikasi pengelolaan keuangan pribadi dan bersama dengan transaksi, budgeting, dashboard, dan laporan. **Fondasi UI, database, autentikasi, ruang pribadi/bersama, peran dan lifecycle anggota, akun, kategori, transaksi inti, budget, dashboard berbasis data, laporan terfilter, ekspor, siklus budget berdasarkan tanggal gajian, OCR lokal, rekonsiliasi saldo, PWA installable, serta kontrol penghapusan ruang dan akun telah diimplementasikan.** Status verifikasi terbaru ada di [ACCEPTANCE.md](docs/ACCEPTANCE.md).
+Aplikasi pengelolaan keuangan pribadi dan bersama dengan transaksi, budgeting, dashboard, dan laporan. **Fondasi UI, database, autentikasi, ruang pribadi/bersama, peran dan lifecycle anggota, akun, kategori, transaksi inti, impor CSV, budget, dashboard berbasis data, laporan terfilter, ekspor, siklus budget berdasarkan tanggal gajian, OCR lokal, rekonsiliasi saldo, PWA installable, serta kontrol penghapusan ruang dan akun telah diimplementasikan.** Status verifikasi terbaru ada di [ACCEPTANCE.md](docs/ACCEPTANCE.md).
 
 ## Menjalankan lokal
 
@@ -28,6 +28,7 @@ Jika dependency sudah terpasang pada workspace ini, cukup jalankan `npm run dev`
 - Menu akun desktop/mobile berisi Profil & Pengaturan dan Keluar; profil mendukung perubahan nama tampilan serta password dengan autentikasi ulang.
 - Manifest, ikon standar/maskable/Apple, service worker, dan halaman offline untuk pemasangan aplikasi sebagai PWA.
 - Rekonsiliasi manual per akun dengan histori, status perlu diperiksa kembali, dan penyesuaian eksplisit yang tidak dihitung sebagai arus kas atau realisasi budget.
+- Impor CSV pada tab Transaksi dengan pemetaan kolom, pratinjau, deteksi kandidat duplikat, commit batch atomik, dan histori; file asli tidak disimpan.
 
 Ruang pribadi/bersama, login, akun, kategori, transaksi inti, budget, dashboard, laporan, peran anggota, undangan berbasis tautan, transfer kepemilikan, ekspor transaksi/ruang, siklus gajian, draf OCR, rekonsiliasi saldo, serta penghapusan ruang/akun sudah terhubung ke PostgreSQL melalui service server. OCR berjalan lokal di browser dan mendeteksi total, tanggal, penerima, transfer/QRIS, serta bank/e-wallet; gambar dan teks mentah tidak diunggah. Pengiriman email undangan otomatis, provider OCR eksternal, penyimpanan bukti, backup/pemulihan, dan konfigurasi deployment produksi belum tersedia.
 

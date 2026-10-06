@@ -97,7 +97,7 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F10 | Kontrol data | P0 | Isolasi ruang dan izin anggota, ekspor, hapus akun dengan konfirmasi |
 | F11 | Transaksi berulang | P1 diimplementasikan | Template bulanan, pengingat, catat atau lewati secara eksplisit |
 | F12 | Target tabungan | P1 | Target nominal/tanggal dan alokasi dana |
-| F13 | Impor CSV | P1 | Pemetaan kolom, pratinjau, deteksi potensi duplikat |
+| F13 | Impor CSV | P1 diimplementasikan | Pemetaan kolom, pratinjau, deteksi potensi duplikat, dan histori batch |
 | F14 | Utang dan piutang pribadi | P1 | Catatan kewajiban, pembayaran, jatuh tempo |
 | F15 | Rekonsiliasi saldo | P1 diimplementasikan | Membandingkan saldo catatan dengan saldo aktual, histori pemeriksaan, dan penyesuaian eksplisit |
 | F16 | Budget rollover | P1 | Aturan membawa sisa budget ke bulan berikutnya |
@@ -109,7 +109,7 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F22 | Saran pengisian transaksi | P1 diimplementasikan | Judul dan kategori dari riwayat ruang yang sama; pemfilteran lokal tanpa request per ketikan |
 | F23 | PWA installable | P1 diimplementasikan | Manifest, ikon, tampilan standalone, service worker aman, dan halaman offline; belum menyimpan atau menyinkronkan transaksi offline |
 
-F12–F14 dan F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deployment produksi dilaporkan berhasil. F22 diaktifkan pada 30 September 2026. F23 diaktifkan pada 5 Oktober 2026 setelah pengguna memilih menunda F12. F15 diaktifkan pada 6 Oktober 2026. F18 dan F21 telah lebih dahulu diimplementasikan atas instruksi pengguna.
+F12, F14, dan F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deployment produksi dilaporkan berhasil. F22 diaktifkan pada 30 September 2026. F23 diaktifkan pada 5 Oktober 2026 setelah pengguna memilih menunda F12. F15 dan F13 diaktifkan berurutan pada 6 Oktober 2026. F18 dan F21 telah lebih dahulu diimplementasikan atas instruksi pengguna.
 
 ## 6. Kebutuhan fungsional dan acceptance criteria
 
@@ -221,6 +221,21 @@ Dashboard menggunakan periode aktif sebagai default dan menyediakan pemilih peri
 - Dashboard menampilkan maksimal lima pengingat yang jatuh tempo atau akan jatuh tempo dalam tujuh hari; tidak ada email/push otomatis pada tahap ini.
 
 **Diterima jika:** membuat template tidak mengubah angka finansial; konfirmasi satu kejadian membuat tepat satu transaksi pada tanggal jatuh tempo; retry atau aksi konkuren tidak menduplikasi transaksi; melewati kejadian tidak membuat transaksi; isolasi workspace dan matriks Owner/Editor/Viewer tetap ditegakkan server.
+
+### F13 — Impor CSV
+
+**User story:** sebagai pengguna, saya dapat memindahkan riwayat transaksi dari CSV bank/e-wallet ke satu akun Alokasi tanpa memasukkan setiap baris secara manual.
+
+- File CSV dibaca di browser dan file asli tidak disimpan. Maksimal 500 KB, 300 baris data, dan 30 kolom per batch.
+- Pengguna memilih akun tujuan, kolom tanggal/deskripsi/catatan, cara nominal bertanda atau kolom pemasukan-pengeluaran terpisah, serta kategori default tiap jenis.
+- Format tanggal yang didukung adalah `YYYY-MM-DD` serta `DD/MM/YYYY` dengan pemisah garis miring, titik, atau tanda hubung. Nominal harus berupa integer rupiah; pemisah ribuan dan akhiran desimal nol didukung.
+- Pratinjau menampilkan baris valid, masalah per baris, serta kemungkinan duplikat berdasarkan akun, tanggal, jenis, nominal, dan judul ternormalisasi. Peringatan bukan bukti pasti.
+- Kandidat duplikat tidak dipilih otomatis, tetapi pengguna dapat memilihnya secara eksplisit. Transfer dan pembuatan kategori baru tidak disimpulkan dari CSV pada irisan ini.
+- Commit menyimpan satu batch dan seluruh transaksi terpilih secara atomik serta idempoten. Perubahan data setelah pratinjau diperiksa ulang; duplikat baru dilewati kecuali sudah dikonfirmasi.
+- Owner dan Editor dapat mengimpor; Viewer hanya melihat histori batch. Semua akun, kategori, transaksi, dan batch dibatasi workspace.
+- Histori batch menyimpan nama file, akun, pembuat, jumlah sumber, jumlah diimpor, dan jumlah dilewati. Isi file asli, idempotency key, serta request hash tidak masuk ekspor.
+
+**Diterima jika:** CSV dengan baris valid, invalid, dan kandidat duplikat menghasilkan pratinjau yang dapat diperiksa; hanya baris terpilih yang menjadi transaksi; retry batch tidak menggandakan transaksi; Viewer dan referensi lintas ruang ditolak; saldo, laporan, dan rekonsiliasi membaca transaksi hasil impor seperti transaksi biasa.
 
 ### F15 — Rekonsiliasi saldo
 
@@ -520,7 +535,7 @@ Jangan memasukkan semua kandidat ke rilis pertama. Prioritaskan bukti kebutuhan 
 | Model bersama | Dana bersama, tiga peran, semua data ruang terlihat bagi anggota | Split bill dan privasi per akun menambah aturan serta kompleksitas |
 | Platform | Web responsif | Native/offline menambah desain sinkronisasi dan distribusi |
 | Mata uang | IDR tunggal | Multi-currency memerlukan kurs dan aturan agregasi |
-| Input data | Manual serta OCR lokal browser; hasil scan tetap draf | Provider vision fallback, upload, biaya, dan retensi berkas belum dipilih |
+| Input data | Manual, impor CSV, serta OCR lokal browser; hasil scan tetap draf | Provider vision fallback, upload, biaya, dan retensi berkas belum dipilih |
 | Gaya budgeting | Kategori per periode; konfigurasi tanggal gajian tersedia | Envelope/zero-based tetap di luar baseline |
 | Tujuan proyek | Validasi produk dengan MVP | Portfolio, penggunaan pribadi, atau SaaS memengaruhi prioritas operasional |
 | Monetisasi | Belum ditetapkan | Subscription menambah billing, entitlement, dan dukungan |
@@ -530,6 +545,7 @@ Jangan memasukkan semua kandidat ke rilis pertama. Prioritaskan bukti kebutuhan 
 
 ## 17. Riwayat revisi
 
+- 1.6 — 6 Oktober 2026: F13 impor CSV diaktifkan dengan parsing lokal, pemetaan kolom, pratinjau server, deteksi kandidat duplikat, commit batch atomik, dan histori impor.
 - 1.5 — 6 Oktober 2026: F15 rekonsiliasi saldo manual diaktifkan dengan snapshot per akun, histori, status perlu diperiksa kembali, dan penyesuaian eksplisit yang tidak masuk arus kas/budget.
 - 1.4 — 5 Oktober 2026: F23 PWA installable diaktifkan dengan manifest, ikon, service worker network-first, dan halaman offline. Data finansial tidak dicache dan transaksi offline belum didukung.
 - 0.1 — 21 September 2026: PRD awal, ruang pribadi dan bersama.

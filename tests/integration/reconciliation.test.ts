@@ -169,7 +169,7 @@ describe("balance reconciliation service", () => {
         requestHash?: string;
       }>;
     };
-    expect(exported.schemaVersion).toBe(4);
+    expect(exported.schemaVersion).toBe(5);
     expect(exported.balanceReconciliations).toHaveLength(2);
     expect(exported.balanceReconciliations[1]).toEqual(
       expect.objectContaining({ adjustmentAmount: "-50000" }),

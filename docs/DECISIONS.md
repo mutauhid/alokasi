@@ -42,6 +42,7 @@ Diperbarui: 6 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent t
 | D35 | 1 Okt 2026 | Pengguna meminta nominal transaksi langsung tampil dalam format rupiah saat diisi | Form transaksi manual, koreksi OCR, dan template pengingat menampilkan awalan Rp serta pemisah ribuan lokal; server tetap menerima string digit integer tanpa request tambahan |
 | D36 | 5 Okt 2026 | Pengguna memilih menunda target tabungan dan meminta PWA installable saja | Aktifkan F23 sebagai PWA yang dapat dipasang dengan manifest, ikon, service worker, dan halaman offline; transaksi tetap memerlukan submit server dan tidak diantrikan atau dianggap tersimpan saat offline |
 | D37 | 6 Okt 2026 | Pengguna meminta implementasi F15 setelah meninjau gambaran alurnya, serta meminta branch baru dibuat lebih dahulu | Aktifkan rekonsiliasi saldo manual per akun pada branch `feat/balance-reconciliation`: bandingkan saldo catatan dengan saldo aktual, simpan histori, dan sediakan penyesuaian eksplisit sebagai jalan terakhir |
+| D38 | 6 Okt 2026 | Pengguna menyetujui rekomendasi fitur berikutnya dan meminta implementasi F13 | Aktifkan impor transaksi CSV pada branch baru `feat/csv-import`: pemetaan kolom, pratinjau, deteksi kandidat duplikat, pilihan eksplisit, commit batch atomik, dan histori impor |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -128,6 +129,8 @@ D35 menghasilkan T34: satu komponen input Rupiah memformat digit di browser untu
 D36 menghasilkan T35: PWA memakai manifest App Router, ikon standar/maskable, registrasi service worker, dan fallback `/offline`. Service worker memakai network-first hanya untuk navigasi dan hanya melakukan precache atas halaman offline, manifest, serta ikon publik. Respons terautentikasi, RSC, API, transaksi, dashboard, laporan, dan data finansial tidak dimasukkan ke cache. Fase ini tidak memakai IndexedDB, Background Sync, antrean mutasi, push notification, atau penyimpanan transaksi offline.
 
 D37 menghasilkan T36: F15 menyimpan snapshot rekonsiliasi immutable per akun, tanggal, dan pembuat. Saldo catatan dihitung dari saldo awal, transaksi aktif sampai tanggal tersebut, serta penyesuaian rekonsiliasi sebelumnya. Saldo yang cocok menyimpan bukti tanpa mutasi; selisih hanya mengubah saldo setelah Owner/Editor memilih penyesuaian eksplisit. Penyesuaian tidak menjadi pemasukan, pengeluaran, transfer, atau realisasi budget, tetapi tetap terlihat pada riwayat, audit, saldo akun, dan ekspor lengkap ruang. Viewer hanya membaca. Transaksi bertanggal mundur atau koreksi setelah snapshot menandai hasil lama perlu diperiksa kembali. Rekonsiliasi memakai idempotency key dan isolasi workspace; saldo awal tidak ditimpa.
+
+D38 menghasilkan T37: F13 membaca file CSV maksimal 500 KB/300 baris di browser dan tidak menyimpan file mentah. Pengguna memetakan tanggal, judul, catatan, nominal bertanda atau kolom masuk/keluar, akun, serta kategori default. Server memvalidasi ulang setiap baris dan menandai kandidat duplikat dari akun, tanggal, jenis, nominal, serta judul ternormalisasi. Kandidat tidak dipilih otomatis, tetapi dapat dikonfirmasi eksplisit. Commit serializable menyimpan batch audit dan transaksi terpilih dengan idempotensi per batch/nomor baris. Baseline tidak menebak transfer, membuat kategori, atau mengintegrasikan API bank.
 
 ## Default kerja, bukan keputusan eksplisit pengguna
 

@@ -200,7 +200,22 @@ Ini spesifikasi pengujian, bukan laporan tes yang sudah lulus. Pilih skenario re
 | RECON-05 | Viewer, akun arsip/lintas ruang, tanggal masa depan/sebelum akun | Mutasi ditolak server; tidak ada saldo atau histori yang berubah |
 | RECON-06 | Transaksi bertanggal mundur dibuat/diubah/dihapus setelah snapshot | Rekonsiliasi terkait berstatus “Perlu diperiksa kembali”; snapshot lama tidak ditulis ulang |
 | RECON-07 | Laporan, budget, dashboard periode, dan CSV dibaca setelah penyesuaian | Penyesuaian hanya memengaruhi saldo akun; pemasukan, pengeluaran, transfer, tren arus kas, dan budget tetap |
-| RECON-08 | Ekspor lengkap atau penghapusan ruang/akun | Ekspor versi 4 memuat rekonsiliasi tanpa idempotency/hash; cleanup menghapus seluruh rekonsiliasi ruang |
+| RECON-08 | Ekspor lengkap atau penghapusan ruang/akun | Ekspor versi 5 memuat rekonsiliasi tanpa idempotency/hash; cleanup menghapus seluruh rekonsiliasi ruang |
+
+## F13 — impor CSV
+
+| ID | Skenario | Hasil wajib |
+|---|---|---|
+| CSVIMP-01 | CSV koma/titik koma/tab dengan quote, karakter Indonesia, dan header dipilih | Parser lokal mempertahankan isi sel, tidak mengunggah file mentah, dan menampilkan pemetaan |
+| CSVIMP-02 | Nominal bertanda atau kolom pemasukan/pengeluaran terpisah | Baris dipetakan ke jenis dan integer rupiah yang benar; nol, pecahan nonnol, atau dua kolom terisi ditolak |
+| CSVIMP-03 | Tanggal/judul/nominal invalid, tanggal masa depan/sebelum akun, atau kategori tidak tersedia | Masalah ditampilkan per baris atau submit ditolak server; baris invalid tidak menjadi transaksi |
+| CSVIMP-04 | Transaksi dengan akun, tanggal, jenis, nominal, dan judul sama sudah ada atau berulang dalam file | Ditandai kandidat duplikat dan tidak dipilih otomatis |
+| CSVIMP-05 | Pengguna memilih kandidat duplikat secara eksplisit | Baris dapat diimpor; keputusan tidak menghapus atau menimpa transaksi lama |
+| CSVIMP-06 | Database berubah setelah pratinjau | Commit memeriksa ulang; duplikat baru dilewati kecuali sudah dikonfirmasi |
+| CSVIMP-07 | Retry batch sama atau submit paralel | Batch/transaksi tidak berganda; payload berbeda dengan kunci sama ditolak |
+| CSVIMP-08 | Owner/Editor, Viewer, serta referensi lintas ruang | Owner/Editor dapat mengimpor; Viewer/lintas ruang ditolak server; semua anggota dapat melihat histori sesuai akses ruang |
+| CSVIMP-09 | Commit berisi beberapa baris dan satu operasi gagal | Batch dan transaksi bersifat atomik; tidak ada batch sukses parsial |
+| CSVIMP-10 | Ekspor lengkap dan penghapusan ruang/akun | Ekspor versi 5 memuat ringkasan batch serta tautan transaksi tanpa request hash/key; cleanup menghapus transaksi sebelum batch |
 
 ## UX dan operasional
 
@@ -636,3 +651,16 @@ Smoke browser terautentikasi untuk keyboard numerik serta tampilan 360 px belum 
 | Verifikasi lokal | Prisma validate/generate, lint, TypeScript, build produksi, 15 file/98 unit test, dan 10 smoke Playwright Edge desktop/mobile lulus |
 
 Migrasi `20261006000000_balance_reconciliations` dan test PostgreSQL belum dijalankan lokal karena `.env.test.local` tidak tersedia. Smoke browser terautentikasi untuk panel rekonsiliasi desktop/mobile juga belum dijalankan; keduanya harus dibuktikan oleh CI/database test atau lingkungan uji sebelum merge/deploy.
+
+## Hasil tahap 26 — impor CSV, 6 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| CSVIMP-01/02/03 | Parser/mapper murni mendukung koma, titik koma, tab, quote, dua model nominal, tanggal lokal/ISO, serta laporan masalah per baris; unit test tersedia |
+| CSVIMP-04/05/06 | Service pratinjau membandingkan transaksi aktif dan baris sebelumnya; kandidat tidak terpilih otomatis, override eksplisit tersedia, dan commit memeriksa ulang |
+| CSVIMP-07/09 | Batch memakai unique key workspace/pembuat/idempotensi, request hash, nomor baris unik, transaksi serializable, dan retry konflik; test integrasi disiapkan |
+| CSVIMP-08 | Server Action dan service memeriksa Owner/Editor, workspace, akun, kategori, dan tanggal; Viewer hanya mendapat histori; test integrasi penolakan Viewer disiapkan |
+| CSVIMP-10 | Ekspor lengkap naik ke schema 5, ringkasan penghapusan mencakup batch, dan cleanup menghapus transaksi sebelum batch |
+| Verifikasi lokal | Prisma validate/generate, lint, TypeScript, build produksi, 16 file/103 unit test, 10 smoke Playwright Edge desktop/mobile, targeted Prettier, dan `git diff --check` lulus |
+
+Migrasi `20261006010000_transaction_csv_imports` dan suite PostgreSQL memerlukan `.env.test.local` atau job Database CI. Smoke browser publik tidak menggantikan alur terautentikasi upload–preview–commit; pengujian manual/E2E dengan session tetap diperlukan sebelum deployment.

@@ -22,7 +22,7 @@ export type TransactionInput = {
   note: string | null;
 };
 
-function requestHash(input: TransactionInput) {
+export function transactionRequestHash(input: TransactionInput) {
   return createHash("sha256")
     .update(
       JSON.stringify({
@@ -115,7 +115,7 @@ export async function createTransactionInTransaction(
       categoryId: input.categoryId,
       note: input.note,
       idempotencyKey: input.idempotencyKey,
-      requestHash: requestHash(input),
+      requestHash: transactionRequestHash(input),
       recurringTemplateId: input.recurringTemplateId,
       recurringDueDate: input.recurringDueDate,
     },
@@ -166,7 +166,7 @@ export async function createTransaction(
     throw new FinanceDomainError("TRANSACTION_ACCESS_DENIED");
   }
   const db = getDatabase();
-  const hash = requestHash(input);
+  const hash = transactionRequestHash(input);
   try {
     return await db.$transaction((tx) =>
       createTransactionInTransaction(tx, context, input),
@@ -231,7 +231,7 @@ export async function updateTransaction(
         destinationAccountId: input.destinationAccountId,
         categoryId: input.categoryId,
         note: input.note,
-        requestHash: requestHash(input),
+        requestHash: transactionRequestHash(input),
         updatedBy: context.actorId,
         version: { increment: 1 },
       },

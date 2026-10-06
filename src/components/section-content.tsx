@@ -5,6 +5,7 @@ import { TransactionsSection } from "@/components/transactions-section";
 import { BudgetsSection } from "@/components/budgets-section";
 import { ReportsSection } from "@/components/reports-section";
 import { MembersSection } from "@/components/members-section";
+import { TransactionImportSection } from "@/components/transaction-import-section";
 import type { ReportQuery } from "@/modules/reports/service";
 import type { Section } from "@/lib/navigation";
 import type { WorkspaceAccess } from "@/modules/workspaces/service";
@@ -30,7 +31,7 @@ export function SectionContent({
   selectedPeriodId: string;
   reconcileAccountId?: string;
   reconcileDate?: string;
-  transactionView?: "history" | "reminders";
+  transactionView?: "history" | "reminders" | "import";
 }) {
   switch (section) {
     case "dashboard":
@@ -42,6 +43,15 @@ export function SectionContent({
         />
       );
     case "transactions":
+      if (transactionView === "import") {
+        return (
+          <TransactionImportSection
+            access={access}
+            error={error}
+            success={success}
+          />
+        );
+      }
       return (
         <TransactionsSection
           access={access}

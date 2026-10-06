@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
@@ -68,6 +69,17 @@ import {
   updateRecurringTemplate,
 } from "@/modules/recurring/service";
 import { createBalanceReconciliation } from "@/modules/reconciliations/service";
+import {
+  csvCommitPayloadSchema,
+  csvPreviewPayloadSchema,
+  hasDistinctCsvMapping,
+  mapCsvImportRows,
+} from "@/modules/imports/domain";
+import type { CsvImportPreviewState } from "@/modules/imports/form-state";
+import {
+  commitTransactionImport,
+  previewTransactionImport,
+} from "@/modules/imports/service";
 
 function text(form: FormData, name: string) {
   const value = form.get(name);
@@ -131,6 +143,7 @@ function finish(
     | "/settings"
     | "/transactions"
     | "/transactions/reminders"
+    | "/transactions/import"
     | "/budgets",
   message: string,
   workspaceId: string,
@@ -145,6 +158,7 @@ function fail(
     | "/settings"
     | "/transactions"
     | "/transactions/reminders"
+    | "/transactions/import"
     | "/budgets",
   form: FormData,
   message: string,
@@ -447,6 +461,137 @@ export async function deleteTransactionAction(form: FormData) {
     fail("/transactions", form, transactionError(error));
   }
   finish("/transactions", "transaction-deleted", context.workspaceId);
+}
+
+const importErrors: Record<string, string> = {
+  IMPORT_ACCESS_DENIED: "Kamu tidak memiliki izin untuk mengimpor transaksi.",
+  IMPORT_ACCOUNT_INVALID: "Akun tujuan tidak tersedia atau sudah diarsipkan.",
+  IMPORT_CATEGORY_INVALID:
+    "Kategori tujuan tidak tersedia, sudah diarsipkan, atau jenisnya tidak sesuai.",
+  IMPORT_SELECTION_INVALID: "Pilihan baris impor tidak valid.",
+  IMPORT_DATE_INVALID:
+    "Salah satu tanggal transaksi tidak valid untuk akun ini.",
+  IMPORT_IDEMPOTENCY_CONFLICT:
+    "Batch impor yang sama sudah digunakan dengan isi berbeda. Muat ulang halaman.",
+  IMPORT_CONFLICT: "Impor berbenturan dengan perubahan lain. Coba kembali.",
+};
+
+function importError(error: unknown) {
+  return error instanceof FinanceDomainError
+    ? (importErrors[error.code] ?? "Impor belum dapat diproses.")
+    : "Impor belum dapat diproses.";
+}
+
+function safeImportFileName(value: string) {
+  return value
+    .normalize("NFC")
+    .replace(/[\\/\0]/gu, "_")
+    .trim()
+    .slice(0, 255);
+}
+
+export async function previewCsvImportAction(
+  _previous: CsvImportPreviewState,
+  form: FormData,
+): Promise<CsvImportPreviewState> {
+  const context = await mutationContext(form, ["owner", "editor"]);
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text(form, "payload"));
+  } catch {
+    return { phase: "error", error: "Data pratinjau CSV tidak valid." };
+  }
+  const parsed = csvPreviewPayloadSchema.safeParse(raw);
+  if (!parsed.success || !hasDistinctCsvMapping(parsed.data)) {
+    return {
+      phase: "error",
+      error: "Periksa file, pemetaan kolom, akun, dan kategori.",
+    };
+  }
+  const fileName = safeImportFileName(parsed.data.fileName);
+  if (!fileName) return { phase: "error", error: "Nama file tidak valid." };
+  const mapped = mapCsvImportRows(parsed.data);
+  try {
+    const preview = await previewTransactionImport(context, {
+      accountId: parsed.data.accountId,
+      rows: mapped.candidates,
+    });
+    return {
+      phase: "ready",
+      batchKey: randomUUID(),
+      fileName,
+      accountId: parsed.data.accountId,
+      sourceRowCount: parsed.data.rows.length,
+      rows: preview.rows.map((row) => ({
+        rowNumber: row.rowNumber,
+        type: row.type,
+        title: row.title,
+        amount: row.amount.toString(),
+        transactionDate: row.transactionDate.toISOString().slice(0, 10),
+        categoryId: row.categoryId,
+        note: row.note,
+        possibleDuplicate: row.possibleDuplicate,
+      })),
+      issues: [...mapped.issues, ...preview.issues].sort(
+        (left, right) => left.rowNumber - right.rowNumber,
+      ),
+    };
+  } catch (error) {
+    return { phase: "error", error: importError(error) };
+  }
+}
+
+export async function commitCsvImportAction(form: FormData) {
+  const context = await mutationContext(form, ["owner", "editor"]);
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text(form, "payload"));
+  } catch {
+    fail("/transactions/import", form, "import-invalid");
+  }
+  const selectedRowNumbers = form
+    .getAll("selectedRows")
+    .filter((value): value is string => typeof value === "string")
+    .map(Number);
+  const candidate = raw && typeof raw === "object" ? raw : {};
+  const rows =
+    "rows" in candidate && Array.isArray(candidate.rows) ? candidate.rows : [];
+  const parsed = csvCommitPayloadSchema.safeParse({
+    ...candidate,
+    fileName: safeImportFileName(
+      "fileName" in candidate && typeof candidate.fileName === "string"
+        ? candidate.fileName
+        : "",
+    ),
+    selectedRowNumbers,
+    duplicateOverrideRowNumbers: rows
+      .filter(
+        (row) =>
+          row &&
+          typeof row === "object" &&
+          row.possibleDuplicate === true &&
+          selectedRowNumbers.includes(Number(row.rowNumber)),
+      )
+      .map((row) => Number(row.rowNumber)),
+  });
+  if (!parsed.success) fail("/transactions/import", form, "import-invalid");
+  try {
+    await commitTransactionImport(context, parsed.data);
+  } catch (error) {
+    const code =
+      error instanceof FinanceDomainError
+        ? {
+            IMPORT_ACCOUNT_INVALID: "import-account",
+            IMPORT_CATEGORY_INVALID: "import-category",
+            IMPORT_SELECTION_INVALID: "import-selection",
+            IMPORT_DATE_INVALID: "import-date",
+            IMPORT_IDEMPOTENCY_CONFLICT: "import-idempotency",
+            IMPORT_CONFLICT: "import-conflict",
+          }[error.code]
+        : undefined;
+    fail("/transactions/import", form, code ?? "import-failed");
+  }
+  finish("/transactions/import", "import-created", context.workspaceId);
 }
 
 function recurringFields(form: FormData) {

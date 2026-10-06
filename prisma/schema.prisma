@@ -100,6 +100,7 @@ model Workspace {
   receiptDrafts                   ReceiptDraft[]
   recurringTransactionTemplates   RecurringTransactionTemplate[]
   balanceReconciliations          BalanceReconciliation[]
+  transactionImportBatches        TransactionImportBatch[]
 
   @@map("workspaces")
   @@schema("app")
@@ -137,6 +138,7 @@ model Membership {
   receiptDrafts       ReceiptDraft[]                 @relation("ReceiptDraftCreator")
   recurringTemplates  RecurringTransactionTemplate[] @relation("RecurringTemplateCreator")
   reconciliations     BalanceReconciliation[]        @relation("ReconciliationCreator")
+  transactionImports  TransactionImportBatch[]       @relation("TransactionImportCreator")
 
   @@unique([workspaceId, userId])
   @@unique([workspaceId, id])
@@ -181,6 +183,7 @@ model FinancialAccount {
   receiptDrafts      ReceiptDraft[]                 @relation("ReceiptDraftAccount")
   recurringTemplates RecurringTransactionTemplate[]
   reconciliations    BalanceReconciliation[]
+  transactionImports TransactionImportBatch[]
 
   @@unique([workspaceId, id])
   @@index([workspaceId, archivedAt])
@@ -262,6 +265,8 @@ model Transaction {
   deletedAt            DateTime?                     @map("deleted_at") @db.Timestamptz(3)
   recurringTemplateId  String?                       @map("recurring_template_id") @db.Uuid
   recurringDueDate     DateTime?                     @map("recurring_due_date") @db.Date
+  importBatchId        String?                       @map("import_batch_id") @db.Uuid
+  importRowNumber      Int?                          @map("import_row_number")
   creator              Membership                    @relation("TransactionCreator", fields: [workspaceId, createdBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
   updater              Membership                    @relation("TransactionUpdater", fields: [workspaceId, updatedBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
   account              FinancialAccount              @relation("SourceAccount", fields: [workspaceId, accountId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
@@ -269,15 +274,43 @@ model Transaction {
   category             Category?                     @relation(fields: [workspaceId, categoryId, type], references: [workspaceId, id, type], onDelete: Restrict, onUpdate: Restrict)
   sourceReceiptDraft   ReceiptDraft?                 @relation("ReceiptDraftTransaction")
   recurringTemplate    RecurringTransactionTemplate? @relation(fields: [workspaceId, recurringTemplateId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  importBatch          TransactionImportBatch?       @relation(fields: [workspaceId, importBatchId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
 
   @@unique([workspaceId, id])
   @@unique([workspaceId, createdBy, idempotencyKey])
   @@unique([workspaceId, recurringTemplateId, recurringDueDate])
+  @@unique([workspaceId, importBatchId, importRowNumber])
   @@index([workspaceId, transactionDate, id])
   @@index([workspaceId, categoryId, transactionDate])
   @@index([workspaceId, accountId, transactionDate])
   @@index([workspaceId, destinationAccountId, transactionDate])
   @@map("transactions")
+  @@schema("app")
+}
+
+// CSV files are parsed in the browser and are never stored. This batch keeps
+// only the audit summary and links the transactions committed atomically.
+model TransactionImportBatch {
+  id               String           @id @default(uuid()) @db.Uuid
+  workspaceId      String           @map("workspace_id") @db.Uuid
+  accountId        String           @map("account_id") @db.Uuid
+  createdBy        String           @map("created_by") @db.Uuid
+  sourceFileName   String           @map("source_file_name") @db.VarChar(255)
+  sourceRowCount   Int              @map("source_row_count")
+  importedRowCount Int              @map("imported_row_count")
+  skippedRowCount  Int              @map("skipped_row_count")
+  idempotencyKey   String           @map("idempotency_key") @db.VarChar(128)
+  requestHash      String           @map("request_hash") @db.VarChar(64)
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  account          FinancialAccount @relation(fields: [workspaceId, accountId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  creator          Membership       @relation("TransactionImportCreator", fields: [workspaceId, createdBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  transactions     Transaction[]
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, createdBy, idempotencyKey])
+  @@index([workspaceId, createdAt, id])
+  @@map("transaction_import_batches")
   @@schema("app")
 }
 

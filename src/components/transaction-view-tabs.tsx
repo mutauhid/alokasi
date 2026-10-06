@@ -1,9 +1,16 @@
 import Link from "next/link";
-import { CalendarClock, List } from "lucide-react";
+import { CalendarClock, FileUp, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-function href(view: "history" | "reminders", workspaceId: string) {
-  const path = view === "history" ? "/transactions" : "/transactions/reminders";
+type TransactionView = "history" | "reminders" | "import";
+
+function href(view: TransactionView, workspaceId: string) {
+  const path =
+    view === "history"
+      ? "/transactions"
+      : view === "reminders"
+        ? "/transactions/reminders"
+        : "/transactions/import";
   return `${path}?workspaceId=${encodeURIComponent(workspaceId)}`;
 }
 
@@ -12,11 +19,12 @@ export function TransactionViewTabs({
   current,
 }: {
   workspaceId: string;
-  current: "history" | "reminders";
+  current: TransactionView;
 }) {
   const items = [
     { view: "history" as const, label: "Riwayat", icon: List },
     { view: "reminders" as const, label: "Pengingat", icon: CalendarClock },
+    { view: "import" as const, label: "Impor CSV", icon: FileUp },
   ];
 
   return (
