@@ -19,6 +19,7 @@ export async function getAccountDeletionSummary(actorId: string) {
               categories: true,
               receiptDrafts: true,
               recurringTransactionTemplates: true,
+              balanceReconciliations: true,
             },
           },
         },
@@ -64,6 +65,7 @@ export async function getAccountDeletionSummary(actorId: string) {
       receiptDrafts: user.personalWorkspace._count.receiptDrafts,
       recurringTemplates:
         user.personalWorkspace._count.recurringTransactionTemplates,
+      reconciliations: user.personalWorkspace._count.balanceReconciliations,
       transactions: transactionCount,
       budgets: budgetCount,
     },

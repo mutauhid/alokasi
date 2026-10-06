@@ -99,7 +99,7 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F12 | Target tabungan | P1 | Target nominal/tanggal dan alokasi dana |
 | F13 | Impor CSV | P1 | Pemetaan kolom, pratinjau, deteksi potensi duplikat |
 | F14 | Utang dan piutang pribadi | P1 | Catatan kewajiban, pembayaran, jatuh tempo |
-| F15 | Rekonsiliasi saldo | P1 | Membandingkan saldo catatan dengan saldo aktual |
+| F15 | Rekonsiliasi saldo | P1 diimplementasikan | Membandingkan saldo catatan dengan saldo aktual, histori pemeriksaan, dan penyesuaian eksplisit |
 | F16 | Budget rollover | P1 | Aturan membawa sisa budget ke bulan berikutnya |
 | F17 | Ruang pribadi dan bersama | P0 | Pemilih ruang, undangan, peran, aktivitas anggota, isolasi data |
 | F18 | Scan struk/bukti pembayaran | P1 OCR lokal | OCR browser → deteksi transfer/QRIS dan institusi → koreksi → submit eksplisit; upload/provider eksternal belum aktif |
@@ -109,7 +109,7 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F22 | Saran pengisian transaksi | P1 diimplementasikan | Judul dan kategori dari riwayat ruang yang sama; pemfilteran lokal tanpa request per ketikan |
 | F23 | PWA installable | P1 diimplementasikan | Manifest, ikon, tampilan standalone, service worker aman, dan halaman offline; belum menyimpan atau menyinkronkan transaksi offline |
 
-F12–F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deployment produksi dilaporkan berhasil. F22 diaktifkan pada 30 September 2026. F23 diaktifkan pada 5 Oktober 2026 setelah pengguna memilih menunda F12. F18 dan F21 telah lebih dahulu diimplementasikan atas instruksi pengguna.
+F12–F14 dan F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deployment produksi dilaporkan berhasil. F22 diaktifkan pada 30 September 2026. F23 diaktifkan pada 5 Oktober 2026 setelah pengguna memilih menunda F12. F15 diaktifkan pada 6 Oktober 2026. F18 dan F21 telah lebih dahulu diimplementasikan atas instruksi pengguna.
 
 ## 6. Kebutuhan fungsional dan acceptance criteria
 
@@ -198,7 +198,7 @@ Dashboard menggunakan periode aktif sebagai default dan menyediakan pemilih peri
 
 - Laporan menampilkan pemasukan, pengeluaran, arus kas bersih, rincian kategori, dan budget versus aktual.
 - Ekspor transaksi CSV mengikuti filter dan ruang aktif; memuat tanggal, jenis, akun, akun tujuan untuk transfer, kategori, nominal, catatan, serta pencatat transaksi bersama. Ekspor diizinkan untuk Owner dan Editor.
-- Ekspor lengkap ruang tersedia bagi Owner di pengaturan dan mencakup akun, kategori, transaksi, serta budget dalam berkas terstruktur.
+- Ekspor lengkap ruang tersedia bagi Owner di pengaturan dan mencakup akun, kategori, transaksi, rekonsiliasi saldo, serta budget dalam berkas terstruktur.
 - Status budget: normal di bawah 80%, hampir habis mulai 80% hingga di bawah 100%, habis pada 100%, terlampaui di atas 100%.
 - MVP menggunakan indikator di dalam aplikasi. Push notification dan email pengingat berada di fase berikutnya.
 - Penghapusan akun pengguna membutuhkan autentikasi ulang dan konfirmasi eksplisit. Owner ruang bersama wajib mengalihkan kepemilikan kepada anggota aktif yang menyetujui atau menghapus ruang melalui alur terpisah. Transaksi bersama tetap menjadi milik ruang, sedangkan identitas mantan anggota dianonimkan. Setelah penghapusan akun berhasil, seluruh sesi dicabut dan ruang pribadi dihapus sesuai kebijakan.
@@ -222,6 +222,21 @@ Dashboard menggunakan periode aktif sebagai default dan menyediakan pemilih peri
 
 **Diterima jika:** membuat template tidak mengubah angka finansial; konfirmasi satu kejadian membuat tepat satu transaksi pada tanggal jatuh tempo; retry atau aksi konkuren tidak menduplikasi transaksi; melewati kejadian tidak membuat transaksi; isolasi workspace dan matriks Owner/Editor/Viewer tetap ditegakkan server.
 
+### F15 — Rekonsiliasi saldo
+
+**User story:** sebagai pengguna, saya dapat mencocokkan saldo akun di Alokasi dengan saldo aktual dan menelusuri bagaimana selisih diselesaikan.
+
+- Pengguna memilih akun aktif dan tanggal pengecekan, lalu melihat saldo catatan yang dihitung sampai tanggal tersebut.
+- Owner dan Editor dapat memasukkan saldo aktual; Viewer dapat melihat status dan histori tetapi tidak dapat membuat rekonsiliasi.
+- Jika saldo sama, simpan snapshot “Cocok” tanpa mengubah saldo. Jika berbeda, arahkan pengguna memeriksa transaksi terlebih dahulu.
+- Penyesuaian saldo hanya dibuat setelah konfirmasi eksplisit. Nilainya sama dengan selisih saldo aktual dikurangi saldo catatan dan tidak mengubah saldo awal.
+- Penyesuaian memengaruhi saldo akun, tetapi bukan pemasukan, pengeluaran, transfer, arus kas, atau realisasi budget.
+- Rekonsiliasi immutable, terikat workspace/akun/pembuat, memiliki catatan opsional, audit metadata, idempotensi, dan ikut ekspor/penghapusan data ruang.
+- Transaksi bertanggal mundur, perubahan, atau penghapusan yang memengaruhi tanggal snapshot menandai rekonsiliasi lama “Perlu diperiksa kembali”.
+- Tanggal masa depan, tanggal sebelum akun dimulai, akun arsip/lintas ruang, Viewer, dan selisih di luar rentang BIGINT ditolak server.
+
+**Diterima jika:** saldo catatan Rp1.400.000 dan saldo aktual Rp1.350.000 menghasilkan selisih −Rp50.000; konfirmasi penyesuaian membuat saldo akun Rp1.350.000 tanpa mengubah pemasukan, pengeluaran, atau budget; retry tidak menggandakan penyesuaian; akses lintas ruang dan Viewer ditolak.
+
 ### F17 — Ruang pribadi dan keuangan bersama
 
 **User story:** sebagai pengguna, saya dapat mengelola uang pribadi dan dana bersama dari satu akun, dengan pemisahan data yang jelas.
@@ -240,6 +255,7 @@ Dashboard menggunakan periode aktif sebagai default dan menyediakan pemilih peri
 | Menambah transaksi | Ya | Ya | Tidak |
 | Mengubah/menghapus transaksi | Semua | Hanya transaksi yang dibuat sendiri | Tidak |
 | Mengelola akun, saldo awal, kategori, dan budget | Ya | Tidak | Tidak |
+| Membuat rekonsiliasi/penyesuaian saldo | Ya | Ya | Tidak |
 | Ekspor transaksi | Ya | Ya | Tidak |
 | Ekspor lengkap atau menghapus ruang | Ya | Tidak | Tidak |
 | Mengundang, menghapus anggota, mengubah peran | Ya | Tidak | Tidak |
@@ -378,6 +394,7 @@ Navigasi utama: **Dashboard · Transaksi · Budget · Akun · Laporan · Anggota
 | Membership | id, workspace_id, user_id, role, status, joined_at |
 | Invitation | id, workspace_id, invited_email, role, token_hash, expires_at, accepted_at?, revoked_at? |
 | FinancialAccount | id, workspace_id, name, type, opening_balance, opening_date, archived_at |
+| BalanceReconciliation | id, workspace_id, account_id, created_by, reconciliation_date, recorded_balance, actual_balance, difference, adjustment_amount, resolution, note, created_at |
 | Category | id, workspace_id, name, type, archived_at |
 | Transaction | id, workspace_id, created_by, updated_by, version, type, amount, transaction_date, account_id, destination_account_id?, category_id?, note?, idempotency_key, created_at, updated_at, deleted_at? |
 | BudgetPeriod | id, workspace_id, start_date, end_date_exclusive, cycle_setting_version, is_transition |
@@ -513,6 +530,7 @@ Jangan memasukkan semua kandidat ke rilis pertama. Prioritaskan bukti kebutuhan 
 
 ## 17. Riwayat revisi
 
+- 1.5 — 6 Oktober 2026: F15 rekonsiliasi saldo manual diaktifkan dengan snapshot per akun, histori, status perlu diperiksa kembali, dan penyesuaian eksplisit yang tidak masuk arus kas/budget.
 - 1.4 — 5 Oktober 2026: F23 PWA installable diaktifkan dengan manifest, ikon, service worker network-first, dan halaman offline. Data finansial tidak dicache dan transaksi offline belum didukung.
 - 0.1 — 21 September 2026: PRD awal, ruang pribadi dan bersama.
 - 0.2 — 22 September 2026: arah mockup Alokasi diterima; F05 diperjelas; F18 dipromosikan dari eksplorasi menjadi fitur lanjutan direncanakan; F21 ditambahkan; aturan agent, domain, desain, pengujian, dan keputusan didokumentasikan. Belum ada aplikasi produksi atau fitur baru yang diimplementasikan.

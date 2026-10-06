@@ -16,25 +16,76 @@ export function listActiveAccountOptions(workspaceId: string) {
 
 export async function listAccounts(workspaceId: string) {
   const db = getDatabase();
-  const [accounts, transactions] = await Promise.all([
+  const [accounts, transactions, reconciliations] = await Promise.all([
     db.financialAccount.findMany({
       where: { workspaceId },
       orderBy: [{ archivedAt: "asc" }, { createdAt: "asc" }],
     }),
     db.transaction.findMany({
-      where: { workspaceId, deletedAt: null },
+      where: { workspaceId },
       select: {
         type: true,
         amount: true,
         accountId: true,
         destinationAccountId: true,
+        transactionDate: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+      },
+    }),
+    db.balanceReconciliation.findMany({
+      where: { workspaceId },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      select: {
+        id: true,
+        accountId: true,
+        reconciliationDate: true,
+        resolution: true,
+        adjustmentAmount: true,
+        createdAt: true,
       },
     }),
   ]);
-  const balances = calculateAccountBalances(accounts, transactions);
+  const balances = calculateAccountBalances(
+    accounts,
+    transactions.filter((transaction) => !transaction.deletedAt),
+    reconciliations.map((item) => ({
+      accountId: item.accountId,
+      amount: item.adjustmentAmount,
+    })),
+  );
+  const latestByAccount = new Map<
+    string,
+    (typeof reconciliations)[number] & { needsReview: boolean }
+  >();
+  for (const reconciliation of reconciliations) {
+    if (latestByAccount.has(reconciliation.accountId)) continue;
+    latestByAccount.set(reconciliation.accountId, {
+      ...reconciliation,
+      needsReview:
+        transactions.some(
+          (transaction) =>
+            (transaction.accountId === reconciliation.accountId ||
+              transaction.destinationAccountId === reconciliation.accountId) &&
+            transaction.transactionDate <= reconciliation.reconciliationDate &&
+            (transaction.createdAt > reconciliation.createdAt ||
+              transaction.updatedAt > reconciliation.createdAt),
+        ) ||
+        reconciliations.some(
+          (other) =>
+            other.id !== reconciliation.id &&
+            other.accountId === reconciliation.accountId &&
+            other.createdAt > reconciliation.createdAt &&
+            other.reconciliationDate <= reconciliation.reconciliationDate &&
+            other.adjustmentAmount !== 0n,
+        ),
+    });
+  }
   return accounts.map((account) => ({
     ...account,
     balance: balances.get(account.id) ?? account.openingBalance,
+    lastReconciliation: latestByAccount.get(account.id) ?? null,
   }));
 }
 
@@ -118,18 +169,33 @@ export async function archiveAccount(
     if (activeTemplate) {
       throw new FinanceDomainError("ACCOUNT_RECURRING_ACTIVE");
     }
-    const transactions = await tx.transaction.findMany({
-      where: { workspaceId: context.workspaceId, deletedAt: null },
-      select: {
-        type: true,
-        amount: true,
-        accountId: true,
-        destinationAccountId: true,
-      },
-    });
-    const balance = calculateAccountBalances([account], transactions).get(
-      account.id,
-    );
+    const [transactions, adjustments] = await Promise.all([
+      tx.transaction.findMany({
+        where: { workspaceId: context.workspaceId, deletedAt: null },
+        select: {
+          type: true,
+          amount: true,
+          accountId: true,
+          destinationAccountId: true,
+        },
+      }),
+      tx.balanceReconciliation.findMany({
+        where: {
+          workspaceId: context.workspaceId,
+          accountId: account.id,
+          adjustmentAmount: { not: 0n },
+        },
+        select: { accountId: true, adjustmentAmount: true },
+      }),
+    ]);
+    const balance = calculateAccountBalances(
+      [account],
+      transactions,
+      adjustments.map((item) => ({
+        accountId: item.accountId,
+        amount: item.adjustmentAmount,
+      })),
+    ).get(account.id);
     if (balance !== 0n) throw new FinanceDomainError("ACCOUNT_NOT_ZERO");
     const updated = await tx.financialAccount.updateMany({
       where: {

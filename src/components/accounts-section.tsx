@@ -1,13 +1,26 @@
-import { Banknote, CreditCard, Landmark, Plus, Wallet } from "lucide-react";
+import { randomUUID } from "node:crypto";
+import Link from "next/link";
+import {
+  Banknote,
+  CalendarCheck2,
+  CreditCard,
+  Landmark,
+  Plus,
+  Scale,
+  Wallet,
+  X,
+} from "lucide-react";
 import {
   archiveAccountAction,
   createAccountAction,
   renameAccountAction,
 } from "@/app/(workspace)/actions";
 import { listAccounts } from "@/modules/accounts/service";
+import { getAccountReconciliationOverview } from "@/modules/reconciliations/service";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ReconciliationForm } from "@/components/reconciliation-form";
 
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
@@ -28,6 +41,23 @@ const messages: Record<string, string> = {
   "account-created": "Akun berhasil dibuat.",
   "account-renamed": "Nama akun berhasil diperbarui.",
   "account-archived": "Akun berhasil diarsipkan.",
+  "reconciliation-invalid":
+    "Periksa akun, tanggal, saldo aktual, dan catatan rekonsiliasi.",
+  "reconciliation-access": "Kamu tidak memiliki izin untuk mencocokkan saldo.",
+  "reconciliation-account": "Akun tidak tersedia atau sudah diarsipkan.",
+  "reconciliation-future": "Tanggal rekonsiliasi tidak boleh di masa depan.",
+  "reconciliation-before-account":
+    "Tanggal rekonsiliasi mendahului tanggal mulai akun.",
+  "reconciliation-difference":
+    "Saldo masih berbeda. Perbaiki transaksi atau pilih penyesuaian saldo.",
+  "reconciliation-already-matches":
+    "Saldo sudah cocok dan tidak memerlukan penyesuaian.",
+  "reconciliation-range": "Selisih saldo melebihi batas penyimpanan.",
+  "reconciliation-idempotency":
+    "Permintaan rekonsiliasi duplikat memiliki isi berbeda.",
+  "reconciliation-failed": "Rekonsiliasi belum dapat disimpan.",
+  "reconciliation-created":
+    "Rekonsiliasi tersimpan dan saldo telah diperbarui bila disesuaikan.",
 };
 
 function rupiah(value: bigint) {
@@ -38,32 +68,51 @@ function rupiah(value: bigint) {
   }).format(value);
 }
 
-function localToday(timeZone: string) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-}
-
 export async function AccountsSection({
   workspaceId,
   canManage,
-  timezone,
+  role,
+  today,
+  reconcileAccountId,
+  reconcileDate,
   error,
   success,
 }: {
   workspaceId: string;
   canManage: boolean;
-  timezone: string;
+  role: "owner" | "editor" | "viewer";
+  today: Date;
+  reconcileAccountId?: string;
+  reconcileDate?: string;
   error?: string;
   success?: string;
 }) {
   const accounts = await listAccounts(workspaceId);
+  const todayValue = today.toISOString().slice(0, 10);
+  const selectedDateValue =
+    reconcileDate &&
+    /^\d{4}-\d{2}-\d{2}$/u.test(reconcileDate) &&
+    reconcileDate <= todayValue
+      ? reconcileDate
+      : todayValue;
+  const selectedDate = new Date(`${selectedDateValue}T00:00:00.000Z`);
+  const reconciliation = reconcileAccountId
+    ? await getAccountReconciliationOverview(
+        workspaceId,
+        reconcileAccountId,
+        selectedDate,
+      )
+    : null;
   const active = accounts.filter((account) => !account.archivedAt);
   const archived = accounts.filter((account) => account.archivedAt);
   const status = error ?? success;
+  const canReconcile = role === "owner" || role === "editor";
+  const displayDate = new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 
   return (
     <div className="space-y-5">
@@ -78,6 +127,167 @@ export async function AccountsSection({
         >
           {messages[status]}
         </p>
+      )}
+
+      {reconciliation && (
+        <Card className="border-primary/30 shadow-none">
+          <CardHeader>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <Scale
+                  className="mb-2 size-5 text-primary"
+                  aria-hidden="true"
+                />
+                <CardTitle>
+                  Rekonsiliasi · {reconciliation.account.name}
+                </CardTitle>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Bandingkan saldo catatan Alokasi dengan saldo aktual. Tidak
+                  ada perubahan saldo sebelum kamu mengonfirmasi.
+                </p>
+              </div>
+              <Button asChild variant="ghost" size="icon">
+                <Link
+                  href={`/accounts?workspaceId=${encodeURIComponent(workspaceId)}`}
+                  aria-label="Tutup rekonsiliasi"
+                >
+                  <X />
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <form
+              action="/accounts"
+              method="get"
+              className="grid gap-3 rounded-xl border p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
+            >
+              <input type="hidden" name="workspaceId" value={workspaceId} />
+              <input
+                type="hidden"
+                name="reconcileAccountId"
+                value={reconciliation.account.id}
+              />
+              <label className="text-sm font-medium">
+                Tanggal pengecekan
+                <input
+                  type="date"
+                  name="reconcileDate"
+                  min={reconciliation.account.openingDate
+                    .toISOString()
+                    .slice(0, 10)}
+                  max={todayValue}
+                  defaultValue={selectedDateValue}
+                  className={inputClass}
+                />
+              </label>
+              <Button type="submit" variant="outline" className="min-h-11">
+                Hitung saldo
+              </Button>
+            </form>
+
+            {reconciliation.recordedBalance === null ? (
+              <p className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
+                Pilih tanggal yang sama dengan atau setelah tanggal mulai akun.
+              </p>
+            ) : (
+              <>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border p-4">
+                    <p className="text-xs text-muted-foreground">
+                      Saldo menurut Alokasi
+                    </p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {rupiah(reconciliation.recordedBalance)}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border p-4">
+                    <p className="text-xs text-muted-foreground">Per tanggal</p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {displayDate.format(selectedDate)}
+                    </p>
+                  </div>
+                </div>
+                {canReconcile && !reconciliation.account.archivedAt ? (
+                  <ReconciliationForm
+                    workspaceId={workspaceId}
+                    accountId={reconciliation.account.id}
+                    reconciliationDate={selectedDateValue}
+                    recordedBalance={reconciliation.recordedBalance.toString()}
+                    idempotencyKey={randomUUID()}
+                  />
+                ) : (
+                  <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                    Rekonsiliasi baru hanya tersedia bagi Owner atau Editor pada
+                    akun aktif.
+                  </p>
+                )}
+              </>
+            )}
+
+            <section>
+              <h3 className="text-sm font-semibold">Riwayat rekonsiliasi</h3>
+              {reconciliation.history.length === 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Belum ada rekonsiliasi untuk akun ini.
+                </p>
+              ) : (
+                <ul className="mt-2 divide-y">
+                  {reconciliation.history.map((item) => (
+                    <li
+                      key={item.id}
+                      className="grid gap-2 py-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start"
+                    >
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-medium">
+                            {displayDate.format(item.reconciliationDate)}
+                          </span>
+                          <Badge
+                            variant={item.needsReview ? "outline" : "secondary"}
+                          >
+                            {item.needsReview
+                              ? "Perlu diperiksa kembali"
+                              : item.resolution === "adjusted"
+                                ? "Disesuaikan"
+                                : "Cocok"}
+                          </Badge>
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Catatan {rupiah(item.recordedBalance)} · aktual{" "}
+                          {rupiah(item.actualBalance)}
+                          {item.note ? ` · ${item.note}` : ""}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Oleh{" "}
+                          {item.creator.user.displayName ??
+                            item.creator.user.email ??
+                            "Anggota"}
+                        </p>
+                      </div>
+                      <div className="text-left sm:text-right">
+                        <p
+                          className={
+                            item.difference === 0n
+                              ? "font-medium"
+                              : "font-medium text-destructive"
+                          }
+                        >
+                          Selisih {rupiah(item.difference)}
+                        </p>
+                        {item.adjustmentAmount !== 0n && (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Penyesuaian {rupiah(item.adjustmentAmount)}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </CardContent>
+        </Card>
       )}
 
       {canManage && (
@@ -130,8 +340,8 @@ export async function AccountsSection({
                   name="openingDate"
                   type="date"
                   required
-                  max={localToday(timezone)}
-                  defaultValue={localToday(timezone)}
+                  max={todayValue}
+                  defaultValue={todayValue}
                   className={inputClass}
                 />
               </label>
@@ -171,6 +381,41 @@ export async function AccountsSection({
                     {rupiah(account.balance)}
                   </p>
                 </div>
+                <div className="rounded-lg bg-muted/50 p-3 text-xs">
+                  {account.lastReconciliation ? (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-muted-foreground">
+                        Terakhir dicocokkan{" "}
+                        {displayDate.format(
+                          account.lastReconciliation.reconciliationDate,
+                        )}
+                      </span>
+                      <Badge
+                        variant={
+                          account.lastReconciliation.needsReview
+                            ? "outline"
+                            : "secondary"
+                        }
+                      >
+                        {account.lastReconciliation.needsReview
+                          ? "Periksa lagi"
+                          : "Terverifikasi"}
+                      </Badge>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      Saldo belum pernah dicocokkan
+                    </span>
+                  )}
+                </div>
+                <Button asChild variant="secondary" className="w-full">
+                  <Link
+                    href={`/accounts?workspaceId=${encodeURIComponent(workspaceId)}&reconcileAccountId=${account.id}&reconcileDate=${todayValue}`}
+                  >
+                    <CalendarCheck2 />
+                    {canReconcile ? "Cocokkan saldo" : "Lihat rekonsiliasi"}
+                  </Link>
+                </Button>
                 {canManage && (
                   <details className="rounded-lg border p-3 text-sm">
                     <summary className="cursor-pointer font-medium">

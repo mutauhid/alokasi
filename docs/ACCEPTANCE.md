@@ -189,6 +189,19 @@ Ini spesifikasi pengujian, bukan laporan tes yang sudah lulus. Pilih skenario re
 | PWA-05 | Pengguna mencoba menyimpan transaksi tanpa jaringan | Tidak dinyatakan tersimpan dan tidak mengubah agregat; retry dilakukan pengguna setelah koneksi kembali |
 | PWA-06 | Versi service worker berubah | Cache shell publik versi lama dibersihkan tanpa menghapus atau menyentuh data server |
 
+## F15 — rekonsiliasi saldo
+
+| ID | Skenario | Hasil wajib |
+|---|---|---|
+| RECON-01 | Saldo catatan dan saldo aktual sama | Snapshot “Cocok” tersimpan; saldo, arus kas, dan budget tidak berubah |
+| RECON-02 | Saldo catatan 1.400.000 dan aktual 1.350.000, lalu pilih penyesuaian | Selisih/penyesuaian −50.000; saldo menjadi 1.350.000 tanpa transaksi pemasukan/pengeluaran |
+| RECON-03 | Selisih ada tetapi pengguna memilih memeriksa transaksi | Tidak ada snapshot atau mutasi otomatis; pengguna diarahkan ke Transaksi |
+| RECON-04 | Retry dengan idempotency key dan payload sama/berbeda | Payload sama mengembalikan hasil yang sama; payload berbeda ditolak tanpa penyesuaian ganda |
+| RECON-05 | Viewer, akun arsip/lintas ruang, tanggal masa depan/sebelum akun | Mutasi ditolak server; tidak ada saldo atau histori yang berubah |
+| RECON-06 | Transaksi bertanggal mundur dibuat/diubah/dihapus setelah snapshot | Rekonsiliasi terkait berstatus “Perlu diperiksa kembali”; snapshot lama tidak ditulis ulang |
+| RECON-07 | Laporan, budget, dashboard periode, dan CSV dibaca setelah penyesuaian | Penyesuaian hanya memengaruhi saldo akun; pemasukan, pengeluaran, transfer, tren arus kas, dan budget tetap |
+| RECON-08 | Ekspor lengkap atau penghapusan ruang/akun | Ekspor versi 4 memuat rekonsiliasi tanpa idempotency/hash; cleanup menghapus seluruh rekonsiliasi ruang |
+
 ## UX dan operasional
 
 - Desktop dan mobile minimal 360 px: tidak ada clipping, horizontal scroll yang tidak perlu, atau tombol utama tak terjangkau.
@@ -609,3 +622,17 @@ Smoke browser terautentikasi untuk keyboard numerik serta tampilan 360 px belum 
 | Verifikasi | 91 unit test, 10 smoke Playwright desktop/mobile, lint, TypeScript, targeted Prettier check, build produksi, pemeriksaan HTTP, dan browser headless lulus |
 
 `npm run format:check` seluruh repository masih melaporkan perbedaan style pada 141 file lama di checkout Windows. Seluruh file kode PWA yang disentuh lulus pemeriksaan Prettier terarah dan `git diff --check` tidak menemukan whitespace error; file lama tidak ditulis ulang sebagai bagian F23.
+
+## Hasil tahap 25 — rekonsiliasi saldo, 6 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| RECON-01/02/07 | Unit test membuktikan perhitungan selisih bertanda dan penyesuaian masuk saldo tanpa menambah transaksi; service/UI memisahkan penyesuaian dari arus kas dan budget |
+| RECON-03 | UI hanya menampilkan tindakan penyesuaian setelah saldo aktual berbeda dan menyediakan tautan pemeriksaan transaksi; tidak ada mutasi pada perubahan input |
+| RECON-04 | Unique key workspace/pembuat/idempotency dan request hash diterapkan; test integrasi retry identik serta pencegahan duplikasi telah ditulis |
+| RECON-05 | Server Action dan service memeriksa role Owner/Editor, workspace, akun aktif, rentang tanggal, serta BIGINT; test integrasi Viewer telah ditulis |
+| RECON-06 | Status kartu/riwayat memeriksa transaksi yang dibuat atau diperbarui setelah snapshot pada tanggal yang memengaruhi; test integrasi backdated telah ditulis |
+| RECON-08 | Ekspor lengkap naik ke schema 4 dan mengecualikan idempotency/hash; ringkasan serta cleanup ruang/akun mencakup rekonsiliasi |
+| Verifikasi lokal | Prisma validate/generate, lint, TypeScript, build produksi, 15 file/98 unit test, dan 10 smoke Playwright Edge desktop/mobile lulus |
+
+Migrasi `20261006000000_balance_reconciliations` dan test PostgreSQL belum dijalankan lokal karena `.env.test.local` tidak tersedia. Smoke browser terautentikasi untuk panel rekonsiliasi desktop/mobile juga belum dijalankan; keduanya harus dibuktikan oleh CI/database test atau lingkungan uji sebelum merge/deploy.

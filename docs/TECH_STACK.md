@@ -127,6 +127,7 @@ Struktur dapat disesuaikan tanpa mengubah batas tanggung jawab. Hindari reposito
 - UUID untuk ID; unique constraint untuk membership, budget per kategori/periode, idempotency key, dan relasi satu draf–satu transaksi saat F18 aktif.
 - Gunakan foreign key gabungan workspace dan object ID atau constraint setara untuk mencegah relasi lintas ruang, selain pemeriksaan service.
 - Transfer, perubahan transaksi, audit terkait, dan submit draf dijalankan dalam transaksi database yang singkat; network OCR/email tidak berada di dalam transaksi tersebut.
+- Rekonsiliasi saldo memakai tabel snapshot immutable terpisah. `adjustment_amount` ikut rumus saldo akun tetapi tidak masuk tabel transaksi, arus kas, budget, atau CSV transaksi; ekspor lengkap tetap menyertakannya.
 - Version checks/locking dan retry konflik database harus mempertahankan idempotensi. Saldo awal dan transaksi tetap sumber kebenaran; agregat laporan tidak boleh memiliki rumus duplikat yang berbeda.
 - Query historis menggunakan BudgetPeriod sejak MVP. Pemilihan stack tidak mengaktifkan F21 atau mengubah batas fase produk.
 
@@ -137,7 +138,7 @@ Struktur dapat disesuaikan tanpa mengubah batas tanggung jawab. Hindari reposito
 - PWA installable memakai manifest App Router dan service worker kecil yang diregistrasikan dari Client Component. Service worker hanya menyediakan fallback navigasi ke halaman offline dan tidak mencache data terautentikasi atau mutasi finansial.
 - F23 tidak memakai IndexedDB, Background Sync, push notification, atau antrean transaksi. Server/PostgreSQL tetap satu-satunya sumber transaksi tersimpan.
 - Zod memvalidasi data di boundary server. Validasi browser adalah bantuan UX, bukan jaminan integritas.
-- Vitest: uang, periode, aturan peran, dan validasi. Integrasi memakai PostgreSQL sungguhan khusus test untuk constraint, rollback, concurrency, dan workspace isolation; jangan menggantinya dengan SQLite lalu mengklaim perilaku sama.
+- Vitest: uang, periode, rekonsiliasi, aturan peran, dan validasi. Integrasi memakai PostgreSQL sungguhan khusus test untuk constraint, rollback, concurrency, dan workspace isolation; jangan menggantinya dengan SQLite lalu mengklaim perilaku sama.
 - Playwright: login, pindah ruang, transaksi, kategori, budget, serta akses peran pada alur UI.
 - Sebelum rilis: lint, TypeScript, build, tes relevan, serta acceptance di ACCEPTANCE.md. Tambahkan perintah yang benar-benar tersedia saat bootstrap, bukan placeholder yang diklaim sudah berjalan.
 
