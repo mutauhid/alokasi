@@ -1,6 +1,6 @@
 # Rencana implementasi dan status
 
-Diperbarui 5 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
+Diperbarui 7 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
 
 ## Status nyata
 
@@ -34,6 +34,7 @@ Diperbarui 5 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikas
 | Tahap 22 percakapan: fokus navigasi Transaksi | Diimplementasikan pada `feat/transaction-reminders-navigation`: Riwayat/Pengingat dipisah, Scan struk dan Tambah transaksi menjadi aksi utama, redirect mutasi kembali ke Pengingat, dan query opsi akun tidak lagi menghitung saldo dari seluruh transaksi |
 | Tahap 23 percakapan: input nominal Rupiah | Diimplementasikan pada `feat/rupiah-amount-input`: transaksi manual, koreksi OCR, dan template pengingat memformat ribuan di browser tetapi mengirim string digit integer yang sama ke server; tidak ada query, request, atau migrasi baru |
 | Tahap 24 percakapan: PWA installable | Diimplementasikan untuk F23: manifest App Router, ikon standar/maskable/Apple, registrasi service worker, header keamanan, dan fallback offline tanpa cache data finansial atau transaksi offline |
+| Tahap 26 percakapan: paging transaksi | Diimplementasikan pada `feat/transaction-pagination`: ukuran 5/10/20/30/50/100, default 10, state URL, query server-side, navigasi halaman, dan sumber saran transaksi terpisah |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Upload/storage/provider OCR eksternal | Belum diimplementasikan; consent, retensi, biaya, callback, dan lifecycle file masih terbuka |
@@ -266,7 +267,7 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 ## Hasil tahap 22 — saran pengisian transaksi, 30 September 2026
 
 - Transaksi memiliki judul wajib yang terpisah dari catatan; migrasi mengisi judul histori tanpa mengubah nilai finansial. OCR memakai merchant dan transaksi berulang memakai nama template sebagai judul.
-- Halaman Transaksi membangun kandidat dari maksimal 100 baris riwayat yang sudah dimuat, memilih maksimal 12 kandidat per jenis, lalu memfilter maksimal lima chip di browser setelah dua karakter. Tidak ada query atau Server Action pada setiap ketikan.
+- Halaman Transaksi membangun kandidat dari query terpisah berisi maksimal 100 transaksi terbaru, memilih maksimal 12 kandidat per jenis, lalu memfilter maksimal lima chip di browser setelah dua karakter. Tidak ada query atau Server Action pada setiap ketikan.
 - Kandidat dibatasi workspace oleh query riwayat, jenis transaksi aktif, serta kategori yang belum diarsipkan. Klik saran mengubah judul dan kategori saja; transfer tidak memiliki kategori.
 - Pencarian laporan, tampilan dashboard/riwayat, CSV, dan ekspor lengkap ruang mencakup judul. Schema ekspor naik ke versi 3.
 - Prisma validate, lint, TypeScript, build produksi, 78 unit test, dan 10 smoke Playwright desktop/mobile lulus. Migrasi dan suite PostgreSQL belum dijalankan lokal karena `.env.test.local` tidak tersedia pada clone ini.
@@ -287,6 +288,15 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Halaman Akun menyediakan pemilihan tanggal, perbandingan langsung, tautan pemeriksaan transaksi, konfirmasi cocok/penyesuaian, status terakhir, dan riwayat. Owner/Editor dapat membuat; Viewer baca saja.
 - Ekspor lengkap naik ke `schemaVersion: 4`; cleanup serta ringkasan penghapusan ruang/akun mencakup rekonsiliasi.
 - Prisma schema/Client, lint, TypeScript, build produksi, 98 unit test, serta 10 smoke Playwright Edge desktop/mobile lulus. Migrasi dan suite PostgreSQL belum dijalankan lokal karena `.env.test.local` tidak tersedia; test integrasi F15 sudah disiapkan untuk CI/database test.
+
+## Hasil tahap 26 — paging riwayat transaksi, 7 Oktober 2026
+
+- Riwayat memakai paging server-side dengan ukuran 5, 10, 20, 30, 50, atau 100 dan default 10; URL menyimpan halaman, ukuran, serta workspace aktif.
+- Service menghitung total transaksi aktif, menjepit halaman berlebih, lalu mengambil hanya rentang yang diminta dengan urutan tanggal transaksi, waktu pembuatan, dan ID yang deterministik.
+- UI menampilkan rentang/jumlah total, posisi halaman, serta Sebelumnya/Berikutnya. Mengubah dropdown langsung menerapkan ukuran tanpa tombol tambahan, selalu kembali ke halaman pertama, dan tata letak kontrol membungkus pada mobile.
+- Query saran F22 dipisahkan dari daftar berpaging: maksimal 100 transaksi terbaru dengan kolom minimum tetap menjadi sumber autocomplete lokal.
+- Unit test mencakup default, seluruh ukuran sah, query tidak valid/berulang, penjepitan halaman, dan hasil kosong. Tidak ada perubahan schema atau migrasi database.
+- Verifikasi lokal lulus: lint, typecheck, build produksi, 108 unit test, dan 10 smoke Playwright Microsoft Edge desktop/mobile.
 
 ## Backlog kandidat — bukan komitmen aktif
 

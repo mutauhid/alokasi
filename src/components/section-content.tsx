@@ -8,6 +8,7 @@ import { MembersSection } from "@/components/members-section";
 import type { ReportQuery } from "@/modules/reports/service";
 import type { Section } from "@/lib/navigation";
 import type { WorkspaceAccess } from "@/modules/workspaces/service";
+import type { TransactionPagination } from "@/modules/transactions/pagination";
 
 export function SectionContent({
   section,
@@ -20,6 +21,7 @@ export function SectionContent({
   reconcileAccountId,
   reconcileDate,
   transactionView = "history",
+  transactionPagination,
 }: {
   section: Section;
   access: WorkspaceAccess;
@@ -31,6 +33,7 @@ export function SectionContent({
   reconcileAccountId?: string;
   reconcileDate?: string;
   transactionView?: "history" | "reminders";
+  transactionPagination: TransactionPagination;
 }) {
   switch (section) {
     case "dashboard":
@@ -49,6 +52,7 @@ export function SectionContent({
           error={error}
           success={success}
           view={transactionView}
+          pagination={transactionPagination}
         />
       );
     case "budgets":

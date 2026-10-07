@@ -90,6 +90,13 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Saran kategori arsip tidak ditampilkan. Tata letak chip membungkus pada mobile dan tidak menambah scroll horizontal.
 - Viewer melihat daftar tanpa kontrol. Editor tidak melihat kontrol pada template milik anggota lain; Owner melihat seluruh kontrol sesuai aturan server.
 
+## Paging riwayat transaksi
+
+- Riwayat menampilkan 10 transaksi per halaman secara default dan menyediakan pilihan 5, 10, 20, 30, 50, atau 100.
+- Kontrol menampilkan rentang baris, jumlah total, posisi halaman, serta tombol Sebelumnya/Berikutnya. Tombol yang tidak memiliki tujuan dibuat nonaktif.
+- Mengubah pilihan ukuran langsung menerapkan paging tanpa tombol tambahan dan kembali ke halaman pertama. Workspace, halaman, dan ukuran halaman dipertahankan pada URL agar refresh serta navigasi browser konsisten.
+- Kontrol membungkus pada layar kecil tanpa scroll horizontal. Paging hanya memengaruhi daftar riwayat; kandidat saran judul tetap dibentuk dari maksimal 100 transaksi terbaru ruang yang sama.
+
 ## Input nominal Rupiah
 
 - Form transaksi manual, koreksi hasil OCR, dan template pengingat menampilkan awalan `Rp` tetap serta pemisah ribuan titik saat pengguna mengetik.

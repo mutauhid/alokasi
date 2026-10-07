@@ -10,7 +10,10 @@ import {
 } from "lucide-react";
 import { listActiveAccountOptions } from "@/modules/accounts/service";
 import { listActiveCategoryOptions } from "@/modules/categories/service";
-import { listTransactions } from "@/modules/transactions/service";
+import {
+  listRecentTransactionsForSuggestions,
+  listTransactionPage,
+} from "@/modules/transactions/service";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TransactionForm } from "@/components/transaction-form";
@@ -22,6 +25,8 @@ import { Button } from "@/components/ui/button";
 import type { WorkspaceAccess } from "@/modules/workspaces/service";
 import { sectionHref } from "@/lib/navigation";
 import { buildTransactionSuggestions } from "@/modules/transactions/suggestions";
+import type { TransactionPagination } from "@/modules/transactions/pagination";
+import { TransactionPageSizeControl } from "@/components/transaction-page-size-control";
 
 const messages: Record<string, string> = {
   "transaction-invalid":
@@ -81,18 +86,33 @@ function localToday(timeZone: string) {
   }).format(new Date());
 }
 
+function transactionPageHref(
+  workspaceId: string,
+  page: number,
+  pageSize: number,
+) {
+  const query = new URLSearchParams({
+    workspaceId,
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+  });
+  return `/transactions?${query.toString()}`;
+}
+
 export async function TransactionsSection({
   access,
   today,
   error,
   success,
   view = "history",
+  pagination,
 }: {
   access: WorkspaceAccess;
   today: Date;
   error?: string;
   success?: string;
   view?: "history" | "reminders";
+  pagination: TransactionPagination;
 }) {
   if (view === "reminders") {
     return (
@@ -105,12 +125,15 @@ export async function TransactionsSection({
     );
   }
 
-  const [accounts, categories, transactions] = await Promise.all([
-    listActiveAccountOptions(access.workspaceId),
-    listActiveCategoryOptions(access.workspaceId),
-    listTransactions(access.workspaceId),
-  ]);
-  const suggestions = buildTransactionSuggestions(transactions);
+  const [accounts, categories, transactionPage, suggestionSource] =
+    await Promise.all([
+      listActiveAccountOptions(access.workspaceId),
+      listActiveCategoryOptions(access.workspaceId),
+      listTransactionPage(access.workspaceId, pagination),
+      listRecentTransactionsForSuggestions(access.workspaceId),
+    ]);
+  const transactions = transactionPage.items;
+  const suggestions = buildTransactionSuggestions(suggestionSource);
   const status = error ?? success;
 
   return (
@@ -204,7 +227,7 @@ export async function TransactionsSection({
         <CardHeader>
           <CardTitle>Riwayat transaksi</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Menampilkan hingga 100 transaksi terbaru dalam ruang ini.
+            Urutan terbaru berdasarkan tanggal transaksi.
           </p>
         </CardHeader>
         <CardContent>
@@ -311,6 +334,54 @@ export async function TransactionsSection({
               })}
             </ul>
           )}
+          <div className="mt-5 flex flex-col gap-4 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <TransactionPageSizeControl
+              workspaceId={access.workspaceId}
+              pageSize={transactionPage.pageSize}
+            />
+
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted-foreground">
+                {transactionPage.from}-{transactionPage.to} dari{" "}
+                {transactionPage.totalCount} | Halaman {transactionPage.page}{" "}
+                dari {transactionPage.totalPages}
+              </span>
+              {transactionPage.page > 1 ? (
+                <Button asChild size="sm" variant="outline">
+                  <Link
+                    href={transactionPageHref(
+                      access.workspaceId,
+                      transactionPage.page - 1,
+                      transactionPage.pageSize,
+                    )}
+                  >
+                    Sebelumnya
+                  </Link>
+                </Button>
+              ) : (
+                <Button size="sm" variant="outline" disabled>
+                  Sebelumnya
+                </Button>
+              )}
+              {transactionPage.page < transactionPage.totalPages ? (
+                <Button asChild size="sm" variant="outline">
+                  <Link
+                    href={transactionPageHref(
+                      access.workspaceId,
+                      transactionPage.page + 1,
+                      transactionPage.pageSize,
+                    )}
+                  >
+                    Berikutnya
+                  </Link>
+                </Button>
+              ) : (
+                <Button size="sm" variant="outline" disabled>
+                  Berikutnya
+                </Button>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -10,6 +10,7 @@ import { requireVerifiedIdentity } from "@/server/auth/identity";
 import { getWorkspaceContext } from "@/modules/workspaces/service";
 import { WorkspaceDomainError } from "@/modules/workspaces/errors";
 import { ensurePeriod, getPeriodSelection } from "@/modules/periods/service";
+import { parseTransactionPagination } from "@/modules/transactions/pagination";
 
 export type WorkspaceSearchParams = Promise<{
   workspaceId?: string | string[];
@@ -24,6 +25,8 @@ export type WorkspaceSearchParams = Promise<{
   periodId?: string | string[];
   reconcileAccountId?: string | string[];
   reconcileDate?: string | string[];
+  page?: string | string[];
+  pageSize?: string | string[];
 }>;
 
 export async function WorkspacePage({
@@ -196,6 +199,7 @@ export async function WorkspacePage({
             : undefined
         }
         transactionView={transactionView}
+        transactionPagination={parseTransactionPagination(query)}
       />
     </AppShell>
   );

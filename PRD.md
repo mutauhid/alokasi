@@ -1,7 +1,7 @@
 # PRD — Aplikasi Manajemen Keuangan & Budgeting
 
-**Versi:** 1.4 — PWA installable
-**Diperbarui:** 5 Oktober 2026
+**Versi:** 1.5 — paging riwayat transaksi
+**Diperbarui:** 7 Oktober 2026
 **Status:** Arah produk dan mockup diterima; status implementasi serta keputusan terbuka dilacak di [IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) dan [DECISIONS.md](docs/DECISIONS.md)  
 **Nama produk sementara:** Alokasi
 
@@ -147,6 +147,7 @@ F12–F14 dan F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setel
 - Biaya transfer dicatat sebagai pengeluaran terpisah; bukan bagian nominal yang diterima akun tujuan.
 - Transaksi masa depan ditolak pada MVP; gunakan tanggal hari ini atau sebelumnya, minimal tanggal mulai akun.
 - Daftar transaksi mendukung filter periode, akun, kategori, jenis, serta pencarian catatan.
+- Riwayat pada halaman Transaksi memakai paging server-side dengan pilihan 5, 10, 20, 30, 50, atau 100 baris per halaman; default 10. Pilihan langsung diterapkan tanpa tombol tambahan, sedangkan halaman dan ukuran halaman disimpan pada URL.
 - Pengguna dapat mengubah dan menghapus transaksi dengan konfirmasi; perubahan langsung memperbarui seluruh agregat.
 - Kategori yang telah dipakai dapat diarsipkan, tetapi transaksi historis tetap memiliki referensi kategori tersebut.
 - Owner dapat menambahkan kategori pemasukan/pengeluaran di Pengaturan → Kategori dan melalui “Tambah kategori” pada form transaksi. Nama kosong atau duplikat setelah normalisasi dalam ruang dan jenis yang sama ditolak.
