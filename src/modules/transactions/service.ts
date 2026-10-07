@@ -3,6 +3,10 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { getDatabase } from "@/server/db/client";
 import { FinanceDomainError } from "@/modules/finance/errors";
+import {
+  buildTransactionPageMeta,
+  type TransactionPagination,
+} from "@/modules/transactions/pagination";
 
 type TransactionType = "income" | "expense" | "transfer";
 export type TransactionContext = {
@@ -142,18 +146,53 @@ export async function createTransactionInTransaction(
   return transaction;
 }
 
-export function listTransactions(workspaceId: string) {
+const transactionListInclude = {
+  account: { select: { name: true } },
+  destinationAccount: { select: { name: true } },
+  category: { select: { name: true, archivedAt: true } },
+  creator: {
+    select: { user: { select: { displayName: true, email: true } } },
+  },
+} as const;
+
+export async function listTransactionPage(
+  workspaceId: string,
+  pagination: TransactionPagination,
+) {
+  const db = getDatabase();
+  const where = { workspaceId, deletedAt: null };
+  const totalCount = await db.transaction.count({ where });
+  const meta = buildTransactionPageMeta(totalCount, pagination);
+  const items = await db.transaction.findMany({
+    where,
+    include: transactionListInclude,
+    orderBy: [
+      { transactionDate: "desc" },
+      { createdAt: "desc" },
+      { id: "desc" },
+    ],
+    skip: (meta.page - 1) * meta.pageSize,
+    take: meta.pageSize,
+  });
+
+  return { ...meta, items };
+}
+
+export function listRecentTransactionsForSuggestions(workspaceId: string) {
   return getDatabase().transaction.findMany({
     where: { workspaceId, deletedAt: null },
-    include: {
-      account: { select: { name: true } },
-      destinationAccount: { select: { name: true } },
+    select: {
+      title: true,
+      type: true,
+      categoryId: true,
+      transactionDate: true,
       category: { select: { name: true, archivedAt: true } },
-      creator: {
-        select: { user: { select: { displayName: true, email: true } } },
-      },
     },
-    orderBy: [{ transactionDate: "desc" }, { createdAt: "desc" }],
+    orderBy: [
+      { transactionDate: "desc" },
+      { createdAt: "desc" },
+      { id: "desc" },
+    ],
     take: 100,
   });
 }

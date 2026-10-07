@@ -1,6 +1,6 @@
 # Aturan domain — kontrak implementasi
 
-Status: diperbarui 5 Oktober 2026. Kebutuhan eksplisit dan default kerja dibedakan di [DECISIONS.md](DECISIONS.md). Rumus dasar, matriks peran, dan kebijakan akun mengikuti [PRD](../PRD.md). Dokumen ini memiliki rincian kategori, scan, periode, dan batas penyimpanan PWA.
+Status: diperbarui 7 Oktober 2026. Kebutuhan eksplisit dan default kerja dibedakan di [DECISIONS.md](DECISIONS.md). Rumus dasar, matriks peran, dan kebijakan akun mengikuti [PRD](../PRD.md). Dokumen ini memiliki rincian kategori, scan, periode, dan batas penyimpanan PWA.
 
 ## 1. Ruang, uang, dan transaksi
 
@@ -11,6 +11,8 @@ Status: diperbarui 5 Oktober 2026. Kebutuhan eksplisit dan default kerja dibedak
 - Tanggal transaksi adalah tanggal kalender lokal yang dipilih/dikonfirmasi, bukan timestamp upload. Timestamp teknis disimpan UTC. Gunakan zona waktu ruang untuk “hari ini”.
 - Tanggal masa depan atau sebelum tanggal mulai akun ditolak sesuai PRD. OCR tunduk pada validasi yang sama.
 - Retry submit dengan idempotency key sama dan payload sama mengembalikan transaksi yang sama. Payload berbeda dengan key sama ditolak. Scope key mencakup workspace dan pembuat.
+- Riwayat transaksi selalu dibatasi workspace aktif dan `deleted_at IS NULL`, diurutkan deterministik menurut tanggal transaksi, waktu pembuatan, lalu ID terbaru. Paging memakai `page` dan `pageSize` pada URL; ukuran yang sah hanya 5, 10, 20, 30, 50, atau 100 dan default 10.
+- Hitungan total dan pengambilan halaman dilakukan di server/database. Nomor halaman yang melampaui halaman terakhir dijepit ke halaman terakhir; nilai query tidak valid kembali ke halaman 1 dan ukuran 10.
 
 ### Lifecycle ruang bersama
 

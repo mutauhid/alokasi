@@ -107,6 +107,17 @@ Ini spesifikasi pengujian, bukan laporan tes yang sudah lulus. Pilih skenario re
 | SUGGEST-05 | Riwayat berasal dari ruang lain atau kategori telah diarsipkan | Saran tidak ditampilkan |
 | SUGGEST-06 | Simpan transaksi manual, hasil OCR, atau pengingat berulang | Judul tersimpan terpisah dari catatan dan muncul konsisten di riwayat, dashboard, laporan, CSV, serta ekspor ruang |
 
+## F04 — paging riwayat transaksi
+
+| ID | Skenario | Hasil wajib |
+|---|---|---|
+| PAGE-01 | Buka Riwayat tanpa parameter paging | Server mengambil dan menampilkan maksimal 10 transaksi pada halaman 1 |
+| PAGE-02 | Pilih 5, 10, 20, 30, 50, atau 100 pada dropdown | Pilihan langsung diterapkan tanpa tombol tambahan; ukuran tersimpan pada URL, halaman kembali ke 1, dan query database memakai batas tersebut |
+| PAGE-03 | Pilih Berikutnya/Sebelumnya | URL, rentang baris, dan isi daftar berpindah sesuai halaman tanpa keluar dari workspace aktif |
+| PAGE-04 | Kirim halaman/ukuran tidak valid atau halaman melampaui hasil | Nilai tidak valid kembali aman ke 1/10; halaman berlebih dijepit ke halaman terakhir |
+| PAGE-05 | Beberapa transaksi memiliki tanggal dan waktu pembuatan sama | Urutan tetap deterministik dengan ID sebagai pembeda terakhir; transaksi soft-delete tidak dihitung |
+| PAGE-06 | Ubah ukuran paging saat form saran aktif | Daftar riwayat berubah, tetapi sumber saran tetap maksimal 100 transaksi terbaru ruang yang sama |
+
 ## F11 — transaksi berulang
 
 | ID | Skenario | Hasil wajib |
@@ -592,7 +603,7 @@ Health check database awal memakai koneksi development hanya untuk verifikasi lo
 |---|---|
 | SUGGEST-01–SUGGEST-04 | Form memfilter kandidat di browser setelah dua karakter, membatasi lima hasil, dan klik hanya mengubah judul/kategori; transfer tidak memiliki kategori |
 | SUGGEST-05 | Kandidat dibentuk dari query transaksi yang sudah dibatasi workspace dan `deletedAt: null`; unit test membuktikan kategori arsip dikeluarkan |
-| Ranking/batas | Unit test membuktikan normalisasi spasi/case dan urutan frekuensi sebelum penggunaan terbaru; server membatasi 12 kandidat per jenis dari maksimal 100 transaksi yang sudah dimuat |
+| Ranking/batas | Unit test membuktikan normalisasi spasi/case dan urutan frekuensi sebelum penggunaan terbaru; server membatasi 12 kandidat per jenis dari query maksimal 100 transaksi terbaru |
 | SUGGEST-06 | Judul masuk ke create/update/idempotency hash, OCR, transaksi berulang, riwayat, dashboard, pencarian laporan, CSV, dan ekspor ruang versi 3 |
 | Verifikasi | Prisma validate, lint, TypeScript, build produksi, 78 unit test, dan 10 smoke Playwright desktop/mobile lulus |
 
@@ -636,3 +647,16 @@ Smoke browser terautentikasi untuk keyboard numerik serta tampilan 360 px belum 
 | Verifikasi lokal | Prisma validate/generate, lint, TypeScript, build produksi, 15 file/98 unit test, dan 10 smoke Playwright Edge desktop/mobile lulus |
 
 Migrasi `20261006000000_balance_reconciliations` dan test PostgreSQL belum dijalankan lokal karena `.env.test.local` tidak tersedia. Smoke browser terautentikasi untuk panel rekonsiliasi desktop/mobile juga belum dijalankan; keduanya harus dibuktikan oleh CI/database test atau lingkungan uji sebelum merge/deploy.
+
+## Hasil tahap 26 — paging riwayat transaksi, 7 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| PAGE-01/02 | Unit test membuktikan default 10 dan seluruh ukuran 5/10/20/30/50/100 diterima; perubahan dropdown langsung submit dan kembali ke halaman 1 tanpa tombol tambahan |
+| PAGE-03 | Link Sebelumnya/Berikutnya mempertahankan workspace dan ukuran pada URL; UI menampilkan rentang, total, serta posisi halaman |
+| PAGE-04 | Unit test membuktikan query tidak valid/berulang kembali ke 1/10, halaman berlebih dijepit, dan hasil kosong tetap pada halaman 1 |
+| PAGE-05 | Query service membatasi `workspaceId` dan `deletedAt: null`, lalu mengurutkan tanggal transaksi, waktu pembuatan, dan ID secara menurun |
+| PAGE-06 | Query saran terpisah mengambil maksimal 100 baris dengan kolom minimum; pemfilteran lokal F22 tidak berubah |
+| Verifikasi lokal | Lint, typecheck, build produksi, 108 unit test, dan 10 smoke Playwright Microsoft Edge desktop/mobile lulus |
+
+Smoke Playwright mencakup regresi publik/auth, bukan halaman Transaksi terautentikasi. Suite PostgreSQL tidak dijalankan karena perubahan ini tidak memiliki migrasi dan unit test mencakup kalkulasi paging; perilaku query tetap perlu mendapat smoke terautentikasi dengan data lebih dari 10 baris sebelum merge/deploy.

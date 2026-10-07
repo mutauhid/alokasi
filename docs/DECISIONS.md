@@ -1,6 +1,6 @@
 # Catatan keputusan
 
-Diperbarui: 6 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
+Diperbarui: 7 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
 
 ## Keputusan dan kebutuhan pengguna
 
@@ -42,6 +42,8 @@ Diperbarui: 6 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent t
 | D35 | 1 Okt 2026 | Pengguna meminta nominal transaksi langsung tampil dalam format rupiah saat diisi | Form transaksi manual, koreksi OCR, dan template pengingat menampilkan awalan Rp serta pemisah ribuan lokal; server tetap menerima string digit integer tanpa request tambahan |
 | D36 | 5 Okt 2026 | Pengguna memilih menunda target tabungan dan meminta PWA installable saja | Aktifkan F23 sebagai PWA yang dapat dipasang dengan manifest, ikon, service worker, dan halaman offline; transaksi tetap memerlukan submit server dan tidak diantrikan atau dianggap tersimpan saat offline |
 | D37 | 6 Okt 2026 | Pengguna meminta implementasi F15 setelah meninjau gambaran alurnya, serta meminta branch baru dibuat lebih dahulu | Aktifkan rekonsiliasi saldo manual per akun pada branch `feat/balance-reconciliation`: bandingkan saldo catatan dengan saldo aktual, simpan histori, dan sediakan penyesuaian eksplisit sebagai jalan terakhir |
+| D38 | 7 Okt 2026 | Pengguna meminta halaman Transaksi memakai paging dengan pilihan 5, 10, 20, 30, 50, dan 100 serta default 10 | Implementasikan paging riwayat transaksi pada branch `feat/transaction-pagination`; batas dan hitungan dilakukan server-side, sedangkan sumber saran judul tetap maksimal 100 transaksi terbaru |
+| D39 | 7 Okt 2026 | Pengguna meminta pilihan ukuran paging langsung diterapkan tanpa tombol Terapkan | Dropdown ukuran melakukan submit GET otomatis saat berubah, kembali ke halaman pertama, dan tetap menyimpan workspace serta ukuran pada URL |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -121,13 +123,17 @@ D32 menghasilkan T31: build CI tetap tidak membutuhkan credential agar pemeriksa
 
 D33 menghasilkan T32: F11 tahap 21 memakai template pemasukan/pengeluaran bulanan dengan nominal integer, akun, kategori, catatan, hari 1–31, dan satu tanggal jatuh tempo berikutnya. Template hanya menghasilkan pengingat; saldo, budget, dashboard, dan laporan baru berubah setelah Owner atau Editor yang berwenang memilih **Catat sekarang**. Pengguna dapat melewati satu kejadian tanpa transaksi. Hari 29–31 dipotong ke akhir bulan dan kembali ke hari aslinya pada bulan berikutnya. Owner dapat mengelola semua template ruang, Editor hanya template buatannya, dan Viewer hanya membaca. Pencatatan serta kemajuan jadwal terjadi atomik dengan kunci unik template/tanggal; akun atau kategori yang masih dipakai template aktif tidak dapat diarsipkan.
 
-D34 menghasilkan T33: F22 memakai field `title` maksimal 100 karakter yang terpisah dari `note`. Kandidat diringkas dari maksimal 100 transaksi terbaru yang sudah dibaca halaman, dibatasi 12 per jenis, lalu maksimal lima kecocokan difilter di browser setelah dua karakter; tidak ada endpoint atau query pada setiap ketikan. Kandidat selalu dibatasi workspace, jenis transaksi, dan kategori aktif. Klik saran hanya mengisi judul serta kategori; nominal, tanggal, dan akun tidak berubah. Transfer boleh menyarankan judul tanpa kategori.
+D34 menghasilkan T33: F22 memakai field `title` maksimal 100 karakter yang terpisah dari `note`. Kandidat diringkas dari maksimal 100 transaksi terbaru, dibatasi 12 per jenis, lalu maksimal lima kecocokan difilter di browser setelah dua karakter; tidak ada endpoint atau query pada setiap ketikan. Kandidat selalu dibatasi workspace, jenis transaksi, dan kategori aktif. Klik saran hanya mengisi judul serta kategori; nominal, tanggal, dan akun tidak berubah. Transfer boleh menyarankan judul tanpa kategori. D38/T37 mengganti sumber yang semula menyatu dengan daftar menjadi query server terpisah agar paging tidak membatasi kandidat.
 
 D35 menghasilkan T34: satu komponen input Rupiah memformat digit di browser untuk tiga alur pembentukan transaksi. Nilai yang dikirim ke Server Action tetap string digit mentah agar validasi `bigint`, idempotensi, dan penyimpanan `BIGINT` tidak berubah. Komponen tidak membaca database, tidak memanggil endpoint, dan menolak nilai di atas batas PostgreSQL `BIGINT`.
 
 D36 menghasilkan T35: PWA memakai manifest App Router, ikon standar/maskable, registrasi service worker, dan fallback `/offline`. Service worker memakai network-first hanya untuk navigasi dan hanya melakukan precache atas halaman offline, manifest, serta ikon publik. Respons terautentikasi, RSC, API, transaksi, dashboard, laporan, dan data finansial tidak dimasukkan ke cache. Fase ini tidak memakai IndexedDB, Background Sync, antrean mutasi, push notification, atau penyimpanan transaksi offline.
 
 D37 menghasilkan T36: F15 menyimpan snapshot rekonsiliasi immutable per akun, tanggal, dan pembuat. Saldo catatan dihitung dari saldo awal, transaksi aktif sampai tanggal tersebut, serta penyesuaian rekonsiliasi sebelumnya. Saldo yang cocok menyimpan bukti tanpa mutasi; selisih hanya mengubah saldo setelah Owner/Editor memilih penyesuaian eksplisit. Penyesuaian tidak menjadi pemasukan, pengeluaran, transfer, atau realisasi budget, tetapi tetap terlihat pada riwayat, audit, saldo akun, dan ekspor lengkap ruang. Viewer hanya membaca. Transaksi bertanggal mundur atau koreksi setelah snapshot menandai hasil lama perlu diperiksa kembali. Rekonsiliasi memakai idempotency key dan isolasi workspace; saldo awal tidak ditimpa.
+
+D38 menghasilkan T37: halaman Riwayat membaca `page` dan `pageSize` dari URL, memvalidasi ukuran terhadap 5/10/20/30/50/100, menghitung total baris aktif dalam workspace, menjepit halaman berlebih, lalu mengambil hanya baris halaman terpilih dengan urutan tanggal/waktu/ID deterministik. Perubahan ukuran kembali ke halaman pertama. Query kandidat F22 dipisahkan agar tetap membaca maksimal 100 transaksi terbaru dengan kolom minimum, sehingga paging daftar tidak menurunkan kualitas saran dan tidak menambah request per ketikan.
+
+D39 menghasilkan T38: kontrol ukuran menjadi Client Component kecil yang memanggil submit GET form saat pilihan berubah. Form tetap mengirim `workspaceId`, `page=1`, dan `pageSize`; query serta validasi paging tetap berada di server. Tombol Terapkan dihapus.
 
 ## Default kerja, bukan keputusan eksplisit pengguna
 

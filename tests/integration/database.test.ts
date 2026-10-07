@@ -357,7 +357,14 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
         id: expenseTransaction.id,
         version: expenseTransaction.version + 1,
       });
-      expect(await transactions.listTransactions(room.id)).toHaveLength(0);
+      expect(
+        (
+          await transactions.listTransactionPage(room.id, {
+            page: 1,
+            pageSize: 10,
+          })
+        ).items,
+      ).toHaveLength(0);
       await accounts.archiveAccount(context, {
         id: createdAccount.id,
         version: createdAccount.version + 1,
