@@ -134,6 +134,8 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 ## State wajib dan responsivitas
 
 - Loading, kosong, gagal, berhasil, validasi, konflik edit, akses dicabut, dan draft belum tersimpan memiliki state yang berbeda.
+- Keberhasilan mutasi utama ditampilkan sebagai toast global di atas konten: judul spesifik, penjelasan dampak singkat, ikon yang tidak menjadi satu-satunya penanda, tombol tutup, dan hilang otomatis. Parameter sukses dibersihkan dari URL agar refresh tidak memutar ulang notifikasi.
+- Error dan konflik tetap tampil dekat form atau area tindakan terkait; toast sukses tidak menggantikan umpan balik yang perlu diperbaiki pengguna.
 - Data kosong tidak memakai saldo demo. Kegagalan API tidak ditampilkan sebagai saldo nol.
 - Nama ruang selalu jelas sebelum submit; pergantian ruang tidak menghilangkan input tanpa keputusan pengguna.
 - Desktop sekitar 1024 px mengikuti komposisi mockup; pada layar sempit panel ditumpuk, navigasi diringkas, kontrol tetap tersedia.

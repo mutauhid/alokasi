@@ -308,6 +308,13 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Migrasi `20261008000000_ios_shortcut_receipts` menambah metadata token pada membership dan mengizinkan `source_kind = ios_shortcut`. Unit test domain serta test integrasi service tersedia.
 - Langkah konfigurasi perangkat didokumentasikan di [IOS_SHORTCUT_SETUP.md](IOS_SHORTCUT_SETUP.md).
 
+## Hasil tahap 28 — toast keberhasilan aksi, 8 Oktober 2026
+
+- Status sukses transaksi, submit draf OCR, budget, akun, rekonsiliasi, kategori, siklus, profil, transaksi berulang, anggota, dan lifecycle ruang memakai satu toast global dengan pesan yang menjelaskan dampaknya.
+- Toast tampil responsif di bagian atas, mendukung safe area iPhone, dapat ditutup, hilang otomatis setelah 5,5 detik, memakai `role=status`, dan menghormati preferensi reduced motion.
+- Parameter `success` dibersihkan dari URL tanpa mengubah filter, workspace, atau hash sehingga notifikasi tidak muncul ulang ketika halaman di-refresh. Error tetap memakai pesan inline yang sudah ada.
+- Tidak ada dependency atau migrasi database baru. Verifikasi lokal lulus: lint, TypeScript, build produksi, dan 115 unit test.
+
 ## Backlog kandidat — bukan komitmen aktif
 
 F11 transaksi berulang diaktifkan melalui D33 dan F15 rekonsiliasi melalui D37. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, F14 utang/piutang, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.
