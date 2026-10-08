@@ -1,6 +1,6 @@
 # Rencana implementasi dan status
 
-Diperbarui 7 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
+Diperbarui 8 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
 
 ## Status nyata
 
@@ -35,6 +35,7 @@ Diperbarui 7 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikas
 | Tahap 23 percakapan: input nominal Rupiah | Diimplementasikan pada `feat/rupiah-amount-input`: transaksi manual, koreksi OCR, dan template pengingat memformat ribuan di browser tetapi mengirim string digit integer yang sama ke server; tidak ada query, request, atau migrasi baru |
 | Tahap 24 percakapan: PWA installable | Diimplementasikan untuk F23: manifest App Router, ikon standar/maskable/Apple, registrasi service worker, header keamanan, dan fallback offline tanpa cache data finansial atau transaksi offline |
 | Tahap 26 percakapan: paging transaksi | Diimplementasikan pada `feat/transaction-pagination`: ukuran 5/10/20/30/50/100, default 10, state URL, query server-side, navigasi halaman, dan sumber saran transaksi terpisah |
+| Tahap 27 percakapan: Shortcut iPhone untuk scan | Diimplementasikan pada `feat/ios-shortcut-receipt`: token terbatas per membership, endpoint teks OCR, default akun/kategori, draf privat yang dapat dilanjutkan, dan konfirmasi eksplisit sebelum transaksi |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Upload/storage/provider OCR eksternal | Belum diimplementasikan; consent, retensi, biaya, callback, dan lifecycle file masih terbuka |
@@ -297,6 +298,15 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Query saran F22 dipisahkan dari daftar berpaging: maksimal 100 transaksi terbaru dengan kolom minimum tetap menjadi sumber autocomplete lokal.
 - Unit test mencakup default, seluruh ukuran sah, query tidak valid/berulang, penjepitan halaman, dan hasil kosong. Tidak ada perubahan schema atau migrasi database.
 - Verifikasi lokal lulus: lint, typecheck, build produksi, 108 unit test, dan 10 smoke Playwright Microsoft Edge desktop/mobile.
+
+## Hasil tahap 27 — Shortcut iPhone, 8 Oktober 2026
+
+- Pengaturan Owner/Editor dapat memilih akun serta kategori default, lalu membuat token acak yang hanya tampil sekali. Database menyimpan hash token; pembuatan ulang menonaktifkan token lama dan pencabutan tersedia kapan saja.
+- Route Handler menerima teks OCR Apple Shortcuts maksimal 50.000 karakter dengan Bearer token. Screenshot tidak dikirim; teks mentah tidak disimpan/log dan parser F18 hanya menyimpan field terstruktur.
+- Hasil masuk sebagai `ReceiptDraft` privat `needs_review`, memakai akun/kategori default sebagai prefill, lalu respons membuka halaman Transaksi pada panel review. Draf aktif tidak ditimpa dan tidak ada transaksi sebelum submit eksplisit.
+- Role/membership, masa berlaku token, workspace, akun, dan kategori divalidasi ulang server. Perubahan ke Viewer, pencabutan membership, keluar ruang, atau penghapusan akun membersihkan token.
+- Migrasi `20261008000000_ios_shortcut_receipts` menambah metadata token pada membership dan mengizinkan `source_kind = ios_shortcut`. Unit test domain serta test integrasi service tersedia.
+- Langkah konfigurasi perangkat didokumentasikan di [IOS_SHORTCUT_SETUP.md](IOS_SHORTCUT_SETUP.md).
 
 ## Backlog kandidat — bukan komitmen aktif
 

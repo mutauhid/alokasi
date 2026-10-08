@@ -126,6 +126,104 @@ export async function createLocalReceiptDraft(
   });
 }
 
+export async function createShortcutReceiptDraft(
+  context: ReceiptContext,
+  input: CreateLocalReceiptDraftInput,
+  defaults: { accountId: string; categoryId: string; tokenHash: string },
+) {
+  requireEditor(context);
+  const db = getDatabase();
+  return db.$transaction(async (tx) => {
+    await tx.$queryRaw`
+      SELECT id
+      FROM app.memberships
+      WHERE workspace_id = ${context.workspaceId}::uuid
+        AND user_id = ${context.actorId}::uuid
+      FOR UPDATE
+    `;
+    const membership = await tx.membership.findFirst({
+      where: {
+        workspaceId: context.workspaceId,
+        userId: context.actorId,
+        status: "active",
+        role: { in: ["owner", "editor"] },
+        shortcutTokenHash: defaults.tokenHash,
+        shortcutTokenExpiresAt: { gt: new Date() },
+      },
+      select: { id: true },
+    });
+    if (!membership) throw new FinanceDomainError("RECEIPT_ACCESS_DENIED");
+
+    const existing = await tx.receiptDraft.findFirst({
+      where: {
+        workspaceId: context.workspaceId,
+        createdBy: context.actorId,
+        status: "needs_review",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (existing) return { draft: existing, reused: true } as const;
+
+    const [account, category] = await Promise.all([
+      tx.financialAccount.findFirst({
+        where: {
+          id: defaults.accountId,
+          workspaceId: context.workspaceId,
+          archivedAt: null,
+        },
+        select: { id: true },
+      }),
+      tx.category.findFirst({
+        where: {
+          id: defaults.categoryId,
+          workspaceId: context.workspaceId,
+          type: "expense",
+          archivedAt: null,
+        },
+        select: { id: true },
+      }),
+    ]);
+    if (!account) throw new FinanceDomainError("TRANSACTION_ACCOUNT_INVALID");
+    if (!category) throw new FinanceDomainError("TRANSACTION_CATEGORY_INVALID");
+
+    const draft = await tx.receiptDraft.create({
+      data: {
+        workspaceId: context.workspaceId,
+        createdBy: context.actorId,
+        sourceKind: "ios_shortcut",
+        extractedAmount: input.amount,
+        extractedTransactionDate: input.transactionDate,
+        extractedMerchant: input.merchant,
+        extractedNote: input.note,
+        detectedInstitution: input.institution,
+        evidenceKind: input.evidenceKind,
+        paymentRail: input.paymentRail,
+        ocrConfidence: input.ocrConfidence,
+        institutionConfidence: input.institutionConfidence,
+        suggestedCategoryId: category.id,
+        selectedAccountId: account.id,
+        amountConfidence: input.amountConfidence,
+        dateConfidence: input.dateConfidence,
+        merchantConfidence: input.merchantConfidence,
+        categoryConfidence: null,
+      },
+    });
+    return { draft, reused: false } as const;
+  });
+}
+
+export async function getActiveReceiptDraft(context: ReceiptContext) {
+  requireEditor(context);
+  return getDatabase().receiptDraft.findFirst({
+    where: {
+      workspaceId: context.workspaceId,
+      createdBy: context.actorId,
+      status: "needs_review",
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function cancelReceiptDraft(
   context: ReceiptContext,
   input: { draftId: string; version: number },

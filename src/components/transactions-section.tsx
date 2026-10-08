@@ -27,6 +27,8 @@ import { sectionHref } from "@/lib/navigation";
 import { buildTransactionSuggestions } from "@/modules/transactions/suggestions";
 import type { TransactionPagination } from "@/modules/transactions/pagination";
 import { TransactionPageSizeControl } from "@/components/transaction-page-size-control";
+import { getActiveReceiptDraft } from "@/modules/receipts/service";
+import { receiptDraftView } from "@/modules/receipts/form-state";
 
 const messages: Record<string, string> = {
   "transaction-invalid":
@@ -125,13 +127,21 @@ export async function TransactionsSection({
     );
   }
 
-  const [accounts, categories, transactionPage, suggestionSource] =
-    await Promise.all([
-      listActiveAccountOptions(access.workspaceId),
-      listActiveCategoryOptions(access.workspaceId),
-      listTransactionPage(access.workspaceId, pagination),
-      listRecentTransactionsForSuggestions(access.workspaceId),
-    ]);
+  const [
+    accounts,
+    categories,
+    transactionPage,
+    suggestionSource,
+    activeReceiptDraft,
+  ] = await Promise.all([
+    listActiveAccountOptions(access.workspaceId),
+    listActiveCategoryOptions(access.workspaceId),
+    listTransactionPage(access.workspaceId, pagination),
+    listRecentTransactionsForSuggestions(access.workspaceId),
+    access.role !== "viewer"
+      ? getActiveReceiptDraft({ ...access, today })
+      : Promise.resolve(null),
+  ]);
   const transactions = transactionPage.items;
   const suggestions = buildTransactionSuggestions(suggestionSource);
   const status = error ?? success;
@@ -175,6 +185,11 @@ export async function TransactionsSection({
             categories={categories
               .filter((category) => category.type === "expense")
               .map(({ id, name }) => ({ id, name }))}
+            initialState={
+              activeReceiptDraft
+                ? receiptDraftView(activeReceiptDraft)
+                : undefined
+            }
           />
         </section>
       )}

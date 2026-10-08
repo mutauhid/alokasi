@@ -102,7 +102,7 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F15 | Rekonsiliasi saldo | P1 diimplementasikan | Membandingkan saldo catatan dengan saldo aktual, histori pemeriksaan, dan penyesuaian eksplisit |
 | F16 | Budget rollover | P1 | Aturan membawa sisa budget ke bulan berikutnya |
 | F17 | Ruang pribadi dan bersama | P0 | Pemilih ruang, undangan, peran, aktivitas anggota, isolasi data |
-| F18 | Scan struk/bukti pembayaran | P1 OCR lokal | OCR browser → deteksi transfer/QRIS dan institusi → koreksi → submit eksplisit; upload/provider eksternal belum aktif |
+| F18 | Scan struk/bukti pembayaran | P1 OCR lokal + Shortcut iPhone | OCR browser atau Back Tap/Apple Shortcuts → draf privat → koreksi → submit eksplisit; gambar/provider eksternal belum aktif |
 | F19 | Integrasi bank dan e-wallet | P2 | Penelitian akses API, biaya, izin, keamanan, dan rekonsiliasi |
 | F20 | Insight dan proyeksi | P2 | Insight berbasis data, proyeksi skenario, AI opsional |
 | F21 | Periode mengikuti gajian | P1 diimplementasikan | Hari mulai siklus per ruang; default tanggal 1; batas tanggal konsisten untuk budget, dashboard, dan laporan |
@@ -278,6 +278,8 @@ Dashboard menggunakan periode aktif sebagai default dan menyediakan pemilih peri
 ### F18 — Scan struk dan bukti pembayaran (OCR lokal)
 
 Tahap 11 membaca gambar di browser memakai OCR lokal. Parser mengisi nominal, tanggal, penerima, klasifikasi transfer/QRIS, bank/e-wallet, dan metode seperti BI-FAST. Gambar serta teks mentah tidak dikirim ke server atau disimpan. Hasil dapat salah dan selalu masuk draf privat untuk diperiksa sebelum submit.
+
+Perluasan iPhone menjalankan Apple Shortcut melalui Back Tap. Shortcut mengambil screenshot dan menjalankan OCR bawaan perangkat, lalu mengirim teks hasil OCR ke endpoint terautentikasi Alokasi. Screenshot tidak diunggah; teks mentah diproses sementara dan tidak disimpan. Endpoint mengembalikan tautan review dengan akun/kategori default pengguna. Alur ini tetap tidak boleh membuat transaksi sebelum konfirmasi eksplisit.
 
 - Pemicu “Scan struk” pada form pengeluaran, melalui unggah gambar atau kamera jika perangkat mendukung.
 - Ekstraksi mengisi calon nominal total, tanggal transaksi, merchant/penerima, catatan, dan saran kategori aktif. Akun sumber wajib dipilih/dikonfirmasi pengguna; jangan menyimpulkannya dari rekening penerima pada bukti transfer.
@@ -539,6 +541,7 @@ Jangan memasukkan semua kandidat ke rilis pertama. Prioritaskan bukti kebutuhan 
 - 0.4 — 24 September 2026: status implementasi diselaraskan; F21 tersedia dengan aturan prospektif, versi pengaturan, periode transisi, dan perlindungan budget masa depan. F18 tetap direncanakan.
 - 0.5 — 25 September 2026: F18 mendapat prototipe aman berupa draf privat, simulasi ekstraksi, review/koreksi, batal, dan submit atomik. Upload, penyimpanan, callback, dan OCR nyata belum aktif.
 - 0.6 — 26 September 2026: F18 membaca gambar dengan OCR lokal, memprioritaskan label total, serta mendeteksi transfer/QRIS dan bank/e-wallet. Gambar dan teks mentah tetap di browser; provider eksternal dan penyimpanan bukti belum aktif.
+- 1.4 — 8 Oktober 2026: F18 diperluas dengan token Apple Shortcuts per membership, endpoint teks OCR, akun/kategori default, dan draf konfirmasi. Screenshot tetap di perangkat; teks mentah transit tidak disimpan; transaksi tetap memerlukan submit eksplisit.
 - 0.7 — 27 September 2026: F06/F07 dilengkapi dengan pemilih periode historis, tren hingga enam periode tersimpan, drill-down ke transaksi sumber, serta salin budget periode sebelumnya dengan pratinjau dan perlindungan tanpa overwrite.
 - 0.8 — 27 September 2026: F17 dilengkapi dengan permintaan pengalihan kepemilikan dua langkah, penerimaan atomik, pembatalan, perlindungan konflik, dan keluar mandiri untuk Editor/Viewer.
 - 0.9 — 27 September 2026: atas instruksi pengguna, F21 berubah dari jadwal prospektif menjadi perubahan langsung pada periode aktif, dengan ID budget aktif tetap, histori transisi, versi same-day, dan perlindungan budget masa depan.

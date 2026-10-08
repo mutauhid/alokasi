@@ -33,6 +33,10 @@ import {
 import type { WorkspaceAccess } from "@/modules/workspaces/service";
 import { getAuthAdminConfig } from "@/server/auth/config";
 import { DeleteAccountForm } from "@/components/delete-account-form";
+import { ShortcutIntegrationCard } from "@/components/shortcut-integration-card";
+import { listActiveAccountOptions } from "@/modules/accounts/service";
+import { listActiveCategoryOptions } from "@/modules/categories/service";
+import { getShortcutIntegration } from "@/modules/shortcut-integration/service";
 
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
@@ -93,13 +97,28 @@ export async function SettingsSection({
 }) {
   const workspaceId = access.workspaceId;
   const canManage = access.role === "owner";
-  const [categories, cycle, deletion, profile] = await Promise.all([
+  const [
+    categories,
+    cycle,
+    deletion,
+    profile,
+    shortcut,
+    shortcutAccounts,
+    shortcutCategories,
+  ] = await Promise.all([
     listCategories(access.workspaceId),
     getCycleOverview(access.workspaceId, today),
     access.workspaceType === "personal"
       ? getAccountDeletionSummary(access.actorId)
       : Promise.resolve(null),
     getUserProfile(access.actorId),
+    getShortcutIntegration(access),
+    access.role !== "viewer"
+      ? listActiveAccountOptions(access.workspaceId)
+      : Promise.resolve([]),
+    access.role !== "viewer"
+      ? listActiveCategoryOptions(access.workspaceId)
+      : Promise.resolve([]),
   ]);
   const accountDeletionConfigured = Boolean(getAuthAdminConfig());
   const status = error ?? success;
@@ -218,6 +237,22 @@ export async function SettingsSection({
           </div>
         </CardContent>
       </Card>
+      {access.role !== "viewer" && (
+        <ShortcutIntegrationCard
+          workspaceId={workspaceId}
+          accounts={shortcutAccounts.map(({ id, name }) => ({ id, name }))}
+          categories={shortcutCategories
+            .filter((category) => category.type === "expense")
+            .map(({ id, name }) => ({ id, name }))}
+          initialState={{
+            configured: shortcut.configured,
+            accountName: shortcut.accountName,
+            categoryName: shortcut.categoryName,
+            expiresAt: shortcut.expiresAt?.toISOString(),
+            lastUsedAt: shortcut.lastUsedAt?.toISOString(),
+          }}
+        />
+      )}
       <Card className="shadow-none">
         <CardHeader>
           <CardTitle>Kategori</CardTitle>
@@ -512,7 +547,7 @@ export async function SettingsSection({
         <CardHeader>
           <CardTitle>Status aplikasi</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Tahap 18 · Menu akun, profil, dan keamanan password.
+            Fitur inti dan integrasi perangkat yang telah tersedia.
           </p>
         </CardHeader>
         <CardContent>
@@ -529,6 +564,7 @@ export async function SettingsSection({
               { label: "Periode mengikuti tanggal gajian", done: true },
               { label: "Ekspor lengkap ruang", done: true },
               { label: "Penghapusan ruang dan akun", done: true },
+              { label: "Shortcut iPhone dengan konfirmasi", done: true },
             ].map((item) => (
               <li
                 key={item.label}

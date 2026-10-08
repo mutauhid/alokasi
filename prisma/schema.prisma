@@ -121,22 +121,28 @@ model CycleSetting {
 }
 
 model Membership {
-  id                  String                         @id @default(uuid()) @db.Uuid
-  workspaceId         String                         @map("workspace_id") @db.Uuid
-  userId              String                         @map("user_id") @db.Uuid
-  role                MemberRole
-  status              MemberStatus                   @default(active)
-  version             Int                            @default(1)
-  joinedAt            DateTime                       @default(now()) @map("joined_at") @db.Timestamptz(3)
-  updatedAt           DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
-  workspace           Workspace                      @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  user                User                           @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  createdTransactions Transaction[]                  @relation("TransactionCreator")
-  updatedTransactions Transaction[]                  @relation("TransactionUpdater")
-  invitations         Invitation[]                   @relation("InvitationCreator")
-  receiptDrafts       ReceiptDraft[]                 @relation("ReceiptDraftCreator")
-  recurringTemplates  RecurringTransactionTemplate[] @relation("RecurringTemplateCreator")
-  reconciliations     BalanceReconciliation[]        @relation("ReconciliationCreator")
+  id                        String                         @id @default(uuid()) @db.Uuid
+  workspaceId               String                         @map("workspace_id") @db.Uuid
+  userId                    String                         @map("user_id") @db.Uuid
+  role                      MemberRole
+  status                    MemberStatus                   @default(active)
+  version                   Int                            @default(1)
+  joinedAt                  DateTime                       @default(now()) @map("joined_at") @db.Timestamptz(3)
+  updatedAt                 DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  shortcutTokenHash         String?                        @unique @map("shortcut_token_hash") @db.VarChar(64)
+  shortcutTokenCreatedAt    DateTime?                      @map("shortcut_token_created_at") @db.Timestamptz(3)
+  shortcutTokenExpiresAt    DateTime?                      @map("shortcut_token_expires_at") @db.Timestamptz(3)
+  shortcutTokenLastUsedAt   DateTime?                      @map("shortcut_token_last_used_at") @db.Timestamptz(3)
+  shortcutDefaultAccountId  String?                        @map("shortcut_default_account_id") @db.Uuid
+  shortcutDefaultCategoryId String?                        @map("shortcut_default_category_id") @db.Uuid
+  workspace                 Workspace                      @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user                      User                           @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  createdTransactions       Transaction[]                  @relation("TransactionCreator")
+  updatedTransactions       Transaction[]                  @relation("TransactionUpdater")
+  invitations               Invitation[]                   @relation("InvitationCreator")
+  receiptDrafts             ReceiptDraft[]                 @relation("ReceiptDraftCreator")
+  recurringTemplates        RecurringTransactionTemplate[] @relation("RecurringTemplateCreator")
+  reconciliations           BalanceReconciliation[]        @relation("ReconciliationCreator")
 
   @@unique([workspaceId, userId])
   @@unique([workspaceId, id])

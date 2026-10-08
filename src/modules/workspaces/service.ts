@@ -487,7 +487,20 @@ export async function changeMemberRole(
         role: { not: "owner" },
         version: input.version,
       },
-      data: { role: input.role, version: { increment: 1 } },
+      data: {
+        role: input.role,
+        version: { increment: 1 },
+        ...(input.role === "viewer"
+          ? {
+              shortcutTokenHash: null,
+              shortcutTokenCreatedAt: null,
+              shortcutTokenExpiresAt: null,
+              shortcutTokenLastUsedAt: null,
+              shortcutDefaultAccountId: null,
+              shortcutDefaultCategoryId: null,
+            }
+          : {}),
+      },
     });
     if (result.count !== 1)
       throw new WorkspaceDomainError("MEMBERSHIP_CONFLICT");
@@ -528,7 +541,16 @@ export async function revokeMember(
         role: { not: "owner" },
         version: input.version,
       },
-      data: { status: "revoked", version: { increment: 1 } },
+      data: {
+        status: "revoked",
+        version: { increment: 1 },
+        shortcutTokenHash: null,
+        shortcutTokenCreatedAt: null,
+        shortcutTokenExpiresAt: null,
+        shortcutTokenLastUsedAt: null,
+        shortcutDefaultAccountId: null,
+        shortcutDefaultCategoryId: null,
+      },
     });
     if (result.count !== 1)
       throw new WorkspaceDomainError("MEMBERSHIP_CONFLICT");
@@ -821,7 +843,16 @@ export async function leaveSharedWorkspace(
         status: "active",
         role: { not: "owner" },
       },
-      data: { status: "revoked", version: { increment: 1 } },
+      data: {
+        status: "revoked",
+        version: { increment: 1 },
+        shortcutTokenHash: null,
+        shortcutTokenCreatedAt: null,
+        shortcutTokenExpiresAt: null,
+        shortcutTokenLastUsedAt: null,
+        shortcutDefaultAccountId: null,
+        shortcutDefaultCategoryId: null,
+      },
     });
     if (updated.count !== 1) {
       throw new WorkspaceDomainError("MEMBERSHIP_CONFLICT");

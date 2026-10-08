@@ -155,6 +155,8 @@ Tradeoff utama pilihan ini: bergantung pada layanan Supabase untuk operasi datab
 
 OCR tahap 11 memakai Tesseract.js dalam Web Worker browser dengan core WASM dan model bahasa yang disajikan dari origin aplikasi. Worker diimpor dinamis agar tidak menambah jalur awal halaman. Gambar dan teks mentah tidak masuk backend. Provider vision eksternal atau worker server baru dipilih bila evaluasi akurasi lokal tidak memenuhi target; endpoint serverless tidak dijadikan worker tak terbatas. Hosting aplikasi dan storage scan belum dibeli atau diprovision.
 
+Perluasan iPhone memakai kemampuan bawaan Back Tap dan Apple Shortcuts, tanpa SDK native atau n8n. Aksi `Extract Text from Image` menghasilkan teks yang dikirim sebagai JSON melalui HTTPS ke Route Handler Node.js. Bearer token acak disimpan hanya sebagai hash pada membership; token membawa wewenang membuat draf privat, bukan transaksi. Route Handler membatasi payload, memakai parser F18 yang sama, tidak menyimpan teks mentah/gambar, dan mengembalikan URL review pada origin `APP_URL`.
+
 ## 9. Rujukan resmi yang diperiksa
 
 - [Next.js: Backend for Frontend](https://nextjs.org/docs/app/guides/backend-for-frontend) — jalur server dan Route Handlers.

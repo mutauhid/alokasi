@@ -4,6 +4,7 @@ import { startTransition, useActionState, useEffect, useState } from "react";
 import { Camera, FileImage, ShieldCheck, Sparkles } from "lucide-react";
 import { receiptDraftAction } from "@/app/(workspace)/actions";
 import { initialReceiptDraftState } from "@/modules/receipts/form-state";
+import type { ReceiptDraftFormState } from "@/modules/receipts/form-state";
 import {
   recognizeReceiptLocally,
   type OcrProgress,
@@ -36,14 +37,16 @@ export function ReceiptScanPanel({
   workspaceId,
   accounts,
   categories,
+  initialState = initialReceiptDraftState,
 }: {
   workspaceId: string;
   accounts: Option[];
   categories: Option[];
+  initialState?: ReceiptDraftFormState;
 }) {
   const [state, action, pending] = useActionState(
     receiptDraftAction,
-    initialReceiptDraftState,
+    initialState,
   );
   const [previewUrl, setPreviewUrl] = useState<string>();
   const [selectedFile, setSelectedFile] = useState<File>();
@@ -126,6 +129,7 @@ export function ReceiptScanPanel({
   }
 
   const draft = state.draft;
+  const fromShortcut = draft?.sourceKind === "ios_shortcut";
   return (
     <Card className="shadow-none">
       <CardHeader>
@@ -147,9 +151,9 @@ export function ReceiptScanPanel({
             aria-hidden="true"
           />
           <p>
-            Gambar diproses di browser dengan aset OCR milik aplikasi. Gambar
-            dan teks mentah tidak dikirim ke server atau disimpan; hanya field
-            hasil yang kamu periksa yang menjadi draf.
+            {fromShortcut
+              ? "Screenshot tetap di iPhone. Shortcut mengirim teks OCR ke server untuk diparsing sementara; teks mentah tidak disimpan."
+              : "Gambar diproses di browser dengan aset OCR milik aplikasi. Gambar dan teks mentah tidak dikirim ke server atau disimpan; hanya field hasil yang kamu periksa yang menjadi draf."}
           </p>
         </div>
 
@@ -205,7 +209,9 @@ export function ReceiptScanPanel({
           <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div>
               <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="font-medium">Pratinjau lokal</p>
+                <p className="font-medium">
+                  {fromShortcut ? "Draf dari iPhone" : "Pratinjau lokal"}
+                </p>
                 <Badge variant="outline">Draf privat</Badge>
               </div>
               {previewUrl ? (
@@ -218,7 +224,9 @@ export function ReceiptScanPanel({
                 />
               ) : (
                 <div className="flex min-h-52 items-center justify-center rounded-xl border bg-muted text-sm text-muted-foreground">
-                  Pratinjau tidak tersedia.
+                  {fromShortcut
+                    ? "Screenshot tidak diunggah dan tetap berada di iPhone."
+                    : "Pratinjau tidak tersedia."}
                 </div>
               )}
             </div>
@@ -311,7 +319,7 @@ export function ReceiptScanPanel({
                   <select
                     name="accountId"
                     required
-                    defaultValue=""
+                    defaultValue={draft.accountId}
                     className={inputClass}
                   >
                     <option value="">Pilih akun</option>
