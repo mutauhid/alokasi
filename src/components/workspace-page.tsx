@@ -11,6 +11,7 @@ import { getWorkspaceContext } from "@/modules/workspaces/service";
 import { WorkspaceDomainError } from "@/modules/workspaces/errors";
 import { ensurePeriod, getPeriodSelection } from "@/modules/periods/service";
 import { parseTransactionPagination } from "@/modules/transactions/pagination";
+import { ActionSuccessToast } from "@/components/action-success-toast";
 
 export type WorkspaceSearchParams = Promise<{
   workspaceId?: string | string[];
@@ -83,6 +84,7 @@ export async function WorkspacePage({
     "budgets",
     "reports",
   ].includes(section);
+  const success = typeof query.success === "string" ? query.success : undefined;
 
   return (
     <AppShell
@@ -97,6 +99,7 @@ export async function WorkspacePage({
       userLabel={context.user.displayName ?? identity.email}
       userEmail={identity.email}
     >
+      <ActionSuccessToast code={success} />
       <div className="mb-7 flex flex-wrap items-start justify-between gap-5">
         <div>
           <h1 className="text-[27px] font-semibold leading-tight tracking-[-.8px]">
@@ -176,7 +179,6 @@ export async function WorkspacePage({
         }}
         today={today}
         error={typeof query.error === "string" ? query.error : undefined}
-        success={typeof query.success === "string" ? query.success : undefined}
         reportQuery={{
           from: typeof query.from === "string" ? query.from : undefined,
           to: typeof query.to === "string" ? query.to : undefined,

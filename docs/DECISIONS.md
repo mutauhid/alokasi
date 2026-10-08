@@ -1,6 +1,6 @@
 # Catatan keputusan
 
-Diperbarui: 7 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
+Diperbarui: 8 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
 
 ## Keputusan dan kebutuhan pengguna
 
@@ -45,6 +45,7 @@ Diperbarui: 7 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent t
 | D38 | 7 Okt 2026 | Pengguna meminta halaman Transaksi memakai paging dengan pilihan 5, 10, 20, 30, 50, dan 100 serta default 10 | Implementasikan paging riwayat transaksi pada branch `feat/transaction-pagination`; batas dan hitungan dilakukan server-side, sedangkan sumber saran judul tetap maksimal 100 transaksi terbaru |
 | D39 | 7 Okt 2026 | Pengguna meminta pilihan ukuran paging langsung diterapkan tanpa tombol Terapkan | Dropdown ukuran melakukan submit GET otomatis saat berubah, kembali ke halaman pertama, dan tetap menyimpan workspace serta ukuran pada URL |
 | D40 | 8 Okt 2026 | Setelah memberikan rekaman demo, pengguna meminta pengalaman iPhone dengan konfirmasi singkat lebih dahulu | Aktifkan perluasan F18 melalui Back Tap + Apple Shortcuts: screenshot tetap di iPhone, teks OCR dikirim ke API Alokasi dengan token terbatas, hasil menjadi draf privat, dan pengguna tetap menekan Simpan pengeluaran sebelum saldo berubah |
+| D41 | 8 Okt 2026 | Pengguna meminta toast/notifikasi menarik setelah transaksi, pengaturan budget, dan aksi lainnya berhasil | Status sukses mutasi ruang ditampilkan sebagai toast global yang ringkas, dapat ditutup, hilang otomatis, dan tidak muncul ulang saat refresh; error tetap berada dekat form agar dapat langsung diperbaiki |
 
 ## Pilihan teknis hasil delegasi D07
 

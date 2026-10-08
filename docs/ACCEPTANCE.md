@@ -672,3 +672,13 @@ Smoke Playwright mencakup regresi publik/auth, bukan halaman Transaksi terautent
 | SHORTCUT-05 | Token kedaluwarsa/dicabut, Viewer, dan membership nonaktif ditolak; downgrade/revoke/leave/penghapusan akun membersihkan credential |
 | SHORTCUT-06 | Respons mengandung URL review pada `APP_URL`; halaman memuat kembali draf aktif dan menampilkan konfirmasi akun, kategori, nominal, tanggal, serta merchant |
 | Verifikasi lokal sementara | Prisma validate/generate, lint, TypeScript, dan 111 unit test lulus; migrasi/test PostgreSQL serta smoke iPhone nyata masih perlu dijalankan |
+
+## Hasil tahap 28 — toast keberhasilan aksi, 8 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| TOAST-01 | Kode sukses transaksi, draf OCR, budget, akun, rekonsiliasi, kategori, siklus, profil, pengingat, anggota, dan ruang dipetakan ke judul serta deskripsi spesifik; kode tidak dikenal tidak ditampilkan sebagai sukses |
+| TOAST-02 | Satu toast global menggantikan pesan sukses inline pada halaman ruang, sedangkan error dan konflik tetap tampil dekat area tindakan |
+| TOAST-03 | Toast memakai `role=status`, `aria-live=polite`, tombol tutup berlabel, durasi 5,5 detik, indikator waktu, safe area mobile, dan reduced motion global |
+| TOAST-04 | Setelah toast dipicu, hanya parameter `success` yang dihapus dari URL; workspace, filter, paging, periode, dan hash tetap dipertahankan |
+| Verifikasi | Lint, TypeScript, build produksi, serta 18 file/115 unit test lulus |
