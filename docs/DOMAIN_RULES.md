@@ -109,6 +109,10 @@ Istilah “autocomplete” di sini berarti prefill form yang dapat dikoreksi. Ti
 - Validasi file, sanitasi metadata, batasi ukuran/resolusi/dekode serta frekuensi upload, dan hapus file sesuai lifecycle yang ditetapkan.
 - Provider, lokasi pemrosesan, retensi berkas/draf, penghapusan pasca-submit/batal, dan pemberitahuan pengguna harus ditetapkan sebelum fitur upload produksi aktif. Jangan mengganti keputusan ini dengan retensi tanpa batas.
 - OCR lokal memproses gambar di browser dan hanya mengirim field terstruktur yang diperlukan untuk draf. Teks mentah tidak dikirim/disimpan. Aset worker/model berasal dari origin aplikasi; jika arsitektur ini berubah atau provider eksternal ditambahkan, keputusan privasi dan consent harus diperbarui lebih dahulu.
+- Jalur Apple Shortcuts adalah pengecualian eksplisit: screenshot tetap di iPhone, sedangkan teks hasil OCR Apple dikirim melalui HTTPS untuk diparsing sementara di server. Teks mentah dibatasi 50.000 karakter serta tidak disimpan, diekspor, atau dicatat ke log/analitik.
+- Token Shortcut terikat satu membership dan ruang, disimpan hanya sebagai SHA-256, berlaku maksimal satu tahun, serta dapat diputar/dicabut. Role Viewer, membership nonaktif, atau token kedaluwarsa selalu ditolak server.
+- Akun dan kategori default divalidasi aktif serta satu ruang saat token dibuat dan ketika draf dibuat. Nilai ini hanya prefill review; rekening penerima tidak pernah menentukan akun sumber.
+- Jika masih ada draf `needs_review`, request Shortcut berikutnya tidak menimpa isinya. Server mengembalikan tautan ke draf tersebut agar pengguna menyelesaikan atau membatalkannya.
 
 ## 4. F21 — periode mengikuti tanggal gajian
 

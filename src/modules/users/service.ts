@@ -170,7 +170,16 @@ export async function deleteApplicationAccount(input: {
         });
         await tx.membership.updateMany({
           where: { id: { in: membershipIds }, status: "active" },
-          data: { status: "revoked", version: { increment: 1 } },
+          data: {
+            status: "revoked",
+            version: { increment: 1 },
+            shortcutTokenHash: null,
+            shortcutTokenCreatedAt: null,
+            shortcutTokenExpiresAt: null,
+            shortcutTokenLastUsedAt: null,
+            shortcutDefaultAccountId: null,
+            shortcutDefaultCategoryId: null,
+          },
         });
       }
 

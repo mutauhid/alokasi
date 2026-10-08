@@ -58,6 +58,8 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Tombol utama “Simpan pengeluaran” hanya setelah form valid; sukses menuju transaksi hasil, bukan mengulang submit.
 - Jangan menampilkan toast “Pengeluaran tersimpan” ketika OCR baru selesai. Gunakan “Hasil scan siap diperiksa”.
 - Error/timeout menyediakan input manual. Tidak ada nilai keuangan fiktif untuk menutupi OCR gagal.
+- Pengaturan menyediakan kartu “Shortcut iPhone” untuk memilih akun/kategori default, membuat token yang hanya tampil sekali, memutar token, dan mencabutnya.
+- Draf dari Shortcut langsung membuka bagian “Periksa pengeluaran”, menandai bahwa screenshot tetap di iPhone, dan mengisi akun/kategori default. Tombol utama tetap “Simpan pengeluaran”; kedatangan draf bukan status transaksi tersimpan.
 
 ## Perluasan F21 — siklus gajian
 

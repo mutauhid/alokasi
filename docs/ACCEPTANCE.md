@@ -660,3 +660,15 @@ Migrasi `20261006000000_balance_reconciliations` dan test PostgreSQL belum dijal
 | Verifikasi lokal | Lint, typecheck, build produksi, 108 unit test, dan 10 smoke Playwright Microsoft Edge desktop/mobile lulus |
 
 Smoke Playwright mencakup regresi publik/auth, bukan halaman Transaksi terautentikasi. Suite PostgreSQL tidak dijalankan karena perubahan ini tidak memiliki migrasi dan unit test mencakup kalkulasi paging; perilaku query tetap perlu mendapat smoke terautentikasi dengan data lebih dari 10 baris sebelum merge/deploy.
+
+## Hasil tahap 27 — Shortcut iPhone, 8 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| SHORTCUT-01 | Owner/Editor memilih akun dan kategori aktif; token acak hanya dikembalikan sekali dan database hanya menyimpan SHA-256 |
+| SHORTCUT-02 | Payload wajib JSON `{ text }`, dinormalisasi dan dibatasi 50.000 karakter; gambar serta teks mentah tidak memiliki kolom penyimpanan atau log |
+| SHORTCUT-03 | Endpoint membuat draf privat `ios_shortcut` dengan default terpilih; jumlah transaksi tetap nol sampai submit F18 |
+| SHORTCUT-04 | Request berikutnya ketika ada draf aktif mengembalikan draf lama tanpa menimpa field atau membuat transaksi baru |
+| SHORTCUT-05 | Token kedaluwarsa/dicabut, Viewer, dan membership nonaktif ditolak; downgrade/revoke/leave/penghapusan akun membersihkan credential |
+| SHORTCUT-06 | Respons mengandung URL review pada `APP_URL`; halaman memuat kembali draf aktif dan menampilkan konfirmasi akun, kategori, nominal, tanggal, serta merchant |
+| Verifikasi lokal sementara | Prisma validate/generate, lint, TypeScript, dan 111 unit test lulus; migrasi/test PostgreSQL serta smoke iPhone nyata masih perlu dijalankan |

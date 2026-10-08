@@ -54,7 +54,10 @@ import {
   createLocalReceiptDraftInput,
   submitReceiptDraftInput,
 } from "@/modules/receipts/domain";
-import type { ReceiptDraftFormState } from "@/modules/receipts/form-state";
+import {
+  receiptDraftView,
+  type ReceiptDraftFormState,
+} from "@/modules/receipts/form-state";
 import {
   createRecurringTemplateInput,
   recurringTemplateMutationInput,
@@ -551,59 +554,6 @@ function receiptError(error: unknown) {
   return error instanceof FinanceDomainError
     ? (receiptErrors[error.code] ?? "Draf belum dapat diproses.")
     : "Draf belum dapat diproses.";
-}
-
-function receiptDraftView(draft: {
-  id: string;
-  version: number;
-  sourceKind: string;
-  extractedAmount: bigint | null;
-  extractedTransactionDate: Date | null;
-  extractedMerchant: string | null;
-  extractedNote: string | null;
-  detectedInstitution: string | null;
-  evidenceKind: string | null;
-  paymentRail: string | null;
-  ocrConfidence: number | null;
-  institutionConfidence: number | null;
-  suggestedCategoryId: string | null;
-  amountConfidence: number | null;
-  dateConfidence: number | null;
-  merchantConfidence: number | null;
-  categoryConfidence: number | null;
-}): ReceiptDraftFormState {
-  const evidenceKind = ["transfer", "qris", "receipt"].includes(
-    draft.evidenceKind ?? "",
-  )
-    ? (draft.evidenceKind as "transfer" | "qris" | "receipt")
-    : "unknown";
-  return {
-    phase: "review",
-    draft: {
-      id: draft.id,
-      version: draft.version,
-      sourceKind: draft.sourceKind === "local_ocr" ? "local_ocr" : "fixture",
-      amount: draft.extractedAmount?.toString() ?? "",
-      transactionDate:
-        draft.extractedTransactionDate?.toISOString().slice(0, 10) ?? "",
-      merchant: draft.extractedMerchant ?? "",
-      note: draft.extractedNote ?? "",
-      categoryId: draft.suggestedCategoryId ?? "",
-      detection: {
-        institution: draft.detectedInstitution ?? "",
-        evidenceKind,
-        paymentRail: draft.paymentRail ?? "",
-        ocr: draft.ocrConfidence,
-        institutionConfidence: draft.institutionConfidence,
-      },
-      confidence: {
-        amount: draft.amountConfidence,
-        date: draft.dateConfidence,
-        merchant: draft.merchantConfidence,
-        category: draft.categoryConfidence,
-      },
-    },
-  };
 }
 
 export async function receiptDraftAction(
