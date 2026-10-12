@@ -349,6 +349,24 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
         categoryId: expenseCategory.id,
         note: "Pakan bulanan",
       });
+      expect(
+        (
+          await transactions.listTransactionPage(room.id, {
+            page: 1,
+            pageSize: 10,
+            search: "PAKAN",
+          })
+        ).items.map((item) => item.id),
+      ).toEqual([expenseTransaction.id]);
+      expect(
+        (
+          await transactions.listTransactionPage(room.id, {
+            page: 1,
+            pageSize: 10,
+            search: "hewan",
+          })
+        ).items.map((item) => item.id),
+      ).toEqual([expenseTransaction.id]);
       await transactions.deleteTransaction(context, {
         id: firstIncome.id,
         version: firstIncome.version,
@@ -362,6 +380,7 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
           await transactions.listTransactionPage(room.id, {
             page: 1,
             pageSize: 10,
+            search: "",
           })
         ).items,
       ).toHaveLength(0);
@@ -1785,8 +1804,8 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
         version: localDraft.version,
         amount: 502500n,
         transactionDate: new Date("2026-09-25T00:00:00.000Z"),
-        merchant: "MUHAMMAD TAUFIK HIDAYAT",
-        note: "Transfer via Bank Mandiri (BI-FAST)",
+        title: "Pembayaran penerima",
+        note: "MUHAMMAD TAUFIK HIDAYAT · Transfer via Bank Mandiri (BI-FAST)",
         accountId: accountRow.id,
         categoryId: category.id,
       };
@@ -1797,6 +1816,7 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
       expect(retried.id).toBe(created.id);
       expect(created).toMatchObject({
         type: "expense",
+        title: "Pembayaran penerima",
         amount: 502500n,
         accountId: accountRow.id,
         categoryId: category.id,

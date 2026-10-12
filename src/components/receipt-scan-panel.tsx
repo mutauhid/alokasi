@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RupiahInput } from "@/components/ui/rupiah-input";
+import { TransactionTitleField } from "@/components/transaction-title-field";
+import type { TransactionSuggestion } from "@/modules/transactions/suggestions";
 
 type Option = { id: string; name: string };
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -33,21 +35,78 @@ function Confidence({ value }: { value: number | null }) {
   );
 }
 
+function ReceiptSuggestedFields({
+  title: initialTitle,
+  categoryId: initialCategoryId,
+  categories,
+  suggestions,
+}: {
+  title: string;
+  categoryId: string;
+  categories: Option[];
+  suggestions: TransactionSuggestion[];
+}) {
+  const [title, setTitle] = useState(initialTitle);
+  const [categoryId, setCategoryId] = useState(initialCategoryId);
+
+  function applySuggestion(suggestion: TransactionSuggestion) {
+    setTitle(suggestion.title);
+    if (suggestion.categoryId) setCategoryId(suggestion.categoryId);
+  }
+
+  return (
+    <>
+      <div>
+        <TransactionTitleField
+          value={title}
+          onValueChange={setTitle}
+          type="expense"
+          suggestions={suggestions}
+          onApplySuggestion={applySuggestion}
+        />
+      </div>
+      <label className="text-sm font-medium">
+        Kategori
+        <select
+          name="categoryId"
+          required
+          value={categoryId}
+          onChange={(event) => setCategoryId(event.target.value)}
+          className={inputClass}
+        >
+          <option value="">Pilih kategori</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+        <span className="mt-1 block text-xs text-muted-foreground">
+          Saran kategori wajib diperiksa.
+        </span>
+      </label>
+    </>
+  );
+}
+
 export function ReceiptScanPanel({
   workspaceId,
   accounts,
   categories,
+  suggestions = [],
   initialState = initialReceiptDraftState,
 }: {
   workspaceId: string;
   accounts: Option[];
   categories: Option[];
+  suggestions?: TransactionSuggestion[];
   initialState?: ReceiptDraftFormState;
 }) {
   const [state, action, pending] = useActionState(
     receiptDraftAction,
     initialState,
   );
+  const draft = state.draft;
   const [previewUrl, setPreviewUrl] = useState<string>();
   const [selectedFile, setSelectedFile] = useState<File>();
   const [fileError, setFileError] = useState<string>();
@@ -128,8 +187,13 @@ export function ReceiptScanPanel({
     }
   }
 
-  const draft = state.draft;
   const fromShortcut = draft?.sourceKind === "ios_shortcut";
+  const remotePreviewUrl =
+    fromShortcut && draft?.hasEvidenceImage
+      ? `/api/receipt-drafts/${draft.id}/image?workspaceId=${encodeURIComponent(workspaceId)}&version=${draft.version}`
+      : undefined;
+  const displayedPreviewUrl = previewUrl ?? remotePreviewUrl;
+
   return (
     <Card className="shadow-none">
       <CardHeader>
@@ -152,7 +216,7 @@ export function ReceiptScanPanel({
           />
           <p>
             {fromShortcut
-              ? "Screenshot tetap di iPhone. Shortcut mengirim teks OCR ke server untuk diparsing sementara; teks mentah tidak disimpan."
+              ? "Screenshot dikirim sebagai lampiran privat draf agar dapat diperiksa, lalu dihapus saat draf disimpan atau dibatalkan. Teks OCR mentah tidak disimpan."
               : "Gambar diproses di browser dengan aset OCR milik aplikasi. Gambar dan teks mentah tidak dikirim ke server atau disimpan; hanya field hasil yang kamu periksa yang menjadi draf."}
           </p>
         </div>
@@ -214,18 +278,17 @@ export function ReceiptScanPanel({
                 </p>
                 <Badge variant="outline">Draf privat</Badge>
               </div>
-              {previewUrl ? (
-                // This blob URL never leaves the current browser tab.
+              {displayedPreviewUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={previewUrl}
-                  alt="Pratinjau struk yang dipilih"
+                  src={displayedPreviewUrl}
+                  alt="Pratinjau bukti pembayaran untuk draf"
                   className="max-h-[28rem] w-full rounded-xl border object-contain"
                 />
               ) : (
                 <div className="flex min-h-52 items-center justify-center rounded-xl border bg-muted text-sm text-muted-foreground">
                   {fromShortcut
-                    ? "Screenshot tidak diunggah dan tetap berada di iPhone."
+                    ? "Draf ini dibuat tanpa gambar. Perbarui Shortcut lalu kirim bukti baru."
                     : "Pratinjau tidak tersedia."}
                 </div>
               )}
@@ -275,7 +338,7 @@ export function ReceiptScanPanel({
                 </p>
               )}
               <form
-                key={draft.id}
+                key={`${draft.id}-${draft.version}`}
                 action={action}
                 className="grid gap-4 md:grid-cols-2"
               >
@@ -304,16 +367,13 @@ export function ReceiptScanPanel({
                   />
                   <Confidence value={draft.confidence.date} />
                 </label>
-                <label className="text-sm font-medium">
-                  Merchant
-                  <input
-                    name="merchant"
-                    maxLength={200}
-                    defaultValue={draft.merchant}
-                    className={inputClass}
-                  />
-                  <Confidence value={draft.confidence.merchant} />
-                </label>
+                <ReceiptSuggestedFields
+                  key={`${draft.id}-${draft.version}`}
+                  title={draft.title}
+                  categoryId={draft.categoryId}
+                  categories={categories}
+                  suggestions={suggestions}
+                />
                 <label className="text-sm font-medium">
                   Akun
                   <select
@@ -333,25 +393,6 @@ export function ReceiptScanPanel({
                     Selalu dipilih pengguna.
                   </span>
                 </label>
-                <label className="text-sm font-medium">
-                  Kategori
-                  <select
-                    name="categoryId"
-                    required
-                    defaultValue={draft.categoryId}
-                    className={inputClass}
-                  >
-                    <option value="">Pilih kategori</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    Saran kategori wajib diperiksa.
-                  </span>
-                </label>
                 <label className="text-sm font-medium md:col-span-2">
                   Catatan opsional
                   <input
@@ -360,6 +401,10 @@ export function ReceiptScanPanel({
                     defaultValue={draft.note}
                     className={inputClass}
                   />
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    Nama merchant hasil OCR ditempatkan di catatan dan dapat
+                    dikoreksi.
+                  </span>
                 </label>
                 <Button
                   type="button"

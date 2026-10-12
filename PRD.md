@@ -102,7 +102,7 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F15 | Rekonsiliasi saldo | P1 diimplementasikan | Membandingkan saldo catatan dengan saldo aktual, histori pemeriksaan, dan penyesuaian eksplisit |
 | F16 | Budget rollover | P1 | Aturan membawa sisa budget ke bulan berikutnya |
 | F17 | Ruang pribadi dan bersama | P0 | Pemilih ruang, undangan, peran, aktivitas anggota, isolasi data |
-| F18 | Scan struk/bukti pembayaran | P1 OCR lokal + Shortcut iPhone | OCR browser atau Back Tap/Apple Shortcuts → draf privat → koreksi → submit eksplisit; gambar/provider eksternal belum aktif |
+| F18 | Scan struk/bukti pembayaran | P1 OCR lokal + Shortcut iPhone | OCR browser atau Back Tap/Apple Shortcuts → draf privat dengan preview iPhone sementara → koreksi → submit eksplisit; provider eksternal/lampiran permanen belum aktif |
 | F19 | Integrasi bank dan e-wallet | P2 | Penelitian akses API, biaya, izin, keamanan, dan rekonsiliasi |
 | F20 | Insight dan proyeksi | P2 | Insight berbasis data, proyeksi skenario, AI opsional |
 | F21 | Periode mengikuti gajian | P1 diimplementasikan | Hari mulai siklus per ruang; default tanggal 1; batas tanggal konsisten untuk budget, dashboard, dan laporan |
@@ -146,7 +146,7 @@ F12–F14 dan F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setel
 - Transfer memilih akun asal dan tujuan yang berbeda, tanpa kategori pemasukan/pengeluaran.
 - Biaya transfer dicatat sebagai pengeluaran terpisah; bukan bagian nominal yang diterima akun tujuan.
 - Transaksi masa depan ditolak pada MVP; gunakan tanggal hari ini atau sebelumnya, minimal tanggal mulai akun.
-- Daftar transaksi mendukung filter periode, akun, kategori, jenis, serta pencarian catatan.
+- Daftar transaksi mendukung filter periode, akun, kategori, jenis, serta pencarian. Halaman Riwayat memiliki pencarian server-side khusus judul atau nama kategori.
 - Riwayat pada halaman Transaksi memakai paging server-side dengan pilihan 5, 10, 20, 30, 50, atau 100 baris per halaman; default 10. Pilihan langsung diterapkan tanpa tombol tambahan, sedangkan halaman dan ukuran halaman disimpan pada URL.
 - Pengguna dapat mengubah dan menghapus transaksi dengan konfirmasi; perubahan langsung memperbarui seluruh agregat.
 - Kategori yang telah dipakai dapat diarsipkan, tetapi transaksi historis tetap memiliki referensi kategori tersebut.
@@ -277,12 +277,13 @@ Dashboard menggunakan periode aktif sebagai default dan menyediakan pemilih peri
 
 ### F18 — Scan struk dan bukti pembayaran (OCR lokal)
 
-Tahap 11 membaca gambar di browser memakai OCR lokal. Parser mengisi nominal, tanggal, penerima, klasifikasi transfer/QRIS, bank/e-wallet, dan metode seperti BI-FAST. Gambar serta teks mentah tidak dikirim ke server atau disimpan. Hasil dapat salah dan selalu masuk draf privat untuk diperiksa sebelum submit.
+Tahap 11 membaca gambar yang dipilih manual di browser memakai OCR lokal. Parser mengisi nominal, tanggal, penerima, klasifikasi transfer/QRIS, bank/e-wallet, dan metode seperti BI-FAST. Pada jalur lokal gambar serta teks mentah tidak dikirim ke server atau disimpan. Hasil dapat salah dan selalu masuk draf privat untuk diperiksa sebelum submit.
 
-Perluasan iPhone menjalankan Apple Shortcut melalui Back Tap. Shortcut mengambil screenshot dan menjalankan OCR bawaan perangkat, lalu mengirim teks hasil OCR ke endpoint terautentikasi Alokasi. Screenshot tidak diunggah; teks mentah diproses sementara dan tidak disimpan. Endpoint mengembalikan tautan review dengan akun/kategori default pengguna. Alur ini tetap tidak boleh membuat transaksi sebelum konfirmasi eksplisit.
+Perluasan iPhone menjalankan Apple Shortcut melalui Back Tap. Shortcut mengambil screenshot dan menjalankan OCR bawaan perangkat, lalu mengirim teks hasil OCR bersama satu gambar privat ke endpoint token Alokasi. Gambar JPEG/PNG/WebP maksimal 4 MB dipakai hanya untuk preview draf pembuat, kedaluwarsa maksimal 24 jam, serta dihapus saat submit/batal; teks mentah diproses sementara dan tidak disimpan. Endpoint mengembalikan tautan review dengan akun/kategori default pengguna. Alur ini tetap tidak boleh membuat transaksi sebelum konfirmasi eksplisit.
 
 - Pemicu “Scan struk” pada form pengeluaran, melalui unggah gambar atau kamera jika perangkat mendukung.
 - Ekstraksi mengisi calon nominal total, tanggal transaksi, merchant/penerima, catatan, dan saran kategori aktif. Akun sumber wajib dipilih/dikonfirmasi pengguna; jangan menyimpulkannya dari rekening penerima pada bukti transfer.
+- Review memakai field yang sama dengan transaksi manual. Merchant/penerima hasil OCR mengisi catatan, bukan judul transaksi; judul wajib dipilih/diketik dan memakai saran lokal F22 dari ruang yang sama.
 - Tampilkan gambar sumber dan isian yang dapat diedit. Field yang tidak terbaca/meragukan diberi penanda; jangan mengarang data atau menganggap confidence sebagai jaminan benar.
 - Hasil selalu draf pengeluaran. OCR selesai, retry, atau callback provider tidak boleh membuat transaksi keuangan.
 - Hanya tombol submit eksplisit setelah validasi yang membuat satu transaksi. Draf tidak mengubah saldo, budget, grafik, atau laporan.
@@ -533,6 +534,7 @@ Jangan memasukkan semua kandidat ke rilis pertama. Prioritaskan bukti kebutuhan 
 
 ## 17. Riwayat revisi
 
+- 1.6 — 12 Oktober 2026: F18 Shortcut menambahkan preview privat 24 jam, form judul/catatan yang konsisten dengan transaksi manual, saran F22, serta Riwayat menambahkan pencarian judul/kategori dan layout mobile yang stabil.
 - 1.5 — 6 Oktober 2026: F15 rekonsiliasi saldo manual diaktifkan dengan snapshot per akun, histori, status perlu diperiksa kembali, dan penyesuaian eksplisit yang tidak masuk arus kas/budget.
 - 1.4 — 5 Oktober 2026: F23 PWA installable diaktifkan dengan manifest, ikon, service worker network-first, dan halaman offline. Data finansial tidak dicache dan transaksi offline belum didukung.
 - 0.1 — 21 September 2026: PRD awal, ruang pribadi dan bersama.

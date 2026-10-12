@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   configureShortcutInput,
+  detectShortcutReceiptImageType,
+  hasShortcutReceiptImageSignature,
   shortcutReceiptRequest,
 } from "@/modules/shortcut-integration/domain";
 import {
@@ -32,6 +34,24 @@ describe("iPhone Shortcut integration domain", () => {
       configureShortcutInput.safeParse({ accountId: "BCA", categoryId: uuid })
         .success,
     ).toBe(false);
+  });
+
+  it("accepts only image bytes matching the declared MIME type", () => {
+    const png = new Uint8Array([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+    ]);
+    expect(hasShortcutReceiptImageSignature(png, "image/png")).toBe(true);
+    expect(hasShortcutReceiptImageSignature(png, "image/jpeg")).toBe(false);
+    expect(
+      detectShortcutReceiptImageType(png, "application/octet-stream"),
+    ).toBe("image/png");
+    expect(detectShortcutReceiptImageType(png, "image/jpeg")).toBeNull();
+    expect(
+      hasShortcutReceiptImageSignature(
+        new TextEncoder().encode("RIFF0000WEBP"),
+        "image/webp",
+      ),
+    ).toBe(true);
   });
 
   it("recognizes the scoped token shape and hashes without retaining secret", () => {

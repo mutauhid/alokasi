@@ -8,9 +8,11 @@ import {
 export function TransactionPageSizeControl({
   workspaceId,
   pageSize,
+  search,
 }: {
   workspaceId: string;
   pageSize: TransactionPageSize;
+  search: string;
 }) {
   return (
     <form
@@ -20,6 +22,7 @@ export function TransactionPageSizeControl({
     >
       <input type="hidden" name="workspaceId" value={workspaceId} />
       <input type="hidden" name="page" value="1" />
+      {search && <input type="hidden" name="search" value={search} />}
       <label htmlFor="transaction-page-size">Tampilkan</label>
       <select
         id="transaction-page-size"

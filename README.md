@@ -29,7 +29,7 @@ Jika dependency sudah terpasang pada workspace ini, cukup jalankan `npm run dev`
 - Manifest, ikon standar/maskable/Apple, service worker, dan halaman offline untuk pemasangan aplikasi sebagai PWA.
 - Rekonsiliasi manual per akun dengan histori, status perlu diperiksa kembali, dan penyesuaian eksplisit yang tidak dihitung sebagai arus kas atau realisasi budget.
 
-Ruang pribadi/bersama, login, akun, kategori, transaksi inti, budget, dashboard, laporan, peran anggota, undangan berbasis tautan, transfer kepemilikan, ekspor transaksi/ruang, siklus gajian, draf OCR, rekonsiliasi saldo, serta penghapusan ruang/akun sudah terhubung ke PostgreSQL melalui service server. OCR berjalan lokal di browser dan mendeteksi total, tanggal, penerima, transfer/QRIS, serta bank/e-wallet; gambar dan teks mentah tidak diunggah. Pengiriman email undangan otomatis, provider OCR eksternal, penyimpanan bukti, backup/pemulihan, dan konfigurasi deployment produksi belum tersedia.
+Ruang pribadi/bersama, login, akun, kategori, transaksi inti, budget, dashboard, laporan, peran anggota, undangan berbasis tautan, transfer kepemilikan, ekspor transaksi/ruang, siklus gajian, draf OCR, rekonsiliasi saldo, serta penghapusan ruang/akun sudah terhubung ke PostgreSQL melalui service server. OCR dari upload manual berjalan lokal di browser. Jalur iPhone mengirim screenshot privat maksimal 4 MB untuk preview draf selama paling lama 24 jam; gambar dihapus saat submit/batal dan tidak menjadi lampiran transaksi, sedangkan teks OCR mentah tidak disimpan. Pengiriman email undangan otomatis, provider OCR eksternal, penyimpanan bukti permanen, backup/pemulihan, dan konfigurasi deployment produksi belum tersedia.
 
 ## Environment
 
@@ -134,7 +134,7 @@ Auth, ruang pribadi/bersama, izin dan lifecycle anggota, akun, kategori, transak
 - Periode bulanan dapat mengikuti tanggal gajian; perubahan Owner langsung merebasis periode aktif dan menampilkan histori transisi bila diperlukan.
 - Owner dapat mengekspor lalu menghapus ruang bersama melalui konfirmasi nama dan autentikasi ulang; akun pengguna serta ruang pribadi anggota tetap terpisah.
 - Pengguna dapat menghapus akun setelah menyelesaikan kepemilikan ruang bersama; ruang pribadi dihapus dan histori bersama dianonimkan.
-- OCR lokal tersedia dengan deteksi bank/QRIS, review/koreksi, batal, dan submit eksplisit; upload serta penyimpanan bukti belum diimplementasikan.
+- OCR lokal tersedia dengan deteksi bank/QRIS, review/koreksi, batal, dan submit eksplisit; Shortcut iPhone memiliki preview privat sementara, tetapi upload bukti permanen belum diimplementasikan.
 
 ## Stack terpilih
 

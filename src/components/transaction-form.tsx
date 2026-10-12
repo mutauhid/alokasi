@@ -1,16 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   createTransactionAction,
   updateTransactionAction,
 } from "@/app/(workspace)/actions";
 import { Button } from "@/components/ui/button";
 import { RupiahInput } from "@/components/ui/rupiah-input";
-import {
-  transactionTitleKey,
-  type TransactionSuggestion,
-} from "@/modules/transactions/suggestions";
+import { TransactionTitleField } from "@/components/transaction-title-field";
+import type { TransactionSuggestion } from "@/modules/transactions/suggestions";
 
 type Option = { id: string; name: string };
 type CategoryOption = Option & { type: "income" | "expense" };
@@ -59,27 +57,6 @@ export function TransactionForm({
   const availableCategories = categories.filter(
     (category) => category.type === type,
   );
-  const visibleSuggestions = useMemo(() => {
-    const query = transactionTitleKey(title);
-    if (query.length < 2) return [];
-    return suggestions
-      .filter(
-        (suggestion) =>
-          suggestion.type === type &&
-          transactionTitleKey(suggestion.title).includes(query),
-      )
-      .sort((left, right) => {
-        const leftStarts = transactionTitleKey(left.title).startsWith(query);
-        const rightStarts = transactionTitleKey(right.title).startsWith(query);
-        return (
-          Number(rightStarts) - Number(leftStarts) ||
-          right.usageCount - left.usageCount ||
-          right.lastUsedAt.localeCompare(left.lastUsedAt)
-        );
-      })
-      .slice(0, 5);
-  }, [suggestions, title, type]);
-
   function changeType(nextType: TransactionType) {
     setType(nextType);
     if (
@@ -138,47 +115,14 @@ export function TransactionForm({
         />
       </label>
       <div className={compact ? "" : "md:col-span-2"}>
-        <label className="text-sm font-medium">
-          Judul transaksi
-          <input
-            name="title"
-            required
-            maxLength={100}
-            autoComplete="off"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Contoh: makan siang"
-            className={inputClass}
-          />
-        </label>
-        {visibleSuggestions.length > 0 && (
-          <div
-            className="mt-2 flex flex-wrap gap-2"
-            aria-label="Saran transaksi dari riwayat"
-          >
-            {visibleSuggestions.map((suggestion) => (
-              <button
-                key={`${suggestion.type}-${suggestion.title}-${suggestion.categoryId ?? "none"}`}
-                type="button"
-                onClick={() => applySuggestion(suggestion)}
-                className="rounded-full border bg-secondary px-3 py-1.5 text-left text-xs font-medium transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={`Gunakan ${suggestion.title}${suggestion.categoryName ? `, kategori ${suggestion.categoryName}` : ""}`}
-              >
-                {suggestion.title}
-                {suggestion.categoryName && (
-                  <span className="ml-1 font-normal text-muted-foreground">
-                    · {suggestion.categoryName}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-        {!initial && title.trim().length > 0 && title.trim().length < 2 && (
-          <p className="mt-1.5 text-xs text-muted-foreground">
-            Ketik minimal 2 karakter untuk melihat saran dari riwayat.
-          </p>
-        )}
+        <TransactionTitleField
+          value={title}
+          onValueChange={setTitle}
+          type={type}
+          suggestions={suggestions}
+          onApplySuggestion={applySuggestion}
+          showShortHint={!initial}
+        />
       </div>
       <label className="text-sm font-medium">
         Tanggal

@@ -7,6 +7,8 @@ import {
   Camera,
   Plus,
   ReceiptText,
+  Search,
+  X,
 } from "lucide-react";
 import { listActiveAccountOptions } from "@/modules/accounts/service";
 import { listActiveCategoryOptions } from "@/modules/categories/service";
@@ -92,12 +94,14 @@ function transactionPageHref(
   workspaceId: string,
   page: number,
   pageSize: number,
+  search: string,
 ) {
   const query = new URLSearchParams({
     workspaceId,
     page: page.toString(),
     pageSize: pageSize.toString(),
   });
+  if (search) query.set("search", search);
   return `/transactions?${query.toString()}`;
 }
 
@@ -185,6 +189,7 @@ export async function TransactionsSection({
             categories={categories
               .filter((category) => category.type === "expense")
               .map(({ id, name }) => ({ id, name }))}
+            suggestions={suggestions}
             initialState={
               activeReceiptDraft
                 ? receiptDraftView(activeReceiptDraft)
@@ -244,6 +249,58 @@ export async function TransactionsSection({
           <p className="text-sm text-muted-foreground">
             Urutan terbaru berdasarkan tanggal transaksi.
           </p>
+          <form
+            action="/transactions"
+            method="get"
+            className="mt-3 flex flex-col gap-2 sm:flex-row"
+          >
+            <input
+              type="hidden"
+              name="workspaceId"
+              value={access.workspaceId}
+            />
+            <input type="hidden" name="page" value="1" />
+            <input
+              type="hidden"
+              name="pageSize"
+              value={transactionPage.pageSize}
+            />
+            <label className="relative min-w-0 flex-1">
+              <span className="sr-only">
+                Cari transaksi berdasarkan judul atau kategori
+              </span>
+              <Search
+                className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <input
+                type="search"
+                name="search"
+                defaultValue={pagination.search}
+                maxLength={100}
+                placeholder="Cari judul atau kategori"
+                className="min-h-10 w-full rounded-lg border bg-background py-2 pl-9 pr-3 text-sm shadow-xs"
+              />
+            </label>
+            <Button type="submit" variant="outline" className="min-h-10">
+              Cari
+            </Button>
+            {pagination.search && (
+              <Button asChild variant="ghost" className="min-h-10">
+                <Link
+                  href={transactionPageHref(
+                    access.workspaceId,
+                    1,
+                    transactionPage.pageSize,
+                    "",
+                  )}
+                >
+                  <X aria-hidden="true" />
+                  Hapus pencarian
+                </Link>
+              </Button>
+            )}
+          </form>
         </CardHeader>
         <CardContent>
           {transactions.length === 0 ? (
@@ -252,9 +309,15 @@ export async function TransactionsSection({
                 className="mb-3 size-7 text-primary"
                 aria-hidden="true"
               />
-              <p className="font-medium">Belum ada transaksi</p>
+              <p className="font-medium">
+                {pagination.search
+                  ? "Transaksi tidak ditemukan"
+                  : "Belum ada transaksi"}
+              </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Transaksi pertama akan muncul di sini setelah disimpan.
+                {pagination.search
+                  ? `Tidak ada judul atau kategori yang cocok dengan “${pagination.search}”.`
+                  : "Transaksi pertama akan muncul di sini setelah disimpan."}
               </p>
             </div>
           ) : (
@@ -271,17 +334,19 @@ export async function TransactionsSection({
                     key={transaction.id}
                     className="py-5 first:pt-0 last:pb-0"
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div className="flex min-w-0 gap-3">
+                    <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto]">
+                      <div className="contents">
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
                           <Icon className="size-5" aria-hidden="true" />
                         </span>
                         <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-medium">{transaction.title}</p>
+                          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+                            <p className="min-w-0 break-words font-medium leading-snug">
+                              {transaction.title}
+                            </p>
                             <Badge variant="outline">{detail.label}</Badge>
                           </div>
-                          <p className="mt-1 text-xs text-muted-foreground">
+                          <p className="mt-1 break-words text-xs text-muted-foreground">
                             {transaction.account.name}
                             {transaction.destinationAccount
                               ? ` → ${transaction.destinationAccount.name}`
@@ -295,14 +360,14 @@ export async function TransactionsSection({
                               : ""}
                           </p>
                           {transaction.note && (
-                            <p className="mt-1 text-xs text-muted-foreground">
+                            <p className="mt-1 break-words text-xs text-muted-foreground">
                               {transaction.note}
                             </p>
                           )}
                         </div>
                       </div>
                       <p
-                        className={`font-semibold ${transaction.type === "expense" ? "text-destructive" : transaction.type === "income" ? "text-primary" : ""}`}
+                        className={`col-start-2 font-semibold sm:col-start-3 sm:row-start-1 sm:whitespace-nowrap sm:text-right ${transaction.type === "expense" ? "text-destructive" : transaction.type === "income" ? "text-primary" : ""}`}
                       >
                         {detail.sign}
                         {rupiah(transaction.amount)}
@@ -353,6 +418,7 @@ export async function TransactionsSection({
             <TransactionPageSizeControl
               workspaceId={access.workspaceId}
               pageSize={transactionPage.pageSize}
+              search={pagination.search}
             />
 
             <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -368,6 +434,7 @@ export async function TransactionsSection({
                       access.workspaceId,
                       transactionPage.page - 1,
                       transactionPage.pageSize,
+                      pagination.search,
                     )}
                   >
                     Sebelumnya
@@ -385,6 +452,7 @@ export async function TransactionsSection({
                       access.workspaceId,
                       transactionPage.page + 1,
                       transactionPage.pageSize,
+                      pagination.search,
                     )}
                   >
                     Berikutnya

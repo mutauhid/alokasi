@@ -5,11 +5,13 @@ export type TransactionPageSize = (typeof TRANSACTION_PAGE_SIZES)[number];
 export type TransactionPagination = {
   page: number;
   pageSize: TransactionPageSize;
+  search: string;
 };
 
 type PaginationQuery = {
   page?: string | string[];
   pageSize?: string | string[];
+  search?: string | string[];
 };
 
 function singleValue(value: string | string[] | undefined) {
@@ -29,13 +31,18 @@ export function parseTransactionPagination(
   )
     ? (rawPageSize as TransactionPageSize)
     : 10;
+  const search = (singleValue(query.search) ?? "")
+    .normalize("NFC")
+    .trim()
+    .replace(/\s+/gu, " ")
+    .slice(0, 100);
 
-  return { page, pageSize };
+  return { page, pageSize, search };
 }
 
 export function buildTransactionPageMeta(
   totalCount: number,
-  pagination: TransactionPagination,
+  pagination: Pick<TransactionPagination, "page" | "pageSize">,
 ) {
   const totalPages = Math.max(1, Math.ceil(totalCount / pagination.pageSize));
   const page = Math.min(pagination.page, totalPages);

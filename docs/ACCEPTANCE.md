@@ -117,6 +117,9 @@ Ini spesifikasi pengujian, bukan laporan tes yang sudah lulus. Pilih skenario re
 | PAGE-04 | Kirim halaman/ukuran tidak valid atau halaman melampaui hasil | Nilai tidak valid kembali aman ke 1/10; halaman berlebih dijepit ke halaman terakhir |
 | PAGE-05 | Beberapa transaksi memiliki tanggal dan waktu pembuatan sama | Urutan tetap deterministik dengan ID sebagai pembeda terakhir; transaksi soft-delete tidak dihitung |
 | PAGE-06 | Ubah ukuran paging saat form saran aktif | Daftar riwayat berubah, tetapi sumber saran tetap maksimal 100 transaksi terbaru ruang yang sama |
+| PAGE-07 | Cari judul atau nama kategori dengan perbedaan huruf besar/kecil | Hanya transaksi aktif pada workspace yang sama dan cocok yang dihitung/ditampilkan |
+| PAGE-08 | Pindah halaman atau ukuran saat pencarian aktif | Parameter pencarian dipertahankan, halaman ukuran baru mulai dari 1, dan sumber saran tetap tidak terfilter |
+| PAGE-09 | Judul sangat pendek/panjang pada lebar mobile | Ikon, isi, nominal, dan tindakan konsisten; teks membungkus tanpa scroll horizontal |
 
 ## F11 — transaksi berulang
 
@@ -157,6 +160,9 @@ Ini spesifikasi pengujian, bukan laporan tes yang sudah lulus. Pilih skenario re
 | OCR-15 | Scan tanggal 24 Sep disubmit 26 Sep dengan siklus 25 | Masuk periode 25 Agu–24 Sep, berdasarkan tanggal transaksi |
 | OCR-16 | Bukti transfer internal/pemasukan/pending terdeteksi | Peringatan dan jalan batal/manual; tidak diposting otomatis sebagai pengeluaran |
 | OCR-17 | Sukses submit di ruang bersama | Field transaksi terlihat sesuai peran; gambar tidak otomatis dibagikan |
+| OCR-18 | Shortcut mengirim JPEG/PNG/WebP sah maksimal 4 MB | Preview muncul hanya bagi pembuat draf yang masih Owner/Editor; respons gambar `private, no-store` |
+| OCR-19 | Gambar salah signature, terlalu besar, role Viewer, workspace/pembuat lain, draf selesai, atau preview lebih dari 24 jam | Upload/akses ditolak aman; byte kedaluwarsa atau lifecycle selesai dihapus dan URL lama tidak membocorkan gambar |
+| OCR-20 | Merchant terbaca dari screenshot lalu pengguna mengisi/memilih judul | Merchant menjadi catatan, judul tersimpan terpisah, dan pilihan saran hanya mengubah judul/kategori |
 
 ## F21 — siklus gajian
 
@@ -682,3 +688,15 @@ Smoke Playwright mencakup regresi publik/auth, bukan halaman Transaksi terautent
 | TOAST-03 | Toast memakai `role=status`, `aria-live=polite`, tombol tutup berlabel, durasi 5,5 detik, indikator waktu, safe area mobile, dan reduced motion global |
 | TOAST-04 | Setelah toast dipicu, hanya parameter `success` yang dihapus dari URL; workspace, filter, paging, periode, dan hash tetap dipertahankan |
 | Verifikasi | Lint, TypeScript, build produksi, serta 18 file/115 unit test lulus |
+
+## Hasil tahap 29 — preview iPhone dan pencarian transaksi, 12 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| OCR-18/19 | Route membatasi gambar 4 MB, tipe JPEG/PNG/WebP dan signature; endpoint baca memeriksa login, workspace, role, pembuat, status, retensi 24 jam, serta mengirim `private, no-store`. Unit test signature lulus; test integrasi ACL/cleanup tersedia |
+| OCR-20/SUGGEST-06 | Domain mewajibkan judul terpisah maksimal 100 karakter; merchant dan catatan digabung sebagai note awal, submit menyimpan title/note terpisah, dan panel memakai kandidat F22 ruang yang sama |
+| PAGE-07/08 | Parser menormalisasi pencarian maksimal 100 karakter; service memfilter judul/kategori case-insensitive dalam workspace dan mempertahankan search pada link paging/dropdown. Assertion PostgreSQL telah ditambahkan |
+| PAGE-09 | Struktur daftar mobile memakai grid dengan kolom ikon/isi dan nominal selalu pada baris tersendiri sebelum breakpoint `sm`; judul, metadata, dan catatan membungkus |
+| Verifikasi lokal | Prisma validate/generate, lint, TypeScript, build produksi, 18 file/118 unit test, dan `git diff --check` lulus |
+
+`.env.test.local` tidak tersedia pada checkout ini, sehingga migrasi `20261012000000_receipt_evidence_preview` dan test PostgreSQL tidak dijalankan lokal. Smoke terautentikasi pada Safari/iPhone nyata—termasuk pengiriman Form `text + image`, preview, autosuggest, pencarian, dan layout mobile—tetap perlu dilakukan setelah migrasi diterapkan pada database preview.

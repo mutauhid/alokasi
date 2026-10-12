@@ -1,6 +1,6 @@
 # Catatan keputusan
 
-Diperbarui: 8 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
+Diperbarui: 12 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
 
 ## Keputusan dan kebutuhan pengguna
 
@@ -46,6 +46,7 @@ Diperbarui: 8 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent t
 | D39 | 7 Okt 2026 | Pengguna meminta pilihan ukuran paging langsung diterapkan tanpa tombol Terapkan | Dropdown ukuran melakukan submit GET otomatis saat berubah, kembali ke halaman pertama, dan tetap menyimpan workspace serta ukuran pada URL |
 | D40 | 8 Okt 2026 | Setelah memberikan rekaman demo, pengguna meminta pengalaman iPhone dengan konfirmasi singkat lebih dahulu | Aktifkan perluasan F18 melalui Back Tap + Apple Shortcuts: screenshot tetap di iPhone, teks OCR dikirim ke API Alokasi dengan token terbatas, hasil menjadi draf privat, dan pengguna tetap menekan Simpan pengeluaran sebelum saldo berubah |
 | D41 | 8 Okt 2026 | Pengguna meminta toast/notifikasi menarik setelah transaksi, pengaturan budget, dan aksi lainnya berhasil | Status sukses mutasi ruang ditampilkan sebagai toast global yang ringkas, dapat ditutup, hilang otomatis, dan tidak muncul ulang saat refresh; error tetap berada dekat form agar dapat langsung diperbaiki |
+| D42 | 12 Okt 2026 | Pengguna meminta preview screenshot Back Tap, penyamaan form hasil iPhone dengan transaksi manual, autosuggest, konsistensi daftar mobile, serta pencarian judul/kategori | Implementasikan pada branch `feat/iphone-draft-preview-transaction-search`: kirim gambar privat bersama OCR, tempatkan merchant pada catatan dan minta judul terpisah, gunakan saran F22, stabilkan layout mobile, dan tambahkan pencarian server-side yang tetap bekerja bersama paging |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -123,7 +124,7 @@ D30 menghasilkan T30: navigasi utama tetap berisi fitur finansial dan Anggota & 
 
 D32 menghasilkan T31: build CI tetap tidak membutuhkan credential agar pemeriksaan source dapat berjalan aman, sedangkan readiness runtime diperiksa melalui `/api/health`. Endpoint hanya melaporkan konfigurasi/database `ok`, `failed`, atau `skipped`; nama variabel, host, URL, dan pesan driver tidak dikirim. Security header berlaku global dan CSP dibentuk saat build dari origin Supabase publik, dengan izin minimum untuk blob preview serta Web Worker/WASM OCR lokal. Vercel menjadi baseline hosting terkelola dan proyek Supabase staging harus terpisah; provisioning akun/provider tetap dilakukan pengguna melalui dashboard.
 
-D40 menghasilkan T32: integrasi iPhone memakai satu token acak per membership/ruang yang hanya disimpan sebagai hash, berlaku satu tahun, dapat diputar atau dicabut, dan otomatis tidak berlaku bagi Viewer/membership nonaktif. Pengguna memilih akun serta kategori expense default saat membuat token. Endpoint hanya menerima teks hasil `Extract Text from Image`, membatasi 50.000 karakter, tidak menerima/menyimpan screenshot atau teks mentah, dan tidak membuat transaksi. Draf aktif lama tidak ditimpa; respons membuka halaman review Alokasi. Jalur OCR browser yang seluruhnya lokal tetap tersedia.
+D40 menghasilkan T32: integrasi iPhone memakai satu token acak per membership/ruang yang hanya disimpan sebagai hash, berlaku satu tahun, dapat diputar atau dicabut, dan otomatis tidak berlaku bagi Viewer/membership nonaktif. Pengguna memilih akun serta kategori expense default saat membuat token. Versi awal endpoint hanya menerima teks hasil `Extract Text from Image`, membatasi 50.000 karakter, dan tidak membuat transaksi. Draf aktif lama tidak ditimpa; respons membuka halaman review Alokasi. Jalur OCR browser yang seluruhnya lokal tetap tersedia. Larangan pengiriman screenshot pada versi awal ini digantikan oleh preview privat terbatas pada D42/T39.
 
 D33 menghasilkan T32: F11 tahap 21 memakai template pemasukan/pengeluaran bulanan dengan nominal integer, akun, kategori, catatan, hari 1–31, dan satu tanggal jatuh tempo berikutnya. Template hanya menghasilkan pengingat; saldo, budget, dashboard, dan laporan baru berubah setelah Owner atau Editor yang berwenang memilih **Catat sekarang**. Pengguna dapat melewati satu kejadian tanpa transaksi. Hari 29–31 dipotong ke akhir bulan dan kembali ke hari aslinya pada bulan berikutnya. Owner dapat mengelola semua template ruang, Editor hanya template buatannya, dan Viewer hanya membaca. Pencatatan serta kemajuan jadwal terjadi atomik dengan kunci unik template/tanggal; akun atau kategori yang masih dipakai template aktif tidak dapat diarsipkan.
 
@@ -139,6 +140,8 @@ D38 menghasilkan T37: halaman Riwayat membaca `page` dan `pageSize` dari URL, me
 
 D39 menghasilkan T38: kontrol ukuran menjadi Client Component kecil yang memanggil submit GET form saat pilihan berubah. Form tetap mengirim `workspaceId`, `page=1`, dan `pageSize`; query serta validasi paging tetap berada di server. Tombol Terapkan dihapus.
 
+D42 menghasilkan T39: endpoint Shortcut menerima `multipart/form-data` berisi teks OCR dan satu JPEG/PNG/WebP maksimal 4 MB, memeriksa MIME serta signature, lalu menyimpan byte pada `ReceiptDraft` privat maksimal 24 jam. Endpoint gambar membaca ulang login, membership Owner/Editor, workspace, pembuat, status draf, dan masa berlaku; submit/batal/kedaluwarsa menghapus byte. Gambar tidak menjadi lampiran transaksi atau ekspor. Form OCR memakai `title` wajib maksimal 100 karakter dan `note` terpisah; merchant hasil OCR hanya menjadi bagian catatan, sedangkan saran F22 mengisi judul/kategori. Pencarian riwayat memakai parameter `search` maksimal 100 karakter dan filter database case-insensitive terhadap judul atau nama kategori, tanpa mengubah query kandidat saran.
+
 ## Default kerja, bukan keputusan eksplisit pengguna
 
 Default di bawah cukup untuk menjaga rancangan konsisten. Gunakan selama tidak ada instruksi yang mengganti; jangan berhenti meminta persetujuan ulang pada tiap detail.
@@ -153,7 +156,7 @@ Default di bawah cukup untuk menjaga rancangan konsisten. Gunakan selama tidak a
 | W06 | Digantikan D27: siklus baru berlaku langsung pada periode aktif, dengan histori transisi bila diperlukan | Instruksi eksplisit terbaru pengguna mengungguli default prospektif lama; algoritme di DOMAIN_RULES.md |
 | W07 | Satu gambar scan → satu draf pengeluaran; field dan confidence dapat dikoreksi | Tidak mencakup split item, batch OCR, atau deteksi transfer otomatis |
 | W08 | Draf scan hanya terlihat pembuat; data transaksi setelah submit mengikuti akses ruang; gambar tidak otomatis dibagikan | Menghindari perluasan visibilitas berkas sensitif |
-| W09 | F05 tetap P0; OCR lokal F18 diaktifkan oleh D21; F21 diaktifkan oleh D17 | Upload/storage/provider eksternal tetap menunggu keputusan lifecycle |
+| W09 | F05 tetap P0; OCR lokal F18 diaktifkan oleh D21; preview Shortcut F18 diaktifkan oleh D42; F21 diaktifkan oleh D17 | Provider OCR/storage eksternal dan lampiran permanen tetap menunggu keputusan tersendiri |
 
 ## Belum ditentukan
 
@@ -161,7 +164,7 @@ Default di bawah cukup untuk menjaga rancangan konsisten. Gunakan selama tidak a
 |---|---|---|
 | Region/paket Supabase dan SMTP produksi | Sebelum deployment | Hosting aplikasi memakai baseline Vercel; pilihan region/paket, domain, serta SMTP tetap ditentukan saat provisioning staging/production |
 | Provider OCR/vision fallback, biaya, dan consent | Jika OCR lokal tidak memenuhi target akurasi | OCR lokal tetap jalur privat; jangan kirim berkas nyata ke provider tanpa keputusan baru |
-| Retensi berkas scan/draf dan data residency | Sebelum upload/storage bukti | Implementasi lokal tidak menyimpan gambar; upload produksi memerlukan kebijakan lifecycle |
+| Storage eksternal/data residency untuk bukti permanen | Sebelum lampiran transaksi atau provider scan aktif | Preview Shortcut saat ini berada di database maksimal 24 jam; bukan arsip bukti permanen |
 | Lampiran bukti permanen pada transaksi | Jika diminta sebagai perluasan F18 | Baseline hanya pratinjau sumber draf; bukan sistem arsip bukti bersama |
 | Tanggal rilis F18/F21 dan ukuran tim | Saat penjadwalan implementasi | Tidak membuat janji durasi atau mengaktifkan semua backlog |
 | Gajian variabel, periode per akun, atau siklus 14 hari | Jika kebutuhan tersebut muncul | Di luar siklus bulanan per ruang |

@@ -3,7 +3,12 @@ import { toDatabaseDate } from "@/modules/finance/domain";
 import { createLocalReceiptDraftInput } from "@/modules/receipts/domain";
 import { parseLocalReceiptOcr } from "@/modules/receipts/local-ocr";
 import { createShortcutReceiptDraft } from "@/modules/receipts/service";
-import { shortcutReceiptRequest } from "@/modules/shortcut-integration/domain";
+import {
+  detectShortcutReceiptImageType,
+  SHORTCUT_RECEIPT_IMAGE_MAX_BYTES,
+  SHORTCUT_RECEIPT_REQUEST_MAX_BYTES,
+  shortcutReceiptRequest,
+} from "@/modules/shortcut-integration/domain";
 import {
   authenticateShortcutToken,
   markShortcutUsed,
@@ -36,26 +41,75 @@ function localToday(timeZone: string) {
   }).format(new Date());
 }
 
+function isUploadedFile(value: FormDataEntryValue | null): value is File {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "arrayBuffer" in value &&
+    "size" in value &&
+    "type" in value
+  );
+}
+
+async function parseRequest(request: Request) {
+  const contentType = request.headers.get("content-type") ?? "";
+  if (contentType.includes("multipart/form-data")) {
+    const form = await request.formData();
+    const text = form.get("text");
+    const image = form.get("image");
+    const parsed = shortcutReceiptRequest.safeParse({ text });
+    if (!parsed.success || !isUploadedFile(image)) return null;
+    if (image.size < 1 || image.size > SHORTCUT_RECEIPT_IMAGE_MAX_BYTES) {
+      return null;
+    }
+    const bytes = new Uint8Array(await image.arrayBuffer());
+    const mimeType = detectShortcutReceiptImageType(bytes, image.type);
+    if (!mimeType) return null;
+    return {
+      text: parsed.data.text,
+      evidenceImage: {
+        bytes,
+        mimeType,
+      },
+    };
+  }
+
+  if (contentType.includes("application/json")) {
+    const parsed = shortcutReceiptRequest.safeParse(await request.json());
+    return parsed.success ? { text: parsed.data.text } : null;
+  }
+  return null;
+}
+
 export async function POST(request: Request) {
   const contentLength = Number(request.headers.get("content-length") ?? "0");
-  if (Number.isFinite(contentLength) && contentLength > 100_000) {
-    return json({ ok: false, error: "Teks OCR terlalu besar." }, 413);
+  if (
+    Number.isFinite(contentLength) &&
+    contentLength > SHORTCUT_RECEIPT_REQUEST_MAX_BYTES
+  ) {
+    return json(
+      { ok: false, error: "Payload terlalu besar. Gambar maksimal 4 MB." },
+      413,
+    );
   }
 
   try {
     const membership = await authenticateShortcutToken(bearerToken(request));
-    const body: unknown = await request.json();
-    const parsedRequest = shortcutReceiptRequest.safeParse(body);
-    if (!parsedRequest.success) {
+    const payload = await parseRequest(request);
+    if (!payload) {
       return json(
-        { ok: false, error: "Kirim JSON dengan field text hasil OCR." },
+        {
+          ok: false,
+          error:
+            "Kirim Form berisi text dan image JPEG, PNG, atau WebP maksimal 4 MB.",
+        },
         400,
       );
     }
 
     // Apple Shortcuts does not expose a numeric OCR confidence. Zero keeps
     // every derived field visibly in the "needs review" state.
-    const extracted = parseLocalReceiptOcr(parsedRequest.data.text, 0);
+    const extracted = parseLocalReceiptOcr(payload.text, 0);
     const input = createLocalReceiptDraftInput.safeParse({
       amount: extracted.amount,
       transactionDate: extracted.transactionDate,
@@ -87,6 +141,7 @@ export async function POST(request: Request) {
         categoryId: membership.shortcutDefaultCategoryId!,
         tokenHash: membership.shortcutTokenHash!,
       },
+      payload.evidenceImage,
     );
     await markShortcutUsed(membership.id, membership.shortcutTokenHash!);
 

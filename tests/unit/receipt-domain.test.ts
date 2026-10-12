@@ -15,13 +15,13 @@ describe("receipt draft domain", () => {
       version: "1",
       amount: "120000",
       transactionDate: "2026-09-24",
-      merchant: "  Toko   Baru ",
+      title: "  Belanja   minimarket ",
       note: " kebutuhan ",
       accountId: uuid,
       categoryId: uuid,
     });
     expect(result.amount).toBe(120000n);
-    expect(result.merchant).toBe("Toko Baru");
+    expect(result.title).toBe("Belanja minimarket");
     expect(result.transactionDate.toISOString()).toContain("2026-09-24");
   });
 
@@ -34,7 +34,7 @@ describe("receipt draft domain", () => {
           version: 1,
           amount,
           transactionDate: "2026-09-24",
-          merchant: "",
+          title: "Belanja",
           note: "",
           accountId: uuid,
           categoryId: uuid,
@@ -42,6 +42,21 @@ describe("receipt draft domain", () => {
       ).toBe(false);
     },
   );
+
+  it("requires a separate transaction title for receipt submission", () => {
+    expect(
+      submitReceiptDraftInput.safeParse({
+        draftId: uuid,
+        version: 1,
+        amount: "120000",
+        transactionDate: "2026-09-24",
+        title: "   ",
+        note: "Toko Baru",
+        accountId: uuid,
+        categoryId: uuid,
+      }).success,
+    ).toBe(false);
+  });
 
   it("builds a bounded transaction note without duplicate text", () => {
     expect(receiptTransactionNote("Toko", "Toko")).toBe("Toko");

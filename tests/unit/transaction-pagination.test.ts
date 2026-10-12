@@ -6,7 +6,11 @@ import {
 
 describe("transaction pagination", () => {
   it("uses page 1 and 10 items by default", () => {
-    expect(parseTransactionPagination({})).toEqual({ page: 1, pageSize: 10 });
+    expect(parseTransactionPagination({})).toEqual({
+      page: 1,
+      pageSize: 10,
+      search: "",
+    });
   });
 
   it.each([5, 10, 20, 30, 50, 100])(
@@ -14,7 +18,7 @@ describe("transaction pagination", () => {
     (pageSize) => {
       expect(
         parseTransactionPagination({ page: "3", pageSize: String(pageSize) }),
-      ).toEqual({ page: 3, pageSize });
+      ).toEqual({ page: 3, pageSize, search: "" });
     },
   );
 
@@ -22,10 +26,23 @@ describe("transaction pagination", () => {
     expect(parseTransactionPagination({ page: "0", pageSize: "25" })).toEqual({
       page: 1,
       pageSize: 10,
+      search: "",
     });
     expect(
       parseTransactionPagination({ page: ["2", "3"], pageSize: ["5", "10"] }),
-    ).toEqual({ page: 1, pageSize: 10 });
+    ).toEqual({ page: 1, pageSize: 10, search: "" });
+  });
+
+  it("normalizes a bounded transaction search query", () => {
+    expect(
+      parseTransactionPagination({ search: "  Makan   &   Minum  " }),
+    ).toEqual({ page: 1, pageSize: 10, search: "Makan & Minum" });
+    expect(
+      parseTransactionPagination({ search: ["Belanja", "Dating"] }).search,
+    ).toBe("");
+    expect(
+      parseTransactionPagination({ search: "x".repeat(120) }).search,
+    ).toHaveLength(100);
   });
 
   it("clamps a page beyond the last page and reports its visible range", () => {
