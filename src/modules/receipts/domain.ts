@@ -18,6 +18,12 @@ const optionalText = (maximum: number) =>
     .pipe(z.string().max(maximum))
     .transform((value) => value || null);
 
+const requiredText = (maximum: number) =>
+  z
+    .string()
+    .transform((value) => value.normalize("NFC").trim().replace(/\s+/gu, " "))
+    .pipe(z.string().min(1).max(maximum));
+
 export const submitReceiptDraftInput = z.object({
   draftId: z.uuid(),
   version: z.coerce.number().int().positive(),
@@ -28,7 +34,7 @@ export const submitReceiptDraftInput = z.object({
     .transform(BigInt)
     .refine((value) => value > 0n && value <= 9223372036854775807n),
   transactionDate: dateField.transform(toDatabaseDate),
-  merchant: optionalText(200),
+  title: requiredText(100),
   note: optionalText(1000),
   accountId: z.uuid(),
   categoryId: z.uuid(),

@@ -331,6 +331,9 @@ model ReceiptDraft {
   extractedNote            String?            @map("extracted_note") @db.VarChar(1000)
   detectedInstitution      String?            @map("detected_institution") @db.VarChar(100)
   evidenceKind             String?            @map("evidence_kind") @db.VarChar(20)
+  evidenceImage            Bytes?             @map("evidence_image") @db.ByteA
+  evidenceImageMime        String?            @map("evidence_image_mime") @db.VarChar(50)
+  evidenceImageExpiresAt   DateTime?          @map("evidence_image_expires_at") @db.Timestamptz(3)
   paymentRail              String?            @map("payment_rail") @db.VarChar(50)
   ocrConfidence            Int?               @map("ocr_confidence") @db.SmallInt
   institutionConfidence    Int?               @map("institution_confidence") @db.SmallInt
@@ -342,6 +345,7 @@ model ReceiptDraft {
   correctedAmount          BigInt?            @map("corrected_amount")
   correctedTransactionDate DateTime?          @map("corrected_transaction_date") @db.Date
   correctedMerchant        String?            @map("corrected_merchant") @db.VarChar(200)
+  correctedTitle           String?            @map("corrected_title") @db.VarChar(100)
   correctedNote            String?            @map("corrected_note") @db.VarChar(1000)
   selectedAccountId        String?            @map("selected_account_id") @db.Uuid
   selectedCategoryId       String?            @map("selected_category_id") @db.Uuid

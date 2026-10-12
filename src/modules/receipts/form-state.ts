@@ -1,13 +1,16 @@
+import { receiptTransactionNote } from "@/modules/receipts/domain";
+
 export type ReceiptDraftView = {
   id: string;
   version: number;
   amount: string;
   transactionDate: string;
-  merchant: string;
+  title: string;
   note: string;
   categoryId: string;
   accountId: string;
   sourceKind: "fixture" | "local_ocr" | "ios_shortcut";
+  hasEvidenceImage: boolean;
   detection: {
     institution: string;
     evidenceKind: "transfer" | "qris" | "receipt" | "unknown";
@@ -18,7 +21,6 @@ export type ReceiptDraftView = {
   confidence: {
     amount: number | null;
     date: number | null;
-    merchant: number | null;
     category: number | null;
   };
 };
@@ -42,6 +44,7 @@ export function receiptDraftView(draft: {
   extractedTransactionDate: Date | null;
   extractedMerchant: string | null;
   extractedNote: string | null;
+  evidenceImageMime: string | null;
   detectedInstitution: string | null;
   evidenceKind: string | null;
   paymentRail: string | null;
@@ -71,10 +74,13 @@ export function receiptDraftView(draft: {
       amount: draft.extractedAmount?.toString() ?? "",
       transactionDate:
         draft.extractedTransactionDate?.toISOString().slice(0, 10) ?? "",
-      merchant: draft.extractedMerchant ?? "",
-      note: draft.extractedNote ?? "",
+      title: "",
+      note:
+        receiptTransactionNote(draft.extractedMerchant, draft.extractedNote) ??
+        "",
       accountId: draft.selectedAccountId ?? "",
       categoryId: draft.suggestedCategoryId ?? "",
+      hasEvidenceImage: Boolean(draft.evidenceImageMime),
       detection: {
         institution: draft.detectedInstitution ?? "",
         evidenceKind,
@@ -85,7 +91,6 @@ export function receiptDraftView(draft: {
       confidence: {
         amount: draft.amountConfidence,
         date: draft.dateConfidence,
-        merchant: draft.merchantConfidence,
         category: draft.categoryConfidence,
       },
     },

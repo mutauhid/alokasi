@@ -48,18 +48,23 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Akses cepat “Tambah kategori” pada pemilih kategori Owner; selesai membuat kategori kembali ke draf sebelumnya tanpa kehilangan input.
 - Editor/Viewer tidak mendapat tombol mutasi; izin tetap diverifikasi server.
 
+## Riwayat transaksi
+
+- Pencarian riwayat menerima judul transaksi atau nama kategori, tersimpan pada URL, dan bekerja bersama paging tanpa mengubah sumber saran transaksi.
+- Pada mobile, ikon, blok judul/badge/metadata, nominal, dan tindakan memiliki slot yang konsisten. Nominal selalu berada pada baris tersendiri di bawah isi; judul panjang membungkus tanpa mendorong nominal ke posisi acak atau menimbulkan scroll horizontal.
+
 ## Perluasan F18 — scan
 
 - Tawarkan “Isi manual” dan “Scan struk” pada alur tambah pengeluaran.
 - Setelah memilih gambar: tampilkan pratinjau, status ekstraksi, dan opsi membatalkan/mengganti gambar.
 - Review desktop: gambar sumber dan form berdampingan jika cukup ruang. Mobile: gambar lalu form, tanpa scroll horizontal.
 - Judul “Periksa pengeluaran”; badge “Draf”; nama ruang terlihat.
-- Field nominal, tanggal, merchant/catatan, kategori, dan akun dapat diperiksa. Field tidak pasti diberi teks “Perlu diperiksa”, bukan hanya warna.
+- Field judul transaksi, nominal, tanggal, catatan, kategori, dan akun mengikuti susunan form transaksi manual. Merchant hasil OCR masuk ke catatan; judul memiliki saran lokal dari riwayat ruang yang sama. Field tidak pasti diberi teks “Perlu diperiksa”, bukan hanya warna.
 - Tombol utama “Simpan pengeluaran” hanya setelah form valid; sukses menuju transaksi hasil, bukan mengulang submit.
 - Jangan menampilkan toast “Pengeluaran tersimpan” ketika OCR baru selesai. Gunakan “Hasil scan siap diperiksa”.
 - Error/timeout menyediakan input manual. Tidak ada nilai keuangan fiktif untuk menutupi OCR gagal.
 - Pengaturan menyediakan kartu “Shortcut iPhone” untuk memilih akun/kategori default, membuat token yang hanya tampil sekali, memutar token, dan mencabutnya.
-- Draf dari Shortcut langsung membuka bagian “Periksa pengeluaran”, menandai bahwa screenshot tetap di iPhone, dan mengisi akun/kategori default. Tombol utama tetap “Simpan pengeluaran”; kedatangan draf bukan status transaksi tersimpan.
+- Draf dari Shortcut langsung membuka bagian “Periksa pengeluaran”, menampilkan preview privat di atas form pada mobile, dan mengisi akun/kategori default. Tombol utama tetap “Simpan pengeluaran”; kedatangan draf bukan status transaksi tersimpan.
 
 ## Perluasan F21 — siklus gajian
 

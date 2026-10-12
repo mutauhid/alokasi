@@ -18,7 +18,7 @@ Tanggal: 23 September 2026. Status: frontend/tooling dan fondasi database develo
 | Pengujian | Vitest dan Playwright | Domain/integrasi dan alur browser |
 | Package manager | npm dengan satu lockfile | Setup familiar tanpa toolchain tambahan |
 
-Chart library dan library form dipilih saat kebutuhan UI terkait diimplementasikan; jangan memasang banyak alternatif sekaligus. Hosting aplikasi, SMTP produksi, provider OCR, dan storage scan masih keputusan deployment/fase lanjutan.
+Chart library dan library form dipilih saat kebutuhan UI terkait diimplementasikan; jangan memasang banyak alternatif sekaligus. Hosting aplikasi, SMTP produksi, provider OCR, serta storage bukti permanen masih keputusan deployment/fase lanjutan. Preview Shortcut sementara memakai kolom `bytea` privat pada draf dan bukan storage lampiran.
 
 Versi package tidak dikarang di dokumen. Saat bootstrap, periksa versi stabil yang kompatibel dan didukung, gunakan Node LTS yang sesuai, lalu kunci versi melalui lockfile serta catat runtime di repository. Jangan memakai prerelease tanpa alasan khusus.
 
@@ -153,9 +153,9 @@ Struktur dapat disesuaikan tanpa mengubah batas tanggung jawab. Hindari reposito
 
 Tradeoff utama pilihan ini: bergantung pada layanan Supabase untuk operasi database/auth dan tetap perlu belajar React/Next.js serta SQL. Biaya, kuota, lokasi data, backup, dan email produksi diverifikasi saat memilih paket; tidak ada janji semua kebutuhan gratis.
 
-OCR tahap 11 memakai Tesseract.js dalam Web Worker browser dengan core WASM dan model bahasa yang disajikan dari origin aplikasi. Worker diimpor dinamis agar tidak menambah jalur awal halaman. Gambar dan teks mentah tidak masuk backend. Provider vision eksternal atau worker server baru dipilih bila evaluasi akurasi lokal tidak memenuhi target; endpoint serverless tidak dijadikan worker tak terbatas. Hosting aplikasi dan storage scan belum dibeli atau diprovision.
+OCR tahap 11 untuk upload manual memakai Tesseract.js dalam Web Worker browser dengan core WASM dan model bahasa yang disajikan dari origin aplikasi. Worker diimpor dinamis agar tidak menambah jalur awal halaman. Gambar dan teks mentah jalur ini tidak masuk backend. Provider vision eksternal atau worker server baru dipilih bila evaluasi akurasi lokal tidak memenuhi target; endpoint serverless tidak dijadikan worker tak terbatas. Hosting aplikasi dan storage bukti permanen belum dibeli atau diprovision.
 
-Perluasan iPhone memakai kemampuan bawaan Back Tap dan Apple Shortcuts, tanpa SDK native atau n8n. Aksi `Extract Text from Image` menghasilkan teks yang dikirim sebagai JSON melalui HTTPS ke Route Handler Node.js. Bearer token acak disimpan hanya sebagai hash pada membership; token membawa wewenang membuat draf privat, bukan transaksi. Route Handler membatasi payload, memakai parser F18 yang sama, tidak menyimpan teks mentah/gambar, dan mengembalikan URL review pada origin `APP_URL`.
+Perluasan iPhone memakai kemampuan bawaan Back Tap dan Apple Shortcuts, tanpa SDK native atau n8n. Aksi `Extract Text from Image` menghasilkan teks dan screenshot yang dikirim sebagai `multipart/form-data` melalui HTTPS ke Route Handler Node.js. Bearer token acak disimpan hanya sebagai hash pada membership; token membawa wewenang membuat draf privat, bukan transaksi. Route Handler membatasi teks 50.000 karakter dan gambar 4 MB, memvalidasi MIME/signature, memakai parser F18 yang sama, serta menyimpan gambar pada draf maksimal 24 jam. Preview dibaca lewat endpoint cookie-auth yang memeriksa pembuat/workspace/role dan memakai `private, no-store`; submit, batal, atau kedaluwarsa menghapus byte. Teks OCR mentah tidak disimpan dan gambar tidak menjadi lampiran transaksi.
 
 ## 9. Rujukan resmi yang diperiksa
 

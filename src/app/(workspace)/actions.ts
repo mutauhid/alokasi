@@ -626,7 +626,7 @@ export async function receiptDraftAction(
     version: text(form, "version"),
     amount: text(form, "amount"),
     transactionDate: text(form, "transactionDate"),
-    merchant: text(form, "merchant"),
+    title: text(form, "title"),
     note: text(form, "note"),
     accountId: text(form, "accountId"),
     categoryId: text(form, "categoryId"),
@@ -634,7 +634,7 @@ export async function receiptDraftAction(
   if (!parsed.success) {
     return {
       ...previous,
-      error: "Periksa nominal, tanggal, akun, kategori, dan catatan.",
+      error: "Periksa judul, nominal, tanggal, akun, kategori, dan catatan.",
     };
   }
   try {

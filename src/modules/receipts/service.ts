@@ -8,7 +8,6 @@ import {
 } from "@/modules/transactions/service";
 import { getDatabase } from "@/server/db/client";
 import {
-  receiptTransactionNote,
   type CreateLocalReceiptDraftInput,
   type SubmitReceiptDraftInput,
 } from "@/modules/receipts/domain";
@@ -17,7 +16,16 @@ type ReceiptContext = TransactionContext & {
   role: "owner" | "editor" | "viewer";
 };
 
-function requireEditor(context: ReceiptContext) {
+const EVIDENCE_IMAGE_TTL_MS = 24 * 60 * 60 * 1000;
+
+export type ReceiptEvidenceImage = {
+  bytes: Uint8Array<ArrayBuffer>;
+  mimeType: "image/jpeg" | "image/png" | "image/webp";
+};
+
+function requireEditor(
+  context: Pick<ReceiptContext, "workspaceId" | "actorId" | "role">,
+) {
   if (context.role === "viewer") {
     throw new FinanceDomainError("RECEIPT_ACCESS_DENIED");
   }
@@ -101,6 +109,9 @@ export async function createLocalReceiptDraft(
       extractedNote: input.note,
       detectedInstitution: input.institution,
       evidenceKind: input.evidenceKind,
+      evidenceImage: null,
+      evidenceImageMime: null,
+      evidenceImageExpiresAt: null,
       paymentRail: input.paymentRail,
       ocrConfidence: input.ocrConfidence,
       institutionConfidence: input.institutionConfidence,
@@ -130,6 +141,7 @@ export async function createShortcutReceiptDraft(
   context: ReceiptContext,
   input: CreateLocalReceiptDraftInput,
   defaults: { accountId: string; categoryId: string; tokenHash: string },
+  evidenceImage?: ReceiptEvidenceImage,
 ) {
   requireEditor(context);
   const db = getDatabase();
@@ -197,6 +209,11 @@ export async function createShortcutReceiptDraft(
         extractedNote: input.note,
         detectedInstitution: input.institution,
         evidenceKind: input.evidenceKind,
+        evidenceImage: evidenceImage?.bytes,
+        evidenceImageMime: evidenceImage?.mimeType,
+        evidenceImageExpiresAt: evidenceImage
+          ? new Date(Date.now() + EVIDENCE_IMAGE_TTL_MS)
+          : null,
         paymentRail: input.paymentRail,
         ocrConfidence: input.ocrConfidence,
         institutionConfidence: input.institutionConfidence,
@@ -214,14 +231,104 @@ export async function createShortcutReceiptDraft(
 
 export async function getActiveReceiptDraft(context: ReceiptContext) {
   requireEditor(context);
-  return getDatabase().receiptDraft.findFirst({
+  const db = getDatabase();
+  const draft = await db.receiptDraft.findFirst({
     where: {
       workspaceId: context.workspaceId,
       createdBy: context.actorId,
       status: "needs_review",
     },
     orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      version: true,
+      sourceKind: true,
+      extractedAmount: true,
+      extractedTransactionDate: true,
+      extractedMerchant: true,
+      extractedNote: true,
+      evidenceImageMime: true,
+      evidenceImageExpiresAt: true,
+      detectedInstitution: true,
+      evidenceKind: true,
+      paymentRail: true,
+      ocrConfidence: true,
+      institutionConfidence: true,
+      suggestedCategoryId: true,
+      selectedAccountId: true,
+      amountConfidence: true,
+      dateConfidence: true,
+      merchantConfidence: true,
+      categoryConfidence: true,
+    },
   });
+  if (
+    draft?.evidenceImageExpiresAt &&
+    draft.evidenceImageExpiresAt <= new Date()
+  ) {
+    await db.receiptDraft.updateMany({
+      where: {
+        id: draft.id,
+        workspaceId: context.workspaceId,
+        createdBy: context.actorId,
+        status: "needs_review",
+        evidenceImageExpiresAt: { lte: new Date() },
+      },
+      data: {
+        evidenceImage: null,
+        evidenceImageMime: null,
+        evidenceImageExpiresAt: null,
+      },
+    });
+    return {
+      ...draft,
+      evidenceImageMime: null,
+      evidenceImageExpiresAt: null,
+    };
+  }
+  return draft;
+}
+
+export async function getReceiptDraftEvidence(
+  context: Pick<ReceiptContext, "workspaceId" | "actorId" | "role">,
+  draftId: string,
+) {
+  requireEditor(context);
+  const db = getDatabase();
+  const evidence = await db.receiptDraft.findFirst({
+    where: {
+      id: draftId,
+      workspaceId: context.workspaceId,
+      createdBy: context.actorId,
+      status: "needs_review",
+    },
+    select: {
+      evidenceImage: true,
+      evidenceImageMime: true,
+      evidenceImageExpiresAt: true,
+    },
+  });
+  if (
+    evidence?.evidenceImageExpiresAt &&
+    evidence.evidenceImageExpiresAt <= new Date()
+  ) {
+    await db.receiptDraft.updateMany({
+      where: {
+        id: draftId,
+        workspaceId: context.workspaceId,
+        createdBy: context.actorId,
+        status: "needs_review",
+        evidenceImageExpiresAt: { lte: new Date() },
+      },
+      data: {
+        evidenceImage: null,
+        evidenceImageMime: null,
+        evidenceImageExpiresAt: null,
+      },
+    });
+    return null;
+  }
+  return evidence;
 }
 
 export async function cancelReceiptDraft(
@@ -239,6 +346,9 @@ export async function cancelReceiptDraft(
     },
     data: {
       status: "cancelled",
+      evidenceImage: null,
+      evidenceImageMime: null,
+      evidenceImageExpiresAt: null,
       cancelledAt: new Date(),
       version: { increment: 1 },
     },
@@ -302,13 +412,13 @@ export async function submitReceiptDraft(
 
       const transaction = await createTransactionInTransaction(tx, context, {
         type: "expense",
-        title: (input.merchant || "Pengeluaran hasil scan").slice(0, 100),
+        title: input.title,
         amount: input.amount,
         transactionDate: input.transactionDate,
         accountId: input.accountId,
         destinationAccountId: null,
         categoryId: input.categoryId,
-        note: receiptTransactionNote(input.merchant, input.note),
+        note: input.note,
         idempotencyKey: `receipt-draft:${draft.id}`,
       });
       const updated = await tx.receiptDraft.updateMany({
@@ -323,8 +433,11 @@ export async function submitReceiptDraft(
           status: "submitted",
           correctedAmount: input.amount,
           correctedTransactionDate: input.transactionDate,
-          correctedMerchant: input.merchant,
+          correctedTitle: input.title,
           correctedNote: input.note,
+          evidenceImage: null,
+          evidenceImageMime: null,
+          evidenceImageExpiresAt: null,
           selectedAccountId: input.accountId,
           selectedCategoryId: input.categoryId,
           submittedTransactionId: transaction.id,

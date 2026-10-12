@@ -39,17 +39,18 @@ export function ShortcutIntegrationCard({
         <Smartphone className="mb-2 size-5 text-primary" aria-hidden="true" />
         <CardTitle>Shortcut iPhone</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Ketuk belakang iPhone untuk mengambil screenshot, membaca teks, dan
-          membuka draf konfirmasi di Alokasi.
+          Ketuk belakang iPhone untuk mengambil screenshot, membaca teks,
+          mengirim preview privat, dan membuka draf konfirmasi di Alokasi.
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="rounded-xl border bg-background/50 p-4 text-sm">
           <p className="font-medium">Privasi alur</p>
           <p className="mt-1 text-muted-foreground">
-            Screenshot tidak diunggah. Apple Shortcuts mengirim teks OCR ke
-            server Alokasi untuk diparsing sementara; teks mentah tidak disimpan
-            atau dicatat pada log aplikasi.
+            Screenshot disimpan privat maksimal 24 jam untuk preview dan dihapus
+            lebih cepat saat draf disimpan atau dibatalkan. Gambar tidak menjadi
+            lampiran transaksi; teks OCR mentah tidak disimpan atau dicatat pada
+            log aplikasi.
           </p>
         </div>
 

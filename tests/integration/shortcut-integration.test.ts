@@ -9,7 +9,11 @@ import {
   vi,
 } from "vitest";
 import { createLocalReceiptDraftInput } from "../../src/modules/receipts/domain";
-import { createShortcutReceiptDraft } from "../../src/modules/receipts/service";
+import {
+  cancelReceiptDraft,
+  createShortcutReceiptDraft,
+  getReceiptDraftEvidence,
+} from "../../src/modules/receipts/service";
 import {
   authenticateShortcutToken,
   configureShortcutIntegration,
@@ -132,6 +136,10 @@ describe("iPhone Shortcut receipt service", () => {
         categoryId: authenticated.shortcutDefaultCategoryId!,
         tokenHash: authenticated.shortcutTokenHash!,
       },
+      {
+        bytes: new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+        mimeType: "image/png",
+      },
     );
     const retry = await createShortcutReceiptDraft(
       {
@@ -156,8 +164,42 @@ describe("iPhone Shortcut receipt service", () => {
       suggestedCategoryId: categoryId,
       status: "needs_review",
       extractedMerchant: "Shopee Marketplace",
+      evidenceImageMime: "image/png",
     });
+    expect(first.draft.evidenceImage).toHaveLength(8);
+    expect(first.draft.evidenceImageExpiresAt).toBeInstanceOf(Date);
     expect(await db.transaction.count({ where: { workspaceId } })).toBe(0);
+    await expect(
+      getReceiptDraftEvidence(
+        { workspaceId, actorId: viewerId, role: "viewer" },
+        first.draft.id,
+      ),
+    ).rejects.toMatchObject({ code: "RECEIPT_ACCESS_DENIED" });
+    await cancelReceiptDraft(
+      {
+        workspaceId,
+        actorId: ownerId,
+        role: "owner",
+        today: new Date("2026-10-08T00:00:00.000Z"),
+      },
+      { draftId: first.draft.id, version: first.draft.version },
+    );
+    expect(
+      await db.receiptDraft.findUniqueOrThrow({
+        where: { id: first.draft.id },
+        select: {
+          status: true,
+          evidenceImage: true,
+          evidenceImageMime: true,
+          evidenceImageExpiresAt: true,
+        },
+      }),
+    ).toEqual({
+      status: "cancelled",
+      evidenceImage: null,
+      evidenceImageMime: null,
+      evidenceImageExpiresAt: null,
+    });
   });
 
   it("does not issue a token to a Viewer", async () => {

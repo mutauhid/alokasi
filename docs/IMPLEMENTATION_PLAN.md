@@ -1,6 +1,6 @@
 # Rencana implementasi dan status
 
-Diperbarui 8 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
+Diperbarui 12 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
 
 ## Status nyata
 
@@ -36,9 +36,11 @@ Diperbarui 8 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikas
 | Tahap 24 percakapan: PWA installable | Diimplementasikan untuk F23: manifest App Router, ikon standar/maskable/Apple, registrasi service worker, header keamanan, dan fallback offline tanpa cache data finansial atau transaksi offline |
 | Tahap 26 percakapan: paging transaksi | Diimplementasikan pada `feat/transaction-pagination`: ukuran 5/10/20/30/50/100, default 10, state URL, query server-side, navigasi halaman, dan sumber saran transaksi terpisah |
 | Tahap 27 percakapan: Shortcut iPhone untuk scan | Diimplementasikan pada `feat/ios-shortcut-receipt`: token terbatas per membership, endpoint teks OCR, default akun/kategori, draf privat yang dapat dilanjutkan, dan konfirmasi eksplisit sebelum transaksi |
+| Tahap 28 percakapan: toast keberhasilan | Diimplementasikan: satu toast global responsif untuk status sukses mutasi, auto-dismiss, dapat ditutup, dan membersihkan parameter sukses tanpa merusak URL |
+| Tahap 29 percakapan: preview iPhone dan pencarian transaksi | Diimplementasikan pada `feat/iphone-draft-preview-transaction-search`: preview draf privat maksimal 24 jam, field judul/catatan konsisten dan autosuggest F22, pencarian judul/kategori server-side, serta layout daftar mobile stabil |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
-| Upload/storage/provider OCR eksternal | Belum diimplementasikan; consent, retensi, biaya, callback, dan lifecycle file masih terbuka |
+| Storage bukti permanen/provider OCR eksternal | Belum diimplementasikan; preview Shortcut sementara memakai database draf dengan retensi 24 jam, sedangkan consent, biaya, callback, data residency, dan lifecycle lampiran permanen masih terbuka |
 | Pemeriksaan fondasi | Lint, TypeScript, format, build produksi lulus; 10 smoke browser lulus (exit 0); rincian pada ACCEPTANCE.md |
 | Pengujian database khusus | 33 tes lulus melalui Supabase Session pooler: constraint, Prisma, provisioning, service finansial, undangan/ACL/lifecycle, penghapusan ruang dan akun, siklus gajian, submit draf struk, dan salin budget historis. Bukan pengujian produksi |
 
@@ -314,6 +316,15 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Toast tampil responsif di bagian atas, mendukung safe area iPhone, dapat ditutup, hilang otomatis setelah 5,5 detik, memakai `role=status`, dan menghormati preferensi reduced motion.
 - Parameter `success` dibersihkan dari URL tanpa mengubah filter, workspace, atau hash sehingga notifikasi tidak muncul ulang ketika halaman di-refresh. Error tetap memakai pesan inline yang sudah ada.
 - Tidak ada dependency atau migrasi database baru. Verifikasi lokal lulus: lint, TypeScript, build produksi, dan 115 unit test.
+
+## Hasil tahap 29 — preview iPhone dan pencarian transaksi, 12 Oktober 2026
+
+- Shortcut mengirim Form berisi teks OCR dan gambar JPEG/PNG/WebP maksimal 4 MB. MIME dan signature diperiksa; gambar disimpan pada draf privat maksimal 24 jam dan dihapus saat submit, batal, atau akses setelah kedaluwarsa.
+- Endpoint preview memerlukan login dan memeriksa ulang workspace, role Owner/Editor, pembuat, serta status draf. Respons `private, no-store`; gambar tidak menjadi lampiran transaksi atau bagian ekspor.
+- Form hasil OCR memakai Judul transaksi wajib yang terpisah dari Catatan opsional. Merchant hasil ekstraksi masuk ke catatan, sedangkan judul/kategori mendapat saran F22 yang sama dengan transaksi manual.
+- Riwayat dapat dicari berdasarkan judul atau nama kategori secara case-insensitive. Parameter pencarian bertahan saat paging/ubah ukuran, dan sumber saran tetap query terpisah.
+- Daftar mobile memberi slot konsisten untuk judul, badge, metadata, nominal, dan tindakan; judul panjang membungkus tanpa mengubah posisi nominal secara acak.
+- Migrasi `20261012000000_receipt_evidence_preview` menambah byte preview, MIME, masa berlaku, dan judul terkoreksi. Hasil verifikasi dicatat di ACCEPTANCE.md setelah seluruh pemeriksaan selesai.
 
 ## Backlog kandidat — bukan komitmen aktif
 

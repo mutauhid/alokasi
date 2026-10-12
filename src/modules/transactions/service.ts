@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
+import type { Prisma } from "@/generated/prisma/client";
 import { getDatabase } from "@/server/db/client";
 import { FinanceDomainError } from "@/modules/finance/errors";
 import {
@@ -160,7 +161,26 @@ export async function listTransactionPage(
   pagination: TransactionPagination,
 ) {
   const db = getDatabase();
-  const where = { workspaceId, deletedAt: null };
+  const where: Prisma.TransactionWhereInput = {
+    workspaceId,
+    deletedAt: null,
+    ...(pagination.search
+      ? {
+          OR: [
+            {
+              title: { contains: pagination.search, mode: "insensitive" },
+            },
+            {
+              category: {
+                is: {
+                  name: { contains: pagination.search, mode: "insensitive" },
+                },
+              },
+            },
+          ],
+        }
+      : {}),
+  };
   const totalCount = await db.transaction.count({ where });
   const meta = buildTransactionPageMeta(totalCount, pagination);
   const items = await db.transaction.findMany({
