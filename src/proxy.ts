@@ -19,7 +19,11 @@ function startsWithPath(pathname: string, prefix: string) {
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
-  if (request.nextUrl.pathname === "/api/health") return response;
+  if (
+    request.nextUrl.pathname === "/api/health" ||
+    request.nextUrl.pathname === "/api/integrations/telegram/webhook"
+  )
+    return response;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;

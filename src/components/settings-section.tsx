@@ -37,6 +37,8 @@ import { ShortcutIntegrationCard } from "@/components/shortcut-integration-card"
 import { listActiveAccountOptions } from "@/modules/accounts/service";
 import { listActiveCategoryOptions } from "@/modules/categories/service";
 import { getShortcutIntegration } from "@/modules/shortcut-integration/service";
+import { TelegramIntegrationCard } from "@/components/telegram-integration-card";
+import { getTelegramSettings } from "@/modules/telegram-integration/service";
 
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
@@ -103,6 +105,7 @@ export async function SettingsSection({
     deletion,
     profile,
     shortcut,
+    telegram,
     shortcutAccounts,
     shortcutCategories,
   ] = await Promise.all([
@@ -113,6 +116,9 @@ export async function SettingsSection({
       : Promise.resolve(null),
     getUserProfile(access.actorId),
     getShortcutIntegration(access),
+    access.role !== "viewer"
+      ? getTelegramSettings(access)
+      : Promise.resolve({ configured: false as const }),
     access.role !== "viewer"
       ? listActiveAccountOptions(access.workspaceId)
       : Promise.resolve([]),
@@ -251,6 +257,16 @@ export async function SettingsSection({
             expiresAt: shortcut.expiresAt?.toISOString(),
             lastUsedAt: shortcut.lastUsedAt?.toISOString(),
           }}
+        />
+      )}
+      {access.role !== "viewer" && (
+        <TelegramIntegrationCard
+          workspaceId={workspaceId}
+          accounts={shortcutAccounts.map(({ id, name }) => ({ id, name }))}
+          categories={shortcutCategories
+            .filter((category) => category.type === "expense")
+            .map(({ id, name }) => ({ id, name }))}
+          initialState={telegram}
         />
       )}
       <Card className="shadow-none">

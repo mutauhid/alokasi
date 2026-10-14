@@ -108,6 +108,7 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F21 | Periode mengikuti gajian | P1 diimplementasikan | Hari mulai siklus per ruang; default tanggal 1; batas tanggal konsisten untuk budget, dashboard, dan laporan |
 | F22 | Saran pengisian transaksi | P1 diimplementasikan | Judul dan kategori dari riwayat ruang yang sama; pemfilteran lokal tanpa request per ketikan |
 | F23 | PWA installable | P1 diimplementasikan | Manifest, ikon, tampilan standalone, service worker aman, dan halaman offline; belum menyimpan atau menyinkronkan transaksi offline |
+| F24 | Pencatatan via Telegram | P1 dalam implementasi | Pesan teks menjadi draf pengeluaran, akun/kategori default, koreksi dan konfirmasi dalam chat pribadi, simpan transaksi hanya setelah konfirmasi; VN ditunda |
 
 F12–F14 dan F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deployment produksi dilaporkan berhasil. F22 diaktifkan pada 30 September 2026. F23 diaktifkan pada 5 Oktober 2026 setelah pengguna memilih menunda F12. F15 diaktifkan pada 6 Oktober 2026. F18 dan F21 telah lebih dahulu diimplementasikan atas instruksi pengguna.
 

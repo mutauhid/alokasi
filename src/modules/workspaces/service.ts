@@ -6,6 +6,7 @@ import { getDatabase } from "@/server/db/client";
 import { provisionPersonalWorkspace } from "./provision-personal";
 import { WorkspaceDomainError } from "./errors";
 import { deleteWorkspaceData } from "./delete-data";
+import { deleteTelegramConnections } from "@/modules/telegram-integration/cleanup";
 
 export type WorkspaceRole = "owner" | "editor" | "viewer";
 export type WorkspaceAccess = {
@@ -504,6 +505,12 @@ export async function changeMemberRole(
     });
     if (result.count !== 1)
       throw new WorkspaceDomainError("MEMBERSHIP_CONFLICT");
+    if (input.role === "viewer") {
+      await deleteTelegramConnections(tx, {
+        workspaceId: access.workspaceId,
+        membership: { id: input.membershipId },
+      });
+    }
     await tx.auditEvent.create({
       data: {
         workspaceId: access.workspaceId,
@@ -554,6 +561,10 @@ export async function revokeMember(
     });
     if (result.count !== 1)
       throw new WorkspaceDomainError("MEMBERSHIP_CONFLICT");
+    await deleteTelegramConnections(tx, {
+      workspaceId: access.workspaceId,
+      membership: { id: input.membershipId },
+    });
     if (workspace.ownershipTransferToMembershipId === input.membershipId) {
       await tx.workspace.update({
         where: { id: access.workspaceId },
@@ -857,6 +868,10 @@ export async function leaveSharedWorkspace(
     if (updated.count !== 1) {
       throw new WorkspaceDomainError("MEMBERSHIP_CONFLICT");
     }
+    await deleteTelegramConnections(tx, {
+      workspaceId: access.workspaceId,
+      userId: access.actorId,
+    });
     if (workspace.ownershipTransferToMembershipId === member.id) {
       await tx.workspace.update({
         where: { id: access.workspaceId },

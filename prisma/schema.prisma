@@ -61,6 +61,14 @@ enum ReconciliationResolution {
   @@schema("app")
 }
 
+enum TelegramDraftStatus {
+  pending
+  confirmed
+  cancelled
+
+  @@schema("app")
+}
+
 model User {
   id                String       @id @default(uuid()) @db.Uuid
   authSubject       String?      @unique @map("auth_subject") @db.Uuid
@@ -71,6 +79,7 @@ model User {
   updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
   memberships       Membership[]
   personalWorkspace Workspace?
+  telegramConnections TelegramConnection[]
 
   @@map("users")
   @@schema("app")
@@ -100,6 +109,7 @@ model Workspace {
   receiptDrafts                   ReceiptDraft[]
   recurringTransactionTemplates   RecurringTransactionTemplate[]
   balanceReconciliations          BalanceReconciliation[]
+  telegramConnections             TelegramConnection[]
 
   @@map("workspaces")
   @@schema("app")
@@ -143,6 +153,7 @@ model Membership {
   receiptDrafts             ReceiptDraft[]                 @relation("ReceiptDraftCreator")
   recurringTemplates        RecurringTransactionTemplate[] @relation("RecurringTemplateCreator")
   reconciliations           BalanceReconciliation[]        @relation("ReconciliationCreator")
+  telegramConnection       TelegramConnection?
 
   @@unique([workspaceId, userId])
   @@unique([workspaceId, id])
@@ -167,6 +178,54 @@ model Invitation {
 
   @@index([workspaceId, invitedEmail])
   @@map("invitations")
+  @@schema("app")
+}
+
+model TelegramConnection {
+  id                String          @id @default(uuid()) @db.Uuid
+  workspaceId       String          @map("workspace_id") @db.Uuid
+  userId            String          @map("user_id") @db.Uuid
+  telegramUserId    String?         @unique @map("telegram_user_id") @db.VarChar(32)
+  telegramChatId    String?         @map("telegram_chat_id") @db.VarChar(32)
+  linkCodeHash      String?         @unique @map("link_code_hash") @db.VarChar(64)
+  linkExpiresAt     DateTime?       @map("link_expires_at") @db.Timestamptz(3)
+  defaultAccountId  String          @map("default_account_id") @db.Uuid
+  defaultCategoryId String          @map("default_category_id") @db.Uuid
+  linkedAt          DateTime?       @map("linked_at") @db.Timestamptz(3)
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace         Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user              User            @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  membership        Membership      @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  drafts            TelegramDraft[]
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@map("telegram_connections")
+  @@schema("app")
+}
+
+model TelegramDraft {
+  id                  String              @id @default(uuid()) @db.Uuid
+  connectionId        String              @map("connection_id") @db.Uuid
+  sourceMessageId     BigInt              @map("source_message_id")
+  editPromptMessageId BigInt?             @map("edit_prompt_message_id")
+  status              TelegramDraftStatus @default(pending)
+  title               String              @db.VarChar(100)
+  amount              BigInt
+  note                String?             @db.VarChar(1000)
+  transactionDate     DateTime            @map("transaction_date") @db.Date
+  accountId           String              @map("account_id") @db.Uuid
+  categoryId          String              @map("category_id") @db.Uuid
+  transactionId       String?             @map("transaction_id") @db.Uuid
+  expiresAt           DateTime            @map("expires_at") @db.Timestamptz(3)
+  createdAt           DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  connection          TelegramConnection  @relation(fields: [connectionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([connectionId, sourceMessageId])
+  @@index([connectionId, status, expiresAt])
+  @@map("telegram_drafts")
   @@schema("app")
 }
 
