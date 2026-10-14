@@ -1,0 +1,134 @@
+"use client";
+
+import { useActionState } from "react";
+import { Send } from "lucide-react";
+import {
+  telegramIntegrationAction,
+  type TelegramActionState,
+} from "@/app/(workspace)/telegram-actions";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+type Option = { id: string; name: string };
+
+export function TelegramIntegrationCard({
+  workspaceId,
+  accounts,
+  categories,
+  initialState,
+}: {
+  workspaceId: string;
+  accounts: Option[];
+  categories: Option[];
+  initialState: TelegramActionState;
+}) {
+  const [state, action, pending] = useActionState(
+    telegramIntegrationAction,
+    initialState,
+  );
+  return (
+    <Card className="shadow-none">
+      <CardHeader>
+        <Send className="mb-2 size-5 text-primary" aria-hidden="true" />
+        <CardTitle>Catat lewat Telegram</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Kirim pesan seperti “beli kopi 25rb bca”. Bot menampilkan draf;
+          koreksi dan konfirmasi langsung di Telegram sebelum saldo berubah.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {(state.error || state.message) && (
+          <p
+            role={state.error ? "alert" : "status"}
+            className="rounded-lg bg-secondary p-3 text-sm"
+          >
+            {state.error ?? state.message}
+          </p>
+        )}
+        {state.configured && (
+          <p className="rounded-lg border p-3 text-sm">
+            {state.linked ? "Terhubung" : "Menunggu tautan dibuka"} · Default:{" "}
+            {state.accountName ??
+              accounts.find((item) => item.id === state.accountId)?.name ??
+              "Akun"}{" "}
+            ·{" "}
+            {state.categoryName ??
+              categories.find((item) => item.id === state.categoryId)?.name ??
+              "Kategori"}
+          </p>
+        )}
+        {state.link && (
+          <a
+            href={state.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block break-all rounded-lg border border-primary/40 p-3 text-sm text-primary underline"
+          >
+            Buka bot dan hubungkan Telegram
+          </a>
+        )}
+        <form action={action} className="grid gap-3 sm:grid-cols-2">
+          <input type="hidden" name="workspaceId" value={workspaceId} />
+          <input type="hidden" name="intent" value="configure" />
+          <label className="text-sm font-medium">
+            Akun default
+            <select
+              name="accountId"
+              defaultValue={state.accountId ?? ""}
+              required
+              className="mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            >
+              <option value="">Pilih akun</option>
+              {accounts.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm font-medium">
+            Kategori default
+            <select
+              name="categoryId"
+              defaultValue={state.categoryId ?? ""}
+              required
+              className="mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            >
+              <option value="">Pilih kategori</option>
+              {categories.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Button
+            type="submit"
+            disabled={pending || !accounts.length || !categories.length}
+            className="min-h-11 sm:col-span-2"
+          >
+            {pending
+              ? "Menyiapkan..."
+              : state.configured
+                ? "Atur ulang dan buat tautan baru"
+                : "Hubungkan Telegram"}
+          </Button>
+        </form>
+        {state.configured && (
+          <form action={action}>
+            <input type="hidden" name="workspaceId" value={workspaceId} />
+            <input type="hidden" name="intent" value="revoke" />
+            <Button type="submit" variant="outline" disabled={pending}>
+              Putuskan Telegram
+            </Button>
+          </form>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Satu akun Telegram terhubung ke satu ruang. Gunakan chat pribadi
+          dengan bot. Pesan yang belum dikonfirmasi tidak masuk saldo, budget,
+          atau laporan.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}

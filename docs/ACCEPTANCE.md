@@ -700,3 +700,16 @@ Smoke Playwright mencakup regresi publik/auth, bukan halaman Transaksi terautent
 | Verifikasi lokal | Prisma validate/generate, lint, TypeScript, build produksi, 18 file/118 unit test, dan `git diff --check` lulus |
 
 `.env.test.local` tidak tersedia pada checkout ini, sehingga migrasi `20261012000000_receipt_evidence_preview` dan test PostgreSQL tidak dijalankan lokal. Smoke terautentikasi pada Safari/iPhone nyata—termasuk pengiriman Form `text + image`, preview, autosuggest, pencarian, dan layout mobile—tetap perlu dilakukan setelah migrasi diterapkan pada database preview.
+
+## Hasil tahap 30 — bot Telegram teks, 14 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| TG-01 | Penghubung dari Pengaturan membuat kode acak sekali pakai dengan hash dan masa berlaku 15 menit; hanya Owner/Editor yang dapat mengatur default aktif |
+| TG-02 | Webhook memeriksa secret Telegram, menerima chat pribadi, dan membatasi body; token/teks mentah tidak masuk log atau tabel draf |
+| TG-03 | Parser unit mencakup `25rb`, `25.000`, nama akun opsional, dan penolakan nominal ambigu/di luar BIGINT |
+| TG-04 | Draf dan koreksi tidak membuat transaksi; tombol Simpan memeriksa ulang izin/referensi dan mencatat dalam transaksi atomik dengan kunci idempoten |
+| TG-05 | Revoke, perubahan peran ke Viewer, keluar ruang, hapus ruang, dan hapus akun membersihkan koneksi/draf |
+| Verifikasi lokal | Prisma validate, lint, TypeScript, build produksi, dan 20 file/122 unit test lulus. Route webhook tampil pada output build |
+
+Migrasi `20261014000000_telegram_expense_bot`, suite PostgreSQL, dan smoke Telegram nyata memerlukan database test/preview dan token bot. File `.env.test.local` tidak tersedia pada checkout ini. Jangan menganggap webhook aktif hanya karena build lulus; ikuti `TELEGRAM_SETUP.md` untuk setup eksternal.

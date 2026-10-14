@@ -28,6 +28,7 @@ Jika dependency sudah terpasang pada workspace ini, cukup jalankan `npm run dev`
 - Menu akun desktop/mobile berisi Profil & Pengaturan dan Keluar; profil mendukung perubahan nama tampilan serta password dengan autentikasi ulang.
 - Manifest, ikon standar/maskable/Apple, service worker, dan halaman offline untuk pemasangan aplikasi sebagai PWA.
 - Rekonsiliasi manual per akun dengan histori, status perlu diperiksa kembali, dan penyesuaian eksplisit yang tidak dihitung sebagai arus kas atau realisasi budget.
+- Bot Telegram teks untuk draf pengeluaran dengan koreksi/konfirmasi dari chat pribadi; memerlukan setup webhook, migrasi, dan token bot sebelum aktif. Lihat [setup Telegram](docs/TELEGRAM_SETUP.md).
 
 Ruang pribadi/bersama, login, akun, kategori, transaksi inti, budget, dashboard, laporan, peran anggota, undangan berbasis tautan, transfer kepemilikan, ekspor transaksi/ruang, siklus gajian, draf OCR, rekonsiliasi saldo, serta penghapusan ruang/akun sudah terhubung ke PostgreSQL melalui service server. OCR dari upload manual berjalan lokal di browser. Jalur iPhone mengirim screenshot privat maksimal 4 MB untuk preview draf selama paling lama 24 jam; gambar dihapus saat submit/batal dan tidak menjadi lampiran transaksi, sedangkan teks OCR mentah tidak disimpan. Pengiriman email undangan otomatis, provider OCR eksternal, penyimpanan bukti permanen, backup/pemulihan, dan konfigurasi deployment produksi belum tersedia.
 
@@ -43,6 +44,9 @@ Ruang pribadi/bersama, login, akun, kategori, transaksi inti, budget, dashboard,
 | `DATABASE_URL` | Rahasia server, koneksi runtime PostgreSQL |
 | `DIRECT_URL` | Rahasia server, koneksi migrasi dengan role terpisah |
 | `APP_URL` | Origin aplikasi untuk callback Auth |
+| `TELEGRAM_BOT_USERNAME` | Username bot tanpa `@` untuk tautan penghubung |
+| `TELEGRAM_BOT_TOKEN` | Token rahasia bot, server saja |
+| `TELEGRAM_WEBHOOK_SECRET` | Secret verifikasi webhook Telegram, server saja |
 
 Supabase Auth memakai variabel publiknya, sedangkan Prisma hanya memakai koneksi server. Jangan mengisi credential database dengan awalan `NEXT_PUBLIC_`.
 
@@ -122,6 +126,7 @@ Auth, ruang pribadi/bersama, izin dan lifecycle anggota, akun, kategori, transak
 | [Stack dan arsitektur](docs/TECH_STACK.md) | Pilihan frontend/backend, database, auth, dan batas akses data |
 | [Setup database](docs/DATABASE_SETUP.md) | Migrasi, role runtime, CA/TLS, dan tes PostgreSQL |
 | [Setup autentikasi](docs/AUTH_SETUP.md) | Environment, callback, alur email/password, dan batas verifikasi |
+| [Setup Telegram](docs/TELEGRAM_SETUP.md) | Bot, webhook, migrasi, penghubung akun, dan uji fitur |
 | [Git dan CI](docs/GIT_AND_CI_SETUP.md) | Repository GitHub, workflow GitHub Actions, dan perlindungan branch |
 | [Deployment staging](docs/STAGING_DEPLOYMENT.md) | Supabase staging, Vercel, health check, security headers, dan smoke test |
 

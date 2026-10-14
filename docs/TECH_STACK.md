@@ -157,6 +157,15 @@ OCR tahap 11 untuk upload manual memakai Tesseract.js dalam Web Worker browser d
 
 Perluasan iPhone memakai kemampuan bawaan Back Tap dan Apple Shortcuts, tanpa SDK native atau n8n. Aksi `Extract Text from Image` menghasilkan teks dan screenshot yang dikirim sebagai `multipart/form-data` melalui HTTPS ke Route Handler Node.js. Bearer token acak disimpan hanya sebagai hash pada membership; token membawa wewenang membuat draf privat, bukan transaksi. Route Handler membatasi teks 50.000 karakter dan gambar 4 MB, memvalidasi MIME/signature, memakai parser F18 yang sama, serta menyimpan gambar pada draf maksimal 24 jam. Preview dibaca lewat endpoint cookie-auth yang memeriksa pembuat/workspace/role dan memakai `private, no-store`; submit, batal, atau kedaluwarsa menghapus byte. Teks OCR mentah tidak disimpan dan gambar tidak menjadi lampiran transaksi.
 
+Integrasi Telegram F24 memakai webhook Bot API pada Route Handler Node.js.
+Kode tautan sekali pakai disimpan sebagai hash dalam PostgreSQL dan mengikat
+identitas Telegram ke membership aktif pada satu workspace. Pesan teks menjadi
+draf privat; callback Simpan memanggil service transaksi yang sudah ada dalam
+transaksi database atomik. Koreksi dilakukan melalui balasan ForceReply dalam
+chat pribadi. Tidak diperlukan n8n, server tambahan, atau provider transkripsi
+untuk fase teks ini. Token bot dan secret webhook hanya berada di environment
+server; petunjuk operasional ada di [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md).
+
 ## 9. Rujukan resmi yang diperiksa
 
 - [Next.js: Backend for Frontend](https://nextjs.org/docs/app/guides/backend-for-frontend) — jalur server dan Route Handlers.
