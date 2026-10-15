@@ -1,24 +1,19 @@
 import Link from "next/link";
-import {
-  ArrowDown,
-  ArrowLeftRight,
-  ArrowUp,
-  Download,
-  Search,
-} from "lucide-react";
+import { Download, Search } from "lucide-react";
 import { getReportOverview, type ReportQuery } from "@/modules/reports/service";
 import { budgetPercent, budgetStatus } from "@/modules/finance/domain";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TransactionCategoryIcon } from "@/components/transaction-category-icon";
 
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
 
 const typeDetails = {
-  income: { label: "Pemasukan", icon: ArrowDown, sign: "+" },
-  expense: { label: "Pengeluaran", icon: ArrowUp, sign: "−" },
-  transfer: { label: "Transfer", icon: ArrowLeftRight, sign: "" },
+  income: { label: "Pemasukan", sign: "+" },
+  expense: { label: "Pengeluaran", sign: "−" },
+  transfer: { label: "Transfer", sign: "" },
 } as const;
 
 function rupiah(value: bigint) {
@@ -323,38 +318,33 @@ export async function ReportsSection({
             <ul className="divide-y">
               {report.transactions.map((transaction) => {
                 const detail = typeDetails[transaction.type];
-                const Icon = detail.icon;
                 return (
                   <li
                     key={transaction.id}
-                    className="flex flex-wrap items-start justify-between gap-4 py-4 first:pt-0 last:pb-0"
+                    className="grid grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-x-3 gap-y-2 py-4 first:pt-0 last:pb-0 sm:grid-cols-[2.25rem_minmax(0,1fr)_auto]"
                   >
-                    <div className="flex min-w-0 gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
-                        <Icon className="size-4" aria-hidden="true" />
-                      </span>
-                      <div>
-                        <p className="text-sm font-medium">
-                          {transaction.title}
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {displayDate(transaction.transactionDate)} ·{" "}
-                          {transaction.account.name}
-                          {transaction.destinationAccount
-                            ? ` → ${transaction.destinationAccount.name}`
-                            : ""}
-                          {transaction.category
-                            ? ` · ${transaction.category.name}`
-                            : ""}
-                        </p>
-                      </div>
+                    <TransactionCategoryIcon
+                      categoryName={transaction.category?.name ?? null}
+                      type={transaction.type}
+                      className="size-9 rounded-lg"
+                    />
+                    <div className="min-w-0">
+                      <p className="break-words text-sm font-medium leading-snug">
+                        {transaction.title}
+                      </p>
+                      <p className="mt-1 break-words text-xs text-muted-foreground">
+                        {displayDate(transaction.transactionDate)} ·{" "}
+                        {transaction.account.name}
+                        {transaction.destinationAccount
+                          ? ` → ${transaction.destinationAccount.name}`
+                          : ""}
+                        {transaction.category
+                          ? ` · ${transaction.category.name}`
+                          : ""}
+                      </p>
                     </div>
                     <span
-                      className={
-                        transaction.type === "expense"
-                          ? "text-sm font-semibold text-destructive"
-                          : "text-sm font-semibold"
-                      }
+                      className={`col-start-2 justify-self-end whitespace-nowrap text-sm font-semibold sm:col-start-3 sm:row-start-1 ${transaction.type === "expense" ? "text-destructive" : transaction.type === "income" ? "text-primary" : ""}`}
                     >
                       {detail.sign}
                       {rupiah(transaction.amount)}

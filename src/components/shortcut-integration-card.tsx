@@ -6,6 +6,7 @@ import { shortcutIntegrationAction } from "@/app/(workspace)/shortcut-actions";
 import type { ShortcutIntegrationState } from "@/modules/shortcut-integration/domain";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AutomationGuideDialog } from "@/components/automation-guide-dialog";
 
 type Option = { id: string; name: string };
 const inputClass =
@@ -34,7 +35,7 @@ export function ShortcutIntegrationCard({
   }
 
   return (
-    <Card className="shadow-none">
+    <Card id="integrasi-iphone" className="scroll-mt-5 shadow-none">
       <CardHeader>
         <Smartphone className="mb-2 size-5 text-primary" aria-hidden="true" />
         <CardTitle>Shortcut iPhone</CardTitle>
@@ -42,6 +43,9 @@ export function ShortcutIntegrationCard({
           Ketuk belakang iPhone untuk mengambil screenshot, membaca teks,
           mengirim preview privat, dan membuka draf konfirmasi di Alokasi.
         </p>
+        <div className="pt-2">
+          <AutomationGuideDialog kind="iphone" workspaceId={workspaceId} />
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="rounded-xl border bg-background/50 p-4 text-sm">

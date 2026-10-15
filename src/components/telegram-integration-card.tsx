@@ -8,6 +8,7 @@ import {
 } from "@/app/(workspace)/telegram-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AutomationGuideDialog } from "@/components/automation-guide-dialog";
 
 type Option = { id: string; name: string };
 
@@ -27,7 +28,7 @@ export function TelegramIntegrationCard({
     initialState,
   );
   return (
-    <Card className="shadow-none">
+    <Card id="integrasi-telegram" className="scroll-mt-5 shadow-none">
       <CardHeader>
         <Send className="mb-2 size-5 text-primary" aria-hidden="true" />
         <CardTitle>Catat lewat Telegram</CardTitle>
@@ -35,6 +36,9 @@ export function TelegramIntegrationCard({
           Kirim pesan seperti “beli kopi 25rb bca”. Bot menampilkan draf;
           koreksi dan konfirmasi langsung di Telegram sebelum saldo berubah.
         </p>
+        <div className="pt-2">
+          <AutomationGuideDialog kind="telegram" workspaceId={workspaceId} />
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {(state.error || state.message) && (
