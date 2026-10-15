@@ -3,6 +3,7 @@ import { Layers, ShieldCheck } from "lucide-react";
 import { getAuthConfig } from "@/server/auth/config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export type AuthSearchParams = Promise<
   Record<string, string | string[] | undefined>
@@ -67,6 +68,9 @@ export async function AuthCard({
   return (
     <main className="grid min-h-dvh place-items-center px-4 py-10">
       <div className="w-full max-w-md">
+        <div className="mb-5 flex justify-end">
+          <ThemeSwitcher />
+        </div>
         <Link
           href="/login"
           className="mb-7 flex justify-center"

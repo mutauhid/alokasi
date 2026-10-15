@@ -1,9 +1,10 @@
 const CACHE_PREFIX = "alokasi-public-shell";
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   "/offline",
   "/manifest.webmanifest",
+  "/theme-init.js",
   "/icons/alokasi-192.png",
   "/icons/alokasi-512.png",
   "/icons/alokasi-maskable-512.png",
@@ -35,6 +36,15 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
+  if (
+    request.method === "GET" &&
+    new URL(request.url).pathname === "/theme-init.js"
+  ) {
+    event.respondWith(
+      caches.match(request).then((cached) => cached ?? fetch(request)),
+    );
+    return;
+  }
   if (request.method !== "GET" || request.mode !== "navigate") return;
 
   event.respondWith(

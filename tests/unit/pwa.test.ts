@@ -30,6 +30,7 @@ describe("installable PWA boundary", () => {
 
     expect(source).toContain('request.mode !== "navigate"');
     expect(source).toContain('caches.match("/offline")');
+    expect(source).toContain('"/theme-init.js"');
     expect(source).not.toContain("cache.put");
     expect(source).not.toContain("/api/");
     expect(source).not.toContain("/transactions");

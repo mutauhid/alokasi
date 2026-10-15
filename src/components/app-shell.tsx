@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { AccountMenu } from "@/components/account-menu";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import {
   Sheet,
   SheetContent,
@@ -200,16 +201,19 @@ export function AppShell({
                 workspaces={workspaces}
               />
             </div>
-            <Badge
-              variant="outline"
-              className="gap-2 border-border bg-background px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground"
-            >
-              <span
-                className="size-1.5 rounded-full bg-primary"
-                aria-hidden="true"
-              />
-              Tersambung
-            </Badge>
+            <div className="flex items-center gap-3">
+              <ThemeSwitcher />
+              <Badge
+                variant="outline"
+                className="hidden gap-2 border-border bg-background px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground sm:inline-flex"
+              >
+                <span
+                  className="size-1.5 rounded-full bg-primary"
+                  aria-hidden="true"
+                />
+                Tersambung
+              </Badge>
+            </div>
           </div>
         </header>
         <main
