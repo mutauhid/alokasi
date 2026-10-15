@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { PwaRegistration } from "@/components/pwa-registration";
 import "./globals.css";
 
@@ -22,18 +23,16 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: "light dark",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#176b56" },
-    { media: "(prefers-color-scheme: dark)", color: "#131b20" },
-  ],
+  themeColor: "#176b56",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="id">
+    <html lang="id" suppressHydrationWarning>
       <body>
+        <Script src="/theme-init.js" strategy="beforeInteractive" />
         {children}
         <PwaRegistration />
       </body>
