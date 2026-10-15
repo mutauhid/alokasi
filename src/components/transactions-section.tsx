@@ -1,15 +1,6 @@
 import { randomUUID } from "node:crypto";
 import Link from "next/link";
-import {
-  ArrowDown,
-  ArrowLeftRight,
-  ArrowUp,
-  Camera,
-  Plus,
-  ReceiptText,
-  Search,
-  X,
-} from "lucide-react";
+import { Camera, Plus, ReceiptText, Search, X } from "lucide-react";
 import { listActiveAccountOptions } from "@/modules/accounts/service";
 import { listActiveCategoryOptions } from "@/modules/categories/service";
 import {
@@ -29,6 +20,8 @@ import { sectionHref } from "@/lib/navigation";
 import { buildTransactionSuggestions } from "@/modules/transactions/suggestions";
 import type { TransactionPagination } from "@/modules/transactions/pagination";
 import { TransactionPageSizeControl } from "@/components/transaction-page-size-control";
+import { TransactionCategoryIcon } from "@/components/transaction-category-icon";
+import { AutomationGuideDialog } from "@/components/automation-guide-dialog";
 import { getActiveReceiptDraft } from "@/modules/receipts/service";
 import { receiptDraftView } from "@/modules/receipts/form-state";
 
@@ -55,9 +48,9 @@ const messages: Record<string, string> = {
 };
 
 const typeDetails = {
-  income: { label: "Pemasukan", icon: ArrowDown, sign: "+" },
-  expense: { label: "Pengeluaran", icon: ArrowUp, sign: "−" },
-  transfer: { label: "Transfer", icon: ArrowLeftRight, sign: "" },
+  income: { label: "Pemasukan", sign: "+" },
+  expense: { label: "Pengeluaran", sign: "−" },
+  transfer: { label: "Transfer", sign: "" },
 } as const;
 
 function rupiah(value: bigint) {
@@ -179,6 +172,23 @@ export async function TransactionsSection({
               Tambah transaksi
             </Link>
           </Button>
+        </div>
+      )}
+      {access.role !== "viewer" && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3 text-sm">
+          <span className="mr-auto text-muted-foreground">
+            Catat lebih praktis lewat Telegram atau Back Tap iPhone.
+          </span>
+          <AutomationGuideDialog
+            kind="telegram"
+            workspaceId={access.workspaceId}
+            triggerLabel="Panduan Telegram"
+          />
+          <AutomationGuideDialog
+            kind="iphone"
+            workspaceId={access.workspaceId}
+            triggerLabel="Panduan iPhone"
+          />
         </div>
       )}
       {access.role !== "viewer" && (
@@ -324,7 +334,6 @@ export async function TransactionsSection({
             <ul className="divide-y">
               {transactions.map((transaction) => {
                 const detail = typeDetails[transaction.type];
-                const Icon = detail.icon;
                 const canMutate =
                   access.role === "owner" ||
                   (access.role === "editor" &&
@@ -336,9 +345,10 @@ export async function TransactionsSection({
                   >
                     <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto]">
                       <div className="contents">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
-                          <Icon className="size-5" aria-hidden="true" />
-                        </span>
+                        <TransactionCategoryIcon
+                          categoryName={transaction.category?.name ?? null}
+                          type={transaction.type}
+                        />
                         <div className="min-w-0">
                           <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
                             <p className="min-w-0 break-words font-medium leading-snug">
