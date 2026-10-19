@@ -30,6 +30,7 @@ let mandiriId: string;
 let bcaId: string;
 let categoryId: string;
 let incomeCategoryId: string;
+let transportCategoryId: string;
 
 beforeAll(() => {
   if (!process.env.TEST_DATABASE_URL)
@@ -60,46 +61,56 @@ beforeEach(async () => {
     },
   });
   workspaceId = workspace.id;
-  const [mandiri, bca, category, incomeCategory] = await Promise.all([
-    db.financialAccount.create({
-      data: {
-        workspaceId,
-        name: "Mandiri",
-        type: "bank",
-        openingBalance: 0n,
-        openingDate: new Date("2020-01-01T00:00:00.000Z"),
-      },
-    }),
-    db.financialAccount.create({
-      data: {
-        workspaceId,
-        name: "BCA",
-        type: "bank",
-        openingBalance: 0n,
-        openingDate: new Date("2020-01-01T00:00:00.000Z"),
-      },
-    }),
-    db.category.create({
-      data: {
-        workspaceId,
-        name: "Belanja",
-        nameKey: "belanja",
-        type: "expense",
-      },
-    }),
-    db.category.create({
-      data: {
-        workspaceId,
-        name: "Gaji",
-        nameKey: "gaji",
-        type: "income",
-      },
-    }),
-  ]);
+  const [mandiri, bca, category, incomeCategory, transportCategory] =
+    await Promise.all([
+      db.financialAccount.create({
+        data: {
+          workspaceId,
+          name: "Mandiri",
+          type: "bank",
+          openingBalance: 0n,
+          openingDate: new Date("2020-01-01T00:00:00.000Z"),
+        },
+      }),
+      db.financialAccount.create({
+        data: {
+          workspaceId,
+          name: "BCA",
+          type: "bank",
+          openingBalance: 0n,
+          openingDate: new Date("2020-01-01T00:00:00.000Z"),
+        },
+      }),
+      db.category.create({
+        data: {
+          workspaceId,
+          name: "Belanja",
+          nameKey: "belanja",
+          type: "expense",
+        },
+      }),
+      db.category.create({
+        data: {
+          workspaceId,
+          name: "Gaji",
+          nameKey: "gaji",
+          type: "income",
+        },
+      }),
+      db.category.create({
+        data: {
+          workspaceId,
+          name: "Transportasi",
+          nameKey: "transportasi",
+          type: "expense",
+        },
+      }),
+    ]);
   mandiriId = mandiri.id;
   bcaId = bca.id;
   categoryId = category.id;
   incomeCategoryId = incomeCategory.id;
+  transportCategoryId = transportCategory.id;
 });
 
 afterEach(async () => {
@@ -217,5 +228,46 @@ describe("Telegram expense integration", () => {
       accountId: bcaId,
       categoryId: incomeCategoryId,
     });
+  });
+
+  it("suggests an expense category from keywords and then learns from history", async () => {
+    const code = await configureTelegram(
+      { workspaceId, actorId: ownerId, role: "owner" },
+      mandiriId,
+      categoryId,
+      incomeCategoryId,
+    );
+    await connectTelegram(code, "135792468", "135792468");
+    const connection = await findTelegramConnection("135792468", "135792468");
+    if (!connection) throw new Error("Connection missing");
+
+    const keywordDraft = await createTelegramDraft(
+      connection,
+      13,
+      "beli bensin motor 40rb",
+    );
+    expect(keywordDraft.draft.categoryId).toBe(transportCategoryId);
+
+    await db.transaction.create({
+      data: {
+        workspaceId,
+        createdBy: ownerId,
+        updatedBy: ownerId,
+        type: "expense",
+        title: "beli bensin motor",
+        amount: 40_000n,
+        transactionDate: new Date("2026-10-18T00:00:00.000Z"),
+        accountId: mandiriId,
+        categoryId,
+        idempotencyKey: `history:${randomUUID()}`,
+        requestHash: "a".repeat(64),
+      },
+    });
+    const learnedDraft = await createTelegramDraft(
+      connection,
+      14,
+      "beli bensin motor 45rb",
+    );
+    expect(learnedDraft.draft.categoryId).toBe(categoryId);
   });
 });

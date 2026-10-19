@@ -164,6 +164,11 @@ const telegramSteps: GuideStep[] = [
           judul, nominal, akun, kategori, dan tanggal pada balasan bot.
         </Instruction>
         <Instruction>
+          Kategori pengeluaran diisi dari riwayat judul yang sama atau kata
+          kunci seperti bensin, kopi, dan listrik. Kategori default dipakai jika
+          hasilnya tidak jelas.
+        </Instruction>
+        <Instruction>
           Untuk pemasukan, gunakan awalan, misalnya{" "}
           <strong>pemasukan: gaji 5jt bca</strong>.
         </Instruction>
