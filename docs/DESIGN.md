@@ -65,6 +65,7 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Error/timeout menyediakan input manual. Tidak ada nilai keuangan fiktif untuk menutupi OCR gagal.
 - Pengaturan menyediakan kartu “Shortcut iPhone” untuk memilih akun/kategori default, membuat token yang hanya tampil sekali, memutar token, dan mencabutnya.
 - Pengaturan menyediakan kartu “Catat lewat Telegram” dengan pilihan akun serta kategori default pengeluaran dan pemasukan, tautan penghubung sementara, status koneksi, dan tombol putuskan. Di chat pribadi bot, ringkasan transaksi memiliki tombol Simpan, Koreksi, dan Batal; Koreksi meminta satu field atau teks lengkap sehingga pengguna tidak perlu membuka aplikasi.
+- Draf pengeluaran Telegram mengisi kategori dari riwayat judul yang sama atau kata kunci umum. Ringkasan selalu memperlihatkan kategori hasil deteksi agar pengguna dapat mengoreksinya sebelum Simpan.
 - Draf dari Shortcut langsung membuka bagian “Periksa pengeluaran”, menampilkan preview privat di atas form pada mobile, dan mengisi akun/kategori default. Tombol utama tetap “Simpan pengeluaran”; kedatangan draf bukan status transaksi tersimpan.
 
 ## Perluasan F21 — siklus gajian

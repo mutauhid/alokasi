@@ -725,3 +725,13 @@ Migrasi `20261014000000_telegram_expense_bot`, suite PostgreSQL, dan smoke Teleg
 | Verifikasi lokal | Prisma validate, lint, TypeScript, build produksi, dan 21 file/125 unit test lulus |
 
 Migrasi `20261019000000_telegram_income`, test integrasi PostgreSQL, dan smoke bot nyata belum dijalankan karena database test dan token bot tidak tersedia pada checkout ini.
+
+## Hasil tahap 32 — kategori otomatis Telegram, 19 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| TGC-01 | Riwayat transaksi aktif dengan judul identik mengalahkan mapping kata kunci sehingga koreksi pengguna dapat dipakai pada transaksi berikutnya |
+| TGC-02 | Kata kunci pengeluaran umum memetakan ke kategori aktif Makan & minum, Transportasi, Tagihan, Belanja, atau Kesehatan |
+| TGC-03 | Nama kategori khusus yang tertulis dalam judul dapat dipilih tanpa mapping tambahan |
+| TGC-04 | Hasil ambigu, kategori arsip, atau kategori yang tidak tersedia memakai kategori default |
+| Verifikasi lokal | Lint, TypeScript, build produksi, dan 22 file/129 unit test lulus |

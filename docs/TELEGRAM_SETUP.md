@@ -45,6 +45,10 @@ Membuat tautan baru memutuskan koneksi lama pada workspace tersebut.
   `nominal: 30rb`, `akun: BCA`, `kategori: Belanja`, atau `catatan: ...`.
   Teks lengkap juga dapat dikirim ulang; awalan pemasukan tetap diperlukan
   saat mengubah pengeluaran menjadi pemasukan.
+- Untuk pengeluaran, bot memprioritaskan kategori dari transaksi terdahulu
+  dengan judul yang sama. Jika belum ada, kata kunci umum seperti `bensin`,
+  `kopi`, atau `listrik` dicocokkan ke kategori aktif. Hasil ambigu atau
+  kategori yang tidak tersedia akan memakai kategori pengeluaran default.
 - Draf berlaku 24 jam. Tombol Simpan menjalankan validasi membership,
   akun/kategori aktif, tanggal, dan idempotensi transaksi. Batal tidak
   mengubah data keuangan.

@@ -37,6 +37,7 @@ export function TelegramIntegrationCard({
         <p className="text-sm text-muted-foreground">
           Kirim “beli kopi 25rb bca” untuk pengeluaran atau “pemasukan: gaji 5jt
           bca” untuk pemasukan. Bot meminta konfirmasi sebelum saldo berubah.
+          Kategori pengeluaran disarankan dari riwayat dan kata kunci.
         </p>
         <div className="pt-2">
           <AutomationGuideDialog kind="telegram" workspaceId={workspaceId} />

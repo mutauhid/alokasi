@@ -4,6 +4,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { getDatabase } from "@/server/db/client";
 import { createTransactionInTransaction } from "@/modules/transactions/service";
 import { parseTelegramTransactionMessage } from "./parser";
+import { suggestTelegramExpenseCategory } from "./category-suggestion";
 
 type Access = {
   workspaceId: string;
@@ -333,20 +334,41 @@ export async function createTelegramDraft(
     parsed.type === "income"
       ? connection.defaultIncomeCategoryId
       : connection.defaultCategoryId;
-  const [accounts, category] = await Promise.all([
+  const [accounts, categories, history] = await Promise.all([
     db.financialAccount.findMany({
       where: { workspaceId: connection.workspaceId, archivedAt: null },
       select: { id: true, name: true },
     }),
-    db.category.findFirst({
+    db.category.findMany({
       where: {
         workspaceId: connection.workspaceId,
-        id: defaultCategoryId ?? "",
         type: parsed.type,
         archivedAt: null,
       },
-      select: { id: true },
+      select: { id: true, name: true },
     }),
+    parsed.type === "expense"
+      ? db.transaction.findMany({
+          where: {
+            workspaceId: connection.workspaceId,
+            type: "expense",
+            deletedAt: null,
+            categoryId: { not: null },
+            category: { archivedAt: null },
+          },
+          select: {
+            title: true,
+            categoryId: true,
+            transactionDate: true,
+          },
+          orderBy: [
+            { transactionDate: "desc" },
+            { createdAt: "desc" },
+            { id: "desc" },
+          ],
+          take: 100,
+        })
+      : Promise.resolve([]),
   ]);
   const account = parsed.accountHint
     ? selectByHint(accounts, parsed.accountHint)
@@ -355,10 +377,26 @@ export async function createTelegramDraft(
     throw new TelegramInputError(
       "Akun default tidak aktif. Atur ulang dari Pengaturan Alokasi.",
     );
-  if (!category)
+  const defaultCategory = categories.find(
+    (category) => category.id === defaultCategoryId,
+  );
+  if (!defaultCategory)
     throw new TelegramInputError(
       `Kategori default ${parsed.type === "income" ? "pemasukan" : "pengeluaran"} belum diatur atau tidak aktif. Atur ulang dari Pengaturan Alokasi.`,
     );
+  const category =
+    parsed.type === "expense"
+      ? (categories.find(
+          (item) =>
+            item.id ===
+            suggestTelegramExpenseCategory({
+              title: parsed.title,
+              categories,
+              history,
+              defaultCategoryId: defaultCategory.id,
+            }).categoryId,
+        ) ?? defaultCategory)
+      : defaultCategory;
   try {
     const draft = await db.telegramDraft.create({
       data: {
