@@ -197,7 +197,7 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 ### F24 — Telegram
 
 - Satu akun Telegram terkait satu membership aktif pada satu workspace. Hanya Owner/Editor dapat menghubungkan dan menggunakan bot. Chat grup diabaikan.
-- Format awal adalah judul, nominal rupiah, lalu nama akun opsional. Akun dan kategori default dipilih dari resource aktif dalam workspace. Akun eksplisit yang tidak cocok unik ditolak, tanpa jatuh balik diam-diam ke akun default.
+- Pengeluaran memakai judul, nominal rupiah, lalu nama akun opsional. Pemasukan wajib memakai awalan `pemasukan:`. Akun serta kategori default pengeluaran/pemasukan dipilih dari resource aktif dalam workspace. Akun eksplisit yang tidak cocok unik ditolak, tanpa jatuh balik diam-diam ke akun default.
 - Pesan menghasilkan draf terstruktur tanpa efek ke saldo, budget, atau laporan. Koreksi lewat balasan bot mengubah draf saja. Draf kedaluwarsa setelah 24 jam.
 - Konfirmasi mengambil ulang status membership, user, akun, kategori, dan tanggal. Pembuatan transaksi, audit, serta perubahan status draf berlangsung atomik. Aksi ulang tidak mencatat transaksi kedua.
 - Tautan penghubung berlaku 15 menit dan hanya sekali pakai; database menyimpan hash kode. Webhook memeriksa secret Telegram. Revoke, penurunan peran ke Viewer, keluar ruang, dan penghapusan akun/ruang menghapus koneksi beserta draf.

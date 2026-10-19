@@ -713,3 +713,15 @@ Smoke Playwright mencakup regresi publik/auth, bukan halaman Transaksi terautent
 | Verifikasi lokal | Prisma validate, lint, TypeScript, build produksi, dan 20 file/122 unit test lulus. Route webhook tampil pada output build |
 
 Migrasi `20261014000000_telegram_expense_bot`, suite PostgreSQL, dan smoke Telegram nyata memerlukan database test/preview dan token bot. File `.env.test.local` tidak tersedia pada checkout ini. Jangan menganggap webhook aktif hanya karena build lulus; ikuti `TELEGRAM_SETUP.md` untuk setup eksternal.
+
+## Hasil tahap 31 — pemasukan Telegram, 19 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| TGI-01 | Parser membedakan pengeluaran biasa dan `pemasukan:`, serta membaca `5jt`/`5juta` sebagai jutaan rupiah |
+| TGI-02 | Pengaturan memvalidasi kategori aktif terpisah untuk pengeluaran dan pemasukan |
+| TGI-03 | Draf menyimpan jenis transaksi; ringkasan, koreksi kategori, dan pesan sukses mengikuti jenis tersebut |
+| TGI-04 | Konfirmasi meneruskan jenis draf ke service transaksi atomik dan idempoten |
+| Verifikasi lokal | Prisma validate, lint, TypeScript, build produksi, dan 21 file/125 unit test lulus |
+
+Migrasi `20261019000000_telegram_income`, test integrasi PostgreSQL, dan smoke bot nyata belum dijalankan karena database test dan token bot tidak tersedia pada checkout ini.

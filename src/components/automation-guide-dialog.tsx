@@ -84,8 +84,12 @@ const telegramSteps: GuideStep[] = [
           <p className="mb-2 font-semibold">Catat lewat Telegram</p>
           <p className="mb-1 text-muted-foreground">Akun default</p>
           <PhoneRow>Mandiri</PhoneRow>
-          <p className="mb-1 mt-3 text-muted-foreground">Kategori default</p>
+          <p className="mb-1 mt-3 text-muted-foreground">
+            Kategori pengeluaran
+          </p>
           <PhoneRow>Makan & minum</PhoneRow>
+          <p className="mb-1 mt-3 text-muted-foreground">Kategori pemasukan</p>
+          <PhoneRow>Gaji</PhoneRow>
           <div className="mt-3">
             <Highlight>Hubungkan Telegram</Highlight>
           </div>
@@ -95,12 +99,13 @@ const telegramSteps: GuideStep[] = [
     instructions: (
       <div className="space-y-3">
         <Instruction>
-          Di Pengaturan Alokasi, pilih akun sumber dan kategori pengeluaran
-          default, lalu ketuk <strong>Hubungkan Telegram</strong>.
+          Di Pengaturan Alokasi, pilih akun serta kategori default untuk
+          pengeluaran dan pemasukan, lalu ketuk{" "}
+          <strong>Hubungkan Telegram</strong>.
         </Instruction>
         <Instruction>
-          Contoh: “beli kopi 25rb” memakai akun default. Tambahkan “bca” untuk
-          memilih akun BCA.
+          “Beli kopi 25rb” menjadi pengeluaran. Gunakan “pemasukan: gaji 5jt”
+          untuk pemasukan. Tambahkan “bca” untuk memilih akun BCA.
         </Instruction>
       </div>
     ),
@@ -111,8 +116,8 @@ const telegramSteps: GuideStep[] = [
     illustration: (
       <Phone title="Bot Alokasi · Telegram">
         <div className="rounded-lg bg-card p-3 leading-relaxed">
-          Halo! Saya akan membantu mencatat pengeluaran setelah Anda
-          memeriksanya.
+          Halo! Saya akan membantu mencatat pemasukan dan pengeluaran setelah
+          Anda memeriksanya.
         </div>
         <div className="pt-4 text-center">
           <Highlight>Mulai / Start</Highlight>
@@ -157,6 +162,10 @@ const telegramSteps: GuideStep[] = [
         <Instruction>
           Kirim pesan seperti <strong>beli kopi 25rb bca</strong>. Periksa
           judul, nominal, akun, kategori, dan tanggal pada balasan bot.
+        </Instruction>
+        <Instruction>
+          Untuk pemasukan, gunakan awalan, misalnya{" "}
+          <strong>pemasukan: gaji 5jt bca</strong>.
         </Instruction>
         <Instruction>
           Pilih <strong>Koreksi</strong> untuk memperbaiki draf,{" "}

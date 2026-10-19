@@ -14,8 +14,10 @@ export type TelegramActionState = {
   linked?: boolean;
   accountName?: string;
   categoryName?: string;
+  incomeCategoryName?: string;
   accountId?: string;
   categoryId?: string;
+  incomeCategoryId?: string;
   link?: string;
   message?: string;
   error?: string;
@@ -48,6 +50,7 @@ export async function telegramIntegrationAction(
     }
     const accountId = value(form, "accountId");
     const categoryId = value(form, "categoryId");
+    const incomeCategoryId = value(form, "incomeCategoryId");
     const username = process.env.TELEGRAM_BOT_USERNAME?.replace(/^@/u, "");
     if (
       !username ||
@@ -59,16 +62,22 @@ export async function telegramIntegrationAction(
         ...previous,
         error: "Konfigurasi bot Telegram belum lengkap di server.",
       };
-    const code = await configureTelegram(access, accountId, categoryId);
+    const code = await configureTelegram(
+      access,
+      accountId,
+      categoryId,
+      incomeCategoryId,
+    );
     revalidatePath("/settings");
     return {
       configured: true,
       linked: false,
       accountId,
       categoryId,
+      incomeCategoryId,
       link: `https://t.me/${username}?start=${code}`,
       message:
-        "Buka tautan ini di Telegram dalam 15 menit. Setelah bot menyatakan terhubung, kirim contoh: beli kopi 25rb bca.",
+        "Buka tautan ini di Telegram dalam 15 menit. Coba pengeluaran: beli kopi 25rb bca, atau pemasukan: gaji 5jt bca.",
     };
   } catch (error) {
     return {

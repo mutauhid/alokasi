@@ -64,7 +64,7 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Jangan menampilkan toast “Pengeluaran tersimpan” ketika OCR baru selesai. Gunakan “Hasil scan siap diperiksa”.
 - Error/timeout menyediakan input manual. Tidak ada nilai keuangan fiktif untuk menutupi OCR gagal.
 - Pengaturan menyediakan kartu “Shortcut iPhone” untuk memilih akun/kategori default, membuat token yang hanya tampil sekali, memutar token, dan mencabutnya.
-- Pengaturan menyediakan kartu “Catat lewat Telegram” dengan pilihan akun/kategori default, tautan penghubung sementara, status koneksi, dan tombol putuskan. Di chat pribadi bot, ringkasan pengeluaran memiliki tombol Simpan, Koreksi, dan Batal; Koreksi meminta balasan teks sehingga pengguna tidak perlu membuka aplikasi.
+- Pengaturan menyediakan kartu “Catat lewat Telegram” dengan pilihan akun serta kategori default pengeluaran dan pemasukan, tautan penghubung sementara, status koneksi, dan tombol putuskan. Di chat pribadi bot, ringkasan transaksi memiliki tombol Simpan, Koreksi, dan Batal; Koreksi meminta satu field atau teks lengkap sehingga pengguna tidak perlu membuka aplikasi.
 - Draf dari Shortcut langsung membuka bagian “Periksa pengeluaran”, menampilkan preview privat di atas form pada mobile, dan mengisi akun/kategori default. Tombol utama tetap “Simpan pengeluaran”; kedatangan draf bukan status transaksi tersimpan.
 
 ## Perluasan F21 — siklus gajian
