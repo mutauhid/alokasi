@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseExpenseMessage } from "../../src/modules/telegram-integration/parser";
+import {
+  parseExpenseMessage,
+  parseTelegramTransactionMessage,
+} from "../../src/modules/telegram-integration/parser";
 
 describe("Telegram expense parser", () => {
   it("reads IDR shorthand and leaves account selection to the workspace", () => {
@@ -29,5 +32,24 @@ describe("Telegram expense parser", () => {
       "25rb",
     ])
       expect(parseExpenseMessage(text)).toBeNull();
+  });
+
+  it("recognizes explicit income and million shorthand", () => {
+    expect(parseTelegramTransactionMessage("pemasukan: gaji 5jt bca")).toEqual({
+      type: "income",
+      title: "gaji",
+      amount: 5_000_000n,
+      accountHint: "bca",
+    });
+    expect(parseTelegramTransactionMessage("Pemasukan : bonus 2juta")).toEqual({
+      type: "income",
+      title: "bonus",
+      amount: 2_000_000n,
+      accountHint: null,
+    });
+    expect(parseTelegramTransactionMessage("beli bensin 50rb")).toMatchObject({
+      type: "expense",
+      amount: 50_000n,
+    });
   });
 });

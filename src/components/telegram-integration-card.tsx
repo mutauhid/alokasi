@@ -15,12 +15,14 @@ type Option = { id: string; name: string };
 export function TelegramIntegrationCard({
   workspaceId,
   accounts,
-  categories,
+  expenseCategories,
+  incomeCategories,
   initialState,
 }: {
   workspaceId: string;
   accounts: Option[];
-  categories: Option[];
+  expenseCategories: Option[];
+  incomeCategories: Option[];
   initialState: TelegramActionState;
 }) {
   const [state, action, pending] = useActionState(
@@ -33,8 +35,8 @@ export function TelegramIntegrationCard({
         <Send className="mb-2 size-5 text-primary" aria-hidden="true" />
         <CardTitle>Catat lewat Telegram</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Kirim pesan seperti “beli kopi 25rb bca”. Bot menampilkan draf;
-          koreksi dan konfirmasi langsung di Telegram sebelum saldo berubah.
+          Kirim “beli kopi 25rb bca” untuk pengeluaran atau “pemasukan: gaji 5jt
+          bca” untuk pemasukan. Bot meminta konfirmasi sebelum saldo berubah.
         </p>
         <div className="pt-2">
           <AutomationGuideDialog kind="telegram" workspaceId={workspaceId} />
@@ -51,14 +53,21 @@ export function TelegramIntegrationCard({
         )}
         {state.configured && (
           <p className="rounded-lg border p-3 text-sm">
-            {state.linked ? "Terhubung" : "Menunggu tautan dibuka"} · Default:{" "}
+            {state.linked ? "Terhubung" : "Menunggu tautan dibuka"} · Akun:{" "}
             {state.accountName ??
               accounts.find((item) => item.id === state.accountId)?.name ??
               "Akun"}{" "}
-            ·{" "}
+            · Pengeluaran:{" "}
             {state.categoryName ??
-              categories.find((item) => item.id === state.categoryId)?.name ??
+              expenseCategories.find((item) => item.id === state.categoryId)
+                ?.name ??
               "Kategori"}
+            {" · Pemasukan: "}
+            {state.incomeCategoryName ??
+              incomeCategories.find(
+                (item) => item.id === state.incomeCategoryId,
+              )?.name ??
+              "Belum diatur"}
           </p>
         )}
         {state.link && (
@@ -91,7 +100,7 @@ export function TelegramIntegrationCard({
             </select>
           </label>
           <label className="text-sm font-medium">
-            Kategori default
+            Kategori pengeluaran default
             <select
               name="categoryId"
               defaultValue={state.categoryId ?? ""}
@@ -99,7 +108,23 @@ export function TelegramIntegrationCard({
               className="mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
             >
               <option value="">Pilih kategori</option>
-              {categories.map((item) => (
+              {expenseCategories.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm font-medium">
+            Kategori pemasukan default
+            <select
+              name="incomeCategoryId"
+              defaultValue={state.incomeCategoryId ?? ""}
+              required
+              className="mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            >
+              <option value="">Pilih kategori</option>
+              {incomeCategories.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
                 </option>
@@ -108,7 +133,12 @@ export function TelegramIntegrationCard({
           </label>
           <Button
             type="submit"
-            disabled={pending || !accounts.length || !categories.length}
+            disabled={
+              pending ||
+              !accounts.length ||
+              !expenseCategories.length ||
+              !incomeCategories.length
+            }
             className="min-h-11 sm:col-span-2"
           >
             {pending
@@ -118,6 +148,12 @@ export function TelegramIntegrationCard({
                 : "Hubungkan Telegram"}
           </Button>
         </form>
+        {(!expenseCategories.length || !incomeCategories.length) && (
+          <p className="text-xs text-destructive">
+            Tambahkan minimal satu kategori pengeluaran dan satu kategori
+            pemasukan aktif sebelum menghubungkan Telegram.
+          </p>
+        )}
         {state.configured && (
           <form action={action}>
             <input type="hidden" name="workspaceId" value={workspaceId} />

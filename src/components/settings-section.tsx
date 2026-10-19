@@ -263,8 +263,11 @@ export async function SettingsSection({
         <TelegramIntegrationCard
           workspaceId={workspaceId}
           accounts={shortcutAccounts.map(({ id, name }) => ({ id, name }))}
-          categories={shortcutCategories
+          expenseCategories={shortcutCategories
             .filter((category) => category.type === "expense")
+            .map(({ id, name }) => ({ id, name }))}
+          incomeCategories={shortcutCategories
+            .filter((category) => category.type === "income")
             .map(({ id, name }) => ({ id, name }))}
           initialState={telegram}
         />

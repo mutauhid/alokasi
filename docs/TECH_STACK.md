@@ -159,8 +159,9 @@ Perluasan iPhone memakai kemampuan bawaan Back Tap dan Apple Shortcuts, tanpa SD
 
 Integrasi Telegram F24 memakai webhook Bot API pada Route Handler Node.js.
 Kode tautan sekali pakai disimpan sebagai hash dalam PostgreSQL dan mengikat
-identitas Telegram ke membership aktif pada satu workspace. Pesan teks menjadi
-draf privat; callback Simpan memanggil service transaksi yang sudah ada dalam
+identitas Telegram ke membership aktif pada satu workspace. Pesan biasa menjadi
+draf pengeluaran; awalan `pemasukan:` menjadi draf pemasukan. Callback Simpan
+memanggil service transaksi yang sudah ada dalam
 transaksi database atomik. Koreksi dilakukan melalui balasan ForceReply dalam
 chat pribadi. Tidak diperlukan n8n, server tambahan, atau provider transkripsi
 untuk fase teks ini. Token bot dan secret webhook hanya berada di environment

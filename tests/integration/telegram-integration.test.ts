@@ -29,6 +29,7 @@ let workspaceId: string;
 let mandiriId: string;
 let bcaId: string;
 let categoryId: string;
+let incomeCategoryId: string;
 
 beforeAll(() => {
   if (!process.env.TEST_DATABASE_URL)
@@ -59,7 +60,7 @@ beforeEach(async () => {
     },
   });
   workspaceId = workspace.id;
-  const [mandiri, bca, category] = await Promise.all([
+  const [mandiri, bca, category, incomeCategory] = await Promise.all([
     db.financialAccount.create({
       data: {
         workspaceId,
@@ -86,10 +87,19 @@ beforeEach(async () => {
         type: "expense",
       },
     }),
+    db.category.create({
+      data: {
+        workspaceId,
+        name: "Gaji",
+        nameKey: "gaji",
+        type: "income",
+      },
+    }),
   ]);
   mandiriId = mandiri.id;
   bcaId = bca.id;
   categoryId = category.id;
+  incomeCategoryId = incomeCategory.id;
 });
 
 afterEach(async () => {
@@ -104,6 +114,7 @@ describe("Telegram expense integration", () => {
       { workspaceId, actorId: ownerId, role: "owner" },
       mandiriId,
       categoryId,
+      incomeCategoryId,
     );
     const stored = await db.telegramConnection.findUniqueOrThrow({
       where: { workspaceId_userId: { workspaceId, userId: ownerId } },
@@ -158,6 +169,7 @@ describe("Telegram expense integration", () => {
       { workspaceId, actorId: ownerId, role: "owner" },
       mandiriId,
       categoryId,
+      incomeCategoryId,
     );
     await connectTelegram(code, "987654321", "987654321");
     const connection = await findTelegramConnection("987654321", "987654321");
@@ -167,5 +179,43 @@ describe("Telegram expense integration", () => {
     await revokeTelegram({ workspaceId, actorId: ownerId, role: "owner" });
     expect(await findTelegramConnection("987654321", "987654321")).toBeNull();
     expect(await db.transaction.count({ where: { workspaceId } })).toBe(0);
+  });
+
+  it("records an income draft with jt shorthand and the income default category", async () => {
+    const code = await configureTelegram(
+      { workspaceId, actorId: ownerId, role: "owner" },
+      mandiriId,
+      categoryId,
+      incomeCategoryId,
+    );
+    await connectTelegram(code, "246813579", "246813579");
+    const connection = await findTelegramConnection("246813579", "246813579");
+    if (!connection) throw new Error("Connection missing");
+
+    const result = await createTelegramDraft(
+      connection,
+      12,
+      "pemasukan: gaji 5jt bca",
+    );
+    expect(result.draft).toMatchObject({
+      type: "income",
+      title: "gaji",
+      amount: 5_000_000n,
+      accountId: bcaId,
+      categoryId: incomeCategoryId,
+    });
+    expect(await confirmTelegramDraft(connection, result.draft.id)).toBe(
+      "created",
+    );
+    const transaction = await db.transaction.findFirstOrThrow({
+      where: { workspaceId },
+    });
+    expect(transaction).toMatchObject({
+      type: "income",
+      title: "gaji",
+      amount: 5_000_000n,
+      accountId: bcaId,
+      categoryId: incomeCategoryId,
+    });
   });
 });

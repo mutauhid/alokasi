@@ -83,6 +83,7 @@ function isCallback(value: unknown): value is Callback {
 function summary(
   draft: NonNullable<Awaited<ReturnType<typeof getTelegramDraft>>>,
 ) {
+  const kind = draft.type === "income" ? "pemasukan" : "pengeluaran";
   const amount = new Intl.NumberFormat("id-ID").format(draft.amount);
   const date = new Intl.DateTimeFormat("id-ID", {
     timeZone: "UTC",
@@ -91,7 +92,7 @@ function summary(
     year: "numeric",
   }).format(draft.transactionDate);
   return [
-    "Periksa pengeluaran:",
+    `Periksa ${kind}:`,
     `Judul: ${draft.title}`,
     `Nominal: Rp${amount}`,
     `Akun: ${draft.accountName}`,
@@ -99,7 +100,7 @@ function summary(
     `Tanggal: ${date}`,
     ...(draft.note ? [`Catatan: ${draft.note}`] : []),
     "",
-    "Saldo baru berubah setelah Anda menekan Simpan.",
+    "Saldo berubah setelah Anda menekan Simpan.",
   ].join("\n");
 }
 
@@ -140,7 +141,7 @@ async function handleMessage(message: Message) {
     await sendTelegramMessage(
       chatId,
       linked || alreadyLinked
-        ? "Telegram terhubung. Kirim pesan seperti: beli kopi 25rb bca. Saya akan minta konfirmasi sebelum mencatat."
+        ? "Telegram terhubung. Kirim seperti: beli kopi 25rb bca, atau pemasukan: gaji 5jt bca. Saya akan minta konfirmasi sebelum mencatat."
         : "Tautan tidak berlaku atau akun Telegram ini sudah terhubung. Buat tautan baru dari Pengaturan Alokasi.",
     );
     return;
@@ -156,7 +157,7 @@ async function handleMessage(message: Message) {
   if (text === "/help") {
     await sendTelegramMessage(
       chatId,
-      "Kirim: beli kopi 25rb [nama akun]. Tanpa nama akun, akun default dipakai. Periksa draf, lalu Simpan, Koreksi, atau Batal.",
+      "Pengeluaran: beli kopi 25rb [nama akun]. Pemasukan: pemasukan: gaji 5jt [nama akun]. Tanpa nama akun, akun default dipakai. Periksa draf, lalu Simpan, Koreksi, atau Batal.",
     );
     return;
   }
@@ -232,7 +233,7 @@ async function handleCallback(callback: Callback) {
   if (action === "edit") {
     const promptId = await sendTelegramMessage(
       chatId,
-      "Balas pesan ini dengan teks lengkap, misalnya: beli kopi 25rb bca. Bisa juga: judul: ..., nominal: 25rb, akun: BCA, kategori: Belanja, atau catatan: ...",
+      "Balas pesan ini dengan satu koreksi saja: judul: ..., nominal: 25rb, akun: BCA, kategori: Belanja, atau catatan: keterangan. Bisa juga kirim ulang teks lengkap, misalnya pemasukan: gaji 5jt bca.",
       { force_reply: true, input_field_placeholder: "Tulis koreksi" },
     );
     await setTelegramEditPrompt(connection.id, draft.id, promptId);
@@ -240,10 +241,11 @@ async function handleCallback(callback: Callback) {
   }
   try {
     const result = await confirmTelegramDraft(connection, draft.id);
+    const kind = draft.type === "income" ? "Pemasukan" : "Pengeluaran";
     await sendTelegramMessage(
       chatId,
       result === "created"
-        ? `✅ Pengeluaran ${draft.title} sebesar Rp${new Intl.NumberFormat("id-ID").format(draft.amount)} tercatat di Alokasi.`
+        ? `✅ ${kind} ${draft.title} sebesar Rp${new Intl.NumberFormat("id-ID").format(draft.amount)} tercatat di Alokasi.`
         : result === "already"
           ? "Transaksi ini sudah tercatat."
           : "Draf tidak dapat disimpan. Kirim pesan baru.",

@@ -3,7 +3,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { getDatabase } from "@/server/db/client";
 import { createTransactionInTransaction } from "@/modules/transactions/service";
-import { parseExpenseMessage } from "./parser";
+import { parseTelegramTransactionMessage } from "./parser";
 
 type Access = {
   workspaceId: string;
@@ -52,7 +52,7 @@ export async function getTelegramSettings(access: Access) {
     },
   });
   if (!connection) return { configured: false as const };
-  const [account, category] = await Promise.all([
+  const [account, category, incomeCategory] = await Promise.all([
     getDatabase().financialAccount.findFirst({
       where: {
         id: connection.defaultAccountId,
@@ -67,6 +67,15 @@ export async function getTelegramSettings(access: Access) {
       },
       select: { name: true },
     }),
+    connection.defaultIncomeCategoryId
+      ? getDatabase().category.findFirst({
+          where: {
+            id: connection.defaultIncomeCategoryId,
+            workspaceId: access.workspaceId,
+          },
+          select: { name: true },
+        })
+      : Promise.resolve(null),
   ]);
   return {
     configured: true as const,
@@ -75,6 +84,8 @@ export async function getTelegramSettings(access: Access) {
     categoryId: connection.defaultCategoryId,
     accountName: account?.name ?? "Tidak tersedia",
     categoryName: category?.name ?? "Tidak tersedia",
+    incomeCategoryId: connection.defaultIncomeCategoryId ?? undefined,
+    incomeCategoryName: incomeCategory?.name ?? undefined,
     linkExpiresAt: connection.linkExpiresAt,
   };
 }
@@ -83,10 +94,15 @@ export async function configureTelegram(
   access: Access,
   accountId: string,
   categoryId: string,
+  incomeCategoryId: string,
 ) {
   requireWriter(access.role);
+  if (!accountId || !categoryId || !incomeCategoryId)
+    throw new TelegramInputError(
+      "Pilih akun serta kategori pengeluaran dan pemasukan yang aktif.",
+    );
   const db = getDatabase();
-  const [membership, account, category] = await Promise.all([
+  const [membership, account, category, incomeCategory] = await Promise.all([
     db.membership.findFirst({
       where: {
         workspaceId: access.workspaceId,
@@ -113,10 +129,19 @@ export async function configureTelegram(
       },
       select: { id: true },
     }),
+    db.category.findFirst({
+      where: {
+        workspaceId: access.workspaceId,
+        id: incomeCategoryId,
+        type: "income",
+        archivedAt: null,
+      },
+      select: { id: true },
+    }),
   ]);
-  if (!membership || !account || !category)
+  if (!membership || !account || !category || !incomeCategory)
     throw new TelegramInputError(
-      "Pilih akun dan kategori pengeluaran yang aktif.",
+      "Pilih akun serta kategori pengeluaran dan pemasukan yang aktif.",
     );
   const code = randomBytes(24).toString("base64url");
   await db.$transaction(async (tx) => {
@@ -145,6 +170,7 @@ export async function configureTelegram(
         userId: access.actorId,
         defaultAccountId: accountId,
         defaultCategoryId: categoryId,
+        defaultIncomeCategoryId: incomeCategoryId,
         linkCodeHash: hash(code),
         linkExpiresAt: new Date(Date.now() + linkLifetimeMs),
       },
@@ -154,6 +180,7 @@ export async function configureTelegram(
         linkedAt: null,
         defaultAccountId: accountId,
         defaultCategoryId: categoryId,
+        defaultIncomeCategoryId: incomeCategoryId,
         linkCodeHash: hash(code),
         linkExpiresAt: new Date(Date.now() + linkLifetimeMs),
       },
@@ -165,7 +192,11 @@ export async function configureTelegram(
         entityType: "telegram",
         entityId: membership.id,
         action: "configured",
-        changedFields: ["default_account_id", "default_category_id"],
+        changedFields: [
+          "default_account_id",
+          "default_category_id",
+          "default_income_category_id",
+        ],
       },
     });
   });
@@ -283,10 +314,10 @@ export async function createTelegramDraft(
   messageId: number,
   text: string,
 ) {
-  const parsed = parseExpenseMessage(text);
+  const parsed = parseTelegramTransactionMessage(text);
   if (!parsed)
     throw new TelegramInputError(
-      "Format belum terbaca. Contoh: beli kopi 25rb bca",
+      "Format belum terbaca. Contoh: beli kopi 25rb bca atau pemasukan: gaji 5jt bca",
     );
   const db = getDatabase();
   const existing = await db.telegramDraft.findUnique({
@@ -298,6 +329,10 @@ export async function createTelegramDraft(
     },
   });
   if (existing) return { draft: existing, created: false };
+  const defaultCategoryId =
+    parsed.type === "income"
+      ? connection.defaultIncomeCategoryId
+      : connection.defaultCategoryId;
   const [accounts, category] = await Promise.all([
     db.financialAccount.findMany({
       where: { workspaceId: connection.workspaceId, archivedAt: null },
@@ -306,8 +341,8 @@ export async function createTelegramDraft(
     db.category.findFirst({
       where: {
         workspaceId: connection.workspaceId,
-        id: connection.defaultCategoryId,
-        type: "expense",
+        id: defaultCategoryId ?? "",
+        type: parsed.type,
         archivedAt: null,
       },
       select: { id: true },
@@ -322,13 +357,14 @@ export async function createTelegramDraft(
     );
   if (!category)
     throw new TelegramInputError(
-      "Kategori default tidak aktif. Atur ulang dari Pengaturan Alokasi.",
+      `Kategori default ${parsed.type === "income" ? "pemasukan" : "pengeluaran"} belum diatur atau tidak aktif. Atur ulang dari Pengaturan Alokasi.`,
     );
   try {
     const draft = await db.telegramDraft.create({
       data: {
         connectionId: connection.id,
         sourceMessageId: BigInt(messageId),
+        type: parsed.type,
         title: parsed.title,
         amount: parsed.amount,
         accountId: account.id,
@@ -426,7 +462,21 @@ export async function correctTelegramDraft(
   const db = getDatabase();
   const change = text.trim();
   const lower = change.toLocaleLowerCase("id-ID");
+  const draft = await db.telegramDraft.findFirst({
+    where: {
+      id: draftId,
+      connectionId: connection.id,
+      status: "pending",
+      expiresAt: { gt: new Date() },
+    },
+    select: { type: true },
+  });
+  if (!draft)
+    throw new TelegramInputError(
+      "Draf sudah kedaluwarsa atau selesai. Kirim transaksi baru.",
+    );
   const data: {
+    type?: "income" | "expense";
     title?: string;
     amount?: bigint;
     accountId?: string;
@@ -442,7 +492,10 @@ export async function correctTelegramDraft(
       );
     data.title = title;
   } else if (lower.startsWith("nominal:")) {
-    const parsed = parseExpenseMessage(`x ${change.slice(8).trim()}`);
+    const parsed = parseTelegramTransactionMessage(
+      `x ${change.slice(8).trim()}`,
+      draft.type === "income" ? "income" : "expense",
+    );
     if (!parsed || parsed.accountHint)
       throw new TelegramInputError("Contoh koreksi nominal: nominal: 25rb");
     data.amount = parsed.amount;
@@ -457,7 +510,7 @@ export async function correctTelegramDraft(
       : await db.category.findMany({
           where: {
             workspaceId: connection.workspaceId,
-            type: "expense",
+            type: draft.type,
             archivedAt: null,
           },
           select: { id: true, name: true },
@@ -471,11 +524,37 @@ export async function correctTelegramDraft(
       throw new TelegramInputError("Catatan maksimal 1000 karakter.");
     data.note = note || null;
   } else {
-    const parsed = parseExpenseMessage(change);
+    const parsed = parseTelegramTransactionMessage(
+      change,
+      draft.type === "income" ? "income" : "expense",
+    );
     if (!parsed)
       throw new TelegramInputError(
-        "Balas dengan contoh: beli kopi 25rb bca, atau judul:/nominal:/akun:/kategori:/catatan:",
+        "Balas dengan satu koreksi, misalnya kategori: Transportasi, atau teks lengkap seperti pemasukan: gaji 5jt bca.",
       );
+    if (parsed.type !== draft.type) {
+      const defaultCategoryId =
+        parsed.type === "income"
+          ? connection.defaultIncomeCategoryId
+          : connection.defaultCategoryId;
+      const category = defaultCategoryId
+        ? await db.category.findFirst({
+            where: {
+              id: defaultCategoryId,
+              workspaceId: connection.workspaceId,
+              type: parsed.type,
+              archivedAt: null,
+            },
+            select: { id: true },
+          })
+        : null;
+      if (!category)
+        throw new TelegramInputError(
+          `Kategori default ${parsed.type === "income" ? "pemasukan" : "pengeluaran"} belum diatur atau tidak aktif. Atur ulang dari Pengaturan Alokasi.`,
+        );
+      data.type = parsed.type;
+      data.categoryId = category.id;
+    }
     data.title = parsed.title;
     data.amount = parsed.amount;
     if (parsed.accountHint) {
@@ -557,7 +636,7 @@ export async function confirmTelegramDraft(
           today,
         },
         {
-          type: "expense",
+          type: draft.type,
           title: draft.title,
           amount: draft.amount,
           transactionDate: draft.transactionDate,

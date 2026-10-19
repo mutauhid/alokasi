@@ -1,9 +1,9 @@
-# Telegram: pencatatan pengeluaran dengan konfirmasi
+# Telegram: pencatatan transaksi dengan konfirmasi
 
-F24 menerima pesan teks di chat pribadi bot, misalnya `beli kopi 25rb`
-atau `beli kopi 25rb bca`. Bot menampilkan draf dengan tombol Simpan,
-Koreksi, dan Batal. Saldo, budget, dan laporan berubah hanya setelah Simpan.
-Voice note belum didukung.
+F24 menerima pengeluaran seperti `beli kopi 25rb bca` dan pemasukan seperti
+`pemasukan: gaji 5jt bca` di chat pribadi bot. Bot menampilkan draf dengan
+tombol Simpan, Koreksi, dan Batal. Saldo, budget, dan laporan berubah hanya
+setelah Simpan. Voice note belum didukung.
 
 ## Menyiapkan bot
 
@@ -13,9 +13,10 @@ Voice note belum didukung.
    `TELEGRAM_WEBHOOK_SECRET` pada environment server Vercel yang dituju.
    Secret webhook sebaiknya string acak 32+ karakter berisi huruf, angka,
    garis bawah, atau minus. Deploy ulang setelah menambah environment.
-3. Terapkan migrasi `20261014000000_telegram_expense_bot` pada database
-   environment yang sama. Gunakan alur migrasi di `DATABASE_SETUP.md`;
-   jangan gunakan `db push` atau mengubah tabel lewat dashboard.
+3. Terapkan migrasi `20261014000000_telegram_expense_bot` dan
+   `20261019000000_telegram_income` pada database environment yang sama.
+   Gunakan alur migrasi di `DATABASE_SETUP.md`; jangan gunakan `db push` atau
+   mengubah tabel lewat dashboard.
 4. Daftarkan webhook Telegram dengan `setWebhook` ke
    `https://<host-alokasi>/api/integrations/telegram/webhook`. Kirim
    `secret_token` dengan nilai `TELEGRAM_WEBHOOK_SECRET`, serta
@@ -24,7 +25,8 @@ Voice note belum didukung.
    jangan ditempel ke issue, chat, atau log. Periksa hasilnya lewat
    `getWebhookInfo`.
 5. Login ke Alokasi, buka **Pengaturan → Catat lewat Telegram**, pilih akun
-   dan kategori pengeluaran default, lalu buka tautan bot dalam 15 menit.
+   serta kategori default pengeluaran dan pemasukan, lalu buka tautan bot
+   dalam 15 menit.
    Pengguna Owner/Editor dapat menghubungkan bot; Viewer tidak.
 
 Domain kustom tidak diperlukan; URL HTTPS Vercel yang aktif dapat dipakai.
@@ -33,12 +35,16 @@ Membuat tautan baru memutuskan koneksi lama pada workspace tersebut.
 
 ## Pemakaian dan koreksi
 
-- Pesan mengikuti bentuk `judul nominal [nama akun]`. Nominal menerima
-  `25rb`, `25k`, `25.000`, atau `25000`. Tanpa nama akun, akun default
-  dipakai. Nama/akhiran nama akun harus cocok unik dengan akun aktif.
-- Kategori memakai default. Sesudah mengetuk **Koreksi**, balas permintaan
-  bot dengan kalimat lengkap atau `judul: ...`, `nominal: 30rb`,
-  `akun: BCA`, `kategori: Belanja`, atau `catatan: ...`.
+- Pengeluaran mengikuti `judul nominal [nama akun]`. Pemasukan wajib memakai
+  awalan `pemasukan:`, misalnya `pemasukan: gaji 5jt bca`. Nominal menerima
+  `25rb`, `25k`, `5jt`, `5juta`, `25.000`, atau `25000`. Tanpa nama akun,
+  akun default dipakai. Nama/akhiran nama akun harus cocok unik dengan akun
+  aktif.
+- Kategori memakai default sesuai jenis transaksi. Sesudah mengetuk
+  **Koreksi**, balas satu field per permintaan: `judul: ...`,
+  `nominal: 30rb`, `akun: BCA`, `kategori: Belanja`, atau `catatan: ...`.
+  Teks lengkap juga dapat dikirim ulang; awalan pemasukan tetap diperlukan
+  saat mengubah pengeluaran menjadi pemasukan.
 - Draf berlaku 24 jam. Tombol Simpan menjalankan validasi membership,
   akun/kategori aktif, tanggal, dan idempotensi transaksi. Batal tidak
   mengubah data keuangan.
@@ -51,6 +57,7 @@ Membuat tautan baru memutuskan koneksi lama pada workspace tersebut.
 
 Gunakan database preview/test: hubungkan akun, kirim `beli kopi 25rb`,
 periksa akun default, koreksi menjadi `nominal: 30rb`, lalu Simpan. Pastikan
-tepat satu transaksi muncul. Ulangi tekan Simpan, uji `beli kopi 25rb bca`,
-akun yang tidak dikenal, Batal, tautan kedaluwarsa, serta Viewer/revoke.
+tepat satu transaksi muncul. Uji juga `pemasukan: gaji 5jt bca` beserta
+kategori pemasukan default. Ulangi tekan Simpan, uji akun yang tidak dikenal,
+Batal, tautan kedaluwarsa, serta Viewer/revoke.
 Migrasi dan webhook produksi hanya dilakukan setelah hasil preview benar.
