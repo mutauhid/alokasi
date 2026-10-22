@@ -26,14 +26,15 @@ function text(form: FormData, name: string) {
 }
 
 function settingsError(workspaceId: string, error: string): never {
+  const view = error.startsWith("account-delete-") ? "danger" : "account";
   redirect(
-    `/settings?workspaceId=${encodeURIComponent(workspaceId)}&error=${error}`,
+    `/settings?workspaceId=${encodeURIComponent(workspaceId)}&view=${view}&error=${error}`,
   );
 }
 
 function settingsSuccess(workspaceId: string, success: string): never {
   redirect(
-    `/settings?workspaceId=${encodeURIComponent(workspaceId)}&success=${success}`,
+    `/settings?workspaceId=${encodeURIComponent(workspaceId)}&view=account&success=${success}`,
   );
 }
 

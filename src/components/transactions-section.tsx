@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import Link from "next/link";
-import { Camera, Plus, ReceiptText, Search, X } from "lucide-react";
+import { Camera, ReceiptText, Search, X } from "lucide-react";
 import { listActiveAccountOptions } from "@/modules/accounts/service";
 import { listActiveCategoryOptions } from "@/modules/categories/service";
 import {
@@ -11,17 +11,18 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TransactionForm } from "@/components/transaction-form";
 import { DeleteTransactionButton } from "@/components/delete-transaction-button";
+import { TransactionActions } from "@/components/transaction-actions";
 import { ReceiptScanPanel } from "@/components/receipt-scan-panel";
 import { RecurringTransactionsSection } from "@/components/recurring-transactions-section";
 import { TransactionViewTabs } from "@/components/transaction-view-tabs";
 import { Button } from "@/components/ui/button";
 import type { WorkspaceAccess } from "@/modules/workspaces/service";
-import { sectionHref } from "@/lib/navigation";
 import { buildTransactionSuggestions } from "@/modules/transactions/suggestions";
 import type { TransactionPagination } from "@/modules/transactions/pagination";
 import { TransactionPageSizeControl } from "@/components/transaction-page-size-control";
 import { TransactionCategoryIcon } from "@/components/transaction-category-icon";
 import { AutomationGuideDialog } from "@/components/automation-guide-dialog";
+import { CreateTransactionDialog } from "@/components/create-transaction-dialog";
 import { getActiveReceiptDraft } from "@/modules/receipts/service";
 import { receiptDraftView } from "@/modules/receipts/form-state";
 
@@ -105,6 +106,7 @@ export async function TransactionsSection({
   success,
   view = "history",
   pagination,
+  openCreateTransaction = false,
 }: {
   access: WorkspaceAccess;
   today: Date;
@@ -112,6 +114,7 @@ export async function TransactionsSection({
   success?: string;
   view?: "history" | "reminders";
   pagination: TransactionPagination;
+  openCreateTransaction?: boolean;
 }) {
   if (view === "reminders") {
     return (
@@ -166,12 +169,15 @@ export async function TransactionsSection({
               Scan struk
             </Link>
           </Button>
-          <Button asChild size="lg" variant="outline" className="min-h-12">
-            <Link href="#tambah-transaksi">
-              <Plus className="size-5" />
-              Tambah transaksi
-            </Link>
-          </Button>
+          <CreateTransactionDialog
+            workspaceId={access.workspaceId}
+            accounts={accounts}
+            categories={categories}
+            idempotencyKey={randomUUID()}
+            defaultDate={localToday(access.timezone)}
+            suggestions={suggestions}
+            defaultOpen={openCreateTransaction}
+          />
         </div>
       )}
       {access.role !== "viewer" && (
@@ -208,51 +214,6 @@ export async function TransactionsSection({
           />
         </section>
       )}
-      {access.role !== "viewer" && (
-        <Card id="tambah-transaksi" className="scroll-mt-5 shadow-none">
-          <CardHeader>
-            <CardTitle>Tambah transaksi</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Transfer memindahkan dana antar-akun dan tidak dihitung sebagai
-              pemasukan atau pengeluaran.
-            </p>
-          </CardHeader>
-          <CardContent>
-            {accounts.length === 0 ? (
-              <div className="rounded-lg bg-muted p-4 text-sm">
-                {access.role === "owner" ? (
-                  <p>
-                    Ruang ini belum memiliki akun aktif. Tambahkan akun melalui{" "}
-                    <Link
-                      href={sectionHref("accounts", access.workspaceId)}
-                      className="font-medium text-primary underline underline-offset-4"
-                    >
-                      halaman Akun
-                    </Link>{" "}
-                    agar transaksi dapat dicatat.
-                  </p>
-                ) : (
-                  <p>
-                    Ruang ini belum memiliki akun aktif. Minta Owner membuat
-                    akun ruang bersama terlebih dahulu; setelah itu Editor dapat
-                    langsung menambahkan transaksi.
-                  </p>
-                )}
-              </div>
-            ) : (
-              <TransactionForm
-                workspaceId={access.workspaceId}
-                accounts={accounts}
-                categories={categories}
-                idempotencyKey={randomUUID()}
-                defaultDate={localToday(access.timezone)}
-                suggestions={suggestions}
-              />
-            )}
-          </CardContent>
-        </Card>
-      )}
-
       <Card className="shadow-none">
         <CardHeader>
           <CardTitle>Riwayat transaksi</CardTitle>
@@ -384,11 +345,8 @@ export async function TransactionsSection({
                       </p>
                     </div>
                     {canMutate && (
-                      <details className="mt-4 rounded-lg border p-3 text-sm">
-                        <summary className="cursor-pointer font-medium">
-                          Ubah atau hapus
-                        </summary>
-                        <div className="mt-4 space-y-3">
+                      <div className="mt-3 flex justify-end">
+                        <TransactionActions title={transaction.title}>
                           <TransactionForm
                             workspaceId={access.workspaceId}
                             compact
@@ -416,8 +374,8 @@ export async function TransactionsSection({
                             id={transaction.id}
                             version={transaction.version}
                           />
-                        </div>
-                      </details>
+                        </TransactionActions>
+                      </div>
                     )}
                   </li>
                 );

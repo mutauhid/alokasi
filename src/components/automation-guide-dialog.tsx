@@ -459,8 +459,8 @@ export function AutomationGuideDialog({
         </Button>
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px]" />
-        <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[92dvh] w-[calc(100vw-1.5rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-2xl">
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:animate-in data-[state=open]:fade-in" />
+        <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[92dvh] w-[calc(100vw-1.5rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-2xl data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95">
           <div className="flex items-start gap-3 border-b px-4 py-4 pr-14 sm:px-6">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
               {kind === "telegram" ? (
@@ -500,7 +500,8 @@ export function AutomationGuideDialog({
               ))}
             </div>
             <div
-              className={`grid gap-5 ${enlarged ? "grid-cols-1" : "md:grid-cols-[14rem_minmax(0,1fr)]"}`}
+              key={`${kind}-${step}-${enlarged ? "large" : "normal"}`}
+              className={`motion-guide-step grid gap-5 ${enlarged ? "grid-cols-1" : "md:grid-cols-[14rem_minmax(0,1fr)]"}`}
             >
               <figure className="min-w-0">
                 <div
@@ -536,7 +537,7 @@ export function AutomationGuideDialog({
             <div className="flex flex-wrap gap-2">
               <Button asChild variant="ghost">
                 <Link
-                  href={`${sectionHref("settings", workspaceId)}#${kind === "telegram" ? "integrasi-telegram" : "integrasi-iphone"}`}
+                  href={`${sectionHref("settings", workspaceId)}&view=automation#${kind === "telegram" ? "integrasi-telegram" : "integrasi-iphone"}`}
                   onClick={() => changeOpen(false)}
                 >
                   Buka Pengaturan

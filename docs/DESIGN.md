@@ -129,6 +129,27 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Riwayat menampilkan saldo catatan, saldo aktual, selisih, penyesuaian, pembuat, dan status “Cocok”, “Disesuaikan”, atau “Perlu diperiksa kembali”.
 - Nilai negatif tetap didukung. Informasi selisih tidak bergantung pada warna, dan layout menumpuk pada mobile tanpa scroll horizontal.
 
+## Gerak antarmuka dan kontrol transaksi
+
+- Setiap modul memakai animasi masuk singkat pada judul dan panel ketika navigasi selesai. Gerak harus tenang, tidak menggeser layout, dan tidak menunda interaksi.
+- Dashboard memakai skeleton yang mengikuti bentuk kartu ringkasan, grafik, dan panel ketika data dimuat. Setelah tampil, batang grafik serta progress arus kas/budget bertumbuh dari titik asalnya tanpa mengubah nilai.
+- Semua animasi wajib dinonaktifkan secara efektif ketika perangkat memilih `prefers-reduced-motion: reduce`.
+- Kategori pada form transaksi manual dan review bukti iPhone ditampilkan sebagai kumpulan kartu radio dengan ikon kategori, teks, fokus keyboard, serta indikator terpilih. Semantik native radio dan validasi wajib tetap dipertahankan.
+- Tindakan sekunder transaksi menggunakan tombol tiga titik berlabel aksesibel. Tombol membuka bottom sheet responsif berisi form ubah dan tindakan hapus; hapus masih memerlukan dialog konfirmasi terpisah.
+- Dashboard memakai komposisi tiga kartu ringkasan, grafik arus kas dan ringkasan budget berdampingan pada desktop, kemudian transaksi terbaru selebar konten. Mobile menumpuk semua panel tanpa kehilangan legend atau nilai.
+- Tambah transaksi dibuka sebagai modal dari halaman Transaksi maupun tombol “Catat transaksi” Dashboard. Scan bukti tetap alur terpisah; menutup modal tidak membuat transaksi.
+- Kartu Budget dan Akun memakai tombol tiga titik yang membuka bottom sheet untuk edit serta hapus/arsip. Tindakan destruktif atau pengarsipan tetap meminta konfirmasi kedua.
+- Laporan menampilkan grafik batang pemasukan/pengeluaran dari transaksi yang sudah mengikuti seluruh filter. Pengeluaran per kategori menggunakan progress relatif terhadap kategori terbesar; grafik tidak memakai data demo.
+- Panduan automasi harus mempertahankan ilustrasi pada setiap langkah. Panduan iPhone wajib memperlihatkan pengisian header Authorization, Form `text` dan `image`, pengambilan `reviewUrl`, pengaturan Back Tap, serta pemeriksaan bukti; bukan hanya deskripsi teks.
+
+## Struktur Pengaturan
+
+- Pengaturan memakai navigasi lokal responsif dan menampilkan satu kelompok fungsi pada satu waktu: Akun, Automasi, Kategori, Ruang & data, atau Zona berbahaya.
+- Pilihan bagian tersimpan pada URL `view` bersama `workspaceId`, sehingga refresh, tombol kembali browser, tautan panduan, dan redirect setelah mutasi tetap membuka konteks yang sama.
+- Pada desktop navigasi menjadi kolom yang tetap terlihat saat konten digulir; pada mobile menjadi grid dua atau tiga kolom tanpa scroll horizontal.
+- Zona berbahaya hanya tersedia pada ruang pribadi. Viewer tetap dapat membuka Automasi untuk melihat penjelasan izin, tetapi tidak menerima kontrol konfigurasi.
+- Halaman tidak menampilkan daftar status implementasi, rincian arsitektur, atau penjelasan validasi server yang ditujukan bagi developer. Perlindungan tersebut tetap dijalankan di backend.
+
 ## Lifecycle ruang bersama
 
 - Owner melihat kartu “Alihkan kepemilikan” dengan calon Owner aktif, penjelasan bahwa penerima harus menyetujui, masa berlaku permintaan, dan tombol pembatalan.

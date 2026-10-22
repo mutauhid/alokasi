@@ -22,6 +22,8 @@ export function SectionContent({
   reconcileDate,
   transactionView = "history",
   transactionPagination,
+  openCreateTransaction = false,
+  settingsView,
 }: {
   section: Section;
   access: WorkspaceAccess;
@@ -34,6 +36,8 @@ export function SectionContent({
   reconcileDate?: string;
   transactionView?: "history" | "reminders";
   transactionPagination: TransactionPagination;
+  openCreateTransaction?: boolean;
+  settingsView?: string;
 }) {
   switch (section) {
     case "dashboard":
@@ -53,6 +57,7 @@ export function SectionContent({
           success={success}
           view={transactionView}
           pagination={transactionPagination}
+          openCreateTransaction={openCreateTransaction}
         />
       );
     case "budgets":
@@ -98,6 +103,7 @@ export function SectionContent({
           today={today}
           error={error}
           success={success}
+          view={settingsView}
         />
       );
   }

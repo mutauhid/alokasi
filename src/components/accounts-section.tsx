@@ -11,7 +11,6 @@ import {
   X,
 } from "lucide-react";
 import {
-  archiveAccountAction,
   createAccountAction,
   renameAccountAction,
 } from "@/app/(workspace)/actions";
@@ -21,6 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReconciliationForm } from "@/components/reconciliation-form";
+import { TransactionActions } from "@/components/transaction-actions";
+import { ArchiveAccountButton } from "@/components/archive-account-button";
 
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
@@ -417,60 +418,48 @@ export async function AccountsSection({
                   </Link>
                 </Button>
                 {canManage && (
-                  <details className="rounded-lg border p-3 text-sm">
-                    <summary className="cursor-pointer font-medium">
-                      Ubah nama
-                    </summary>
-                    <form
-                      action={renameAccountAction}
-                      className="mt-3 space-y-3"
+                  <div className="flex justify-end border-t pt-4">
+                    <TransactionActions
+                      title={account.name}
+                      heading="Kelola akun"
+                      triggerLabel={`Kelola akun ${account.name}`}
                     >
-                      <input
-                        type="hidden"
-                        name="workspaceId"
-                        value={workspaceId}
+                      <form action={renameAccountAction} className="space-y-3">
+                        <input
+                          type="hidden"
+                          name="workspaceId"
+                          value={workspaceId}
+                        />
+                        <input type="hidden" name="id" value={account.id} />
+                        <input
+                          type="hidden"
+                          name="version"
+                          value={account.version}
+                        />
+                        <input
+                          aria-label={`Nama baru untuk ${account.name}`}
+                          name="name"
+                          required
+                          maxLength={100}
+                          defaultValue={account.name}
+                          className={inputClass}
+                        />
+                        <Button
+                          type="submit"
+                          variant="secondary"
+                          className="w-full"
+                        >
+                          Simpan nama
+                        </Button>
+                      </form>
+                      <ArchiveAccountButton
+                        workspaceId={workspaceId}
+                        id={account.id}
+                        version={account.version}
+                        name={account.name}
                       />
-                      <input type="hidden" name="id" value={account.id} />
-                      <input
-                        type="hidden"
-                        name="version"
-                        value={account.version}
-                      />
-                      <input
-                        aria-label={`Nama baru untuk ${account.name}`}
-                        name="name"
-                        required
-                        maxLength={100}
-                        defaultValue={account.name}
-                        className={inputClass}
-                      />
-                      <Button
-                        type="submit"
-                        variant="secondary"
-                        className="w-full"
-                      >
-                        Simpan nama
-                      </Button>
-                    </form>
-                  </details>
-                )}
-                {canManage && (
-                  <form action={archiveAccountAction}>
-                    <input
-                      type="hidden"
-                      name="workspaceId"
-                      value={workspaceId}
-                    />
-                    <input type="hidden" name="id" value={account.id} />
-                    <input
-                      type="hidden"
-                      name="version"
-                      value={account.version}
-                    />
-                    <Button type="submit" variant="outline" className="w-full">
-                      Arsipkan akun
-                    </Button>
-                  </form>
+                    </TransactionActions>
+                  </div>
                 )}
               </CardContent>
             </Card>

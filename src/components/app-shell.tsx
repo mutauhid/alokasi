@@ -4,10 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import {
   ArrowLeftRight,
-  ArrowUpRight,
   ChartNoAxesCombined,
   ChartPie,
-  CircleHelp,
   Layers,
   LayoutDashboard,
   LockKeyhole,
@@ -80,7 +78,7 @@ function Navigation({
               onClick={onNavigate}
               aria-current={section === item.slug ? "page" : undefined}
               className={cn(
-                "flex min-h-11 items-center gap-3 rounded-lg px-3 text-[13px] font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                "workspace-nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[13px] font-medium transition-[background-color,color,transform] duration-200 motion-safe:hover:translate-x-0.5 hover:bg-accent hover:text-accent-foreground",
                 section === item.slug
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground",
@@ -221,20 +219,6 @@ export function AppShell({
           tabIndex={-1}
           className="mx-auto max-w-[1440px] px-4 py-6 focus-visible:outline-none sm:px-7 sm:py-8 lg:px-9"
         >
-          <div className="mb-7 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-dashed bg-card/60 px-3.5 py-2.5 text-xs text-muted-foreground">
-            <CircleHelp className="size-4 shrink-0" aria-hidden="true" />
-            <p className="min-w-0 flex-1">
-              Semua angka dan tindakan di halaman ini dibatasi ke ruang aktif
-              dan peran anggota yang diverifikasi server.
-            </p>
-            <Link
-              href={sectionHref("members", workspace.id)}
-              className="inline-flex min-h-7 items-center gap-1 font-medium text-primary underline-offset-4 hover:underline"
-            >
-              Lihat status
-              <ArrowUpRight className="size-3.5" aria-hidden="true" />
-            </Link>
-          </div>
           {children}
           <footer className="mt-8 flex flex-wrap justify-between gap-2 border-t pt-5 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">

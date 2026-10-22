@@ -29,6 +29,8 @@ export type WorkspaceSearchParams = Promise<{
   page?: string | string[];
   pageSize?: string | string[];
   search?: string | string[];
+  create?: string | string[];
+  view?: string | string[];
 }>;
 
 export async function WorkspacePage({
@@ -101,109 +103,130 @@ export async function WorkspacePage({
       userEmail={identity.email}
     >
       <ActionSuccessToast code={success} />
-      <div className="mb-7 flex flex-wrap items-start justify-between gap-5">
-        <div>
-          <h1 className="text-[27px] font-semibold leading-tight tracking-[-.8px]">
-            {current.label}
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {current.description}
-          </p>
-        </div>
-        {showPeriod && (
-          <div className="flex flex-wrap items-center gap-2">
-            {periodSelection ? (
-              <form
-                action={`/${section}`}
-                method="get"
-                className="flex flex-wrap items-center gap-2"
-              >
-                <input
-                  type="hidden"
-                  name="workspaceId"
-                  value={context.workspace.id}
-                />
-                <label className="relative">
-                  <span className="sr-only">Periode yang ditampilkan</span>
+      <div className="workspace-page-motion">
+        <div className="motion-page-heading mb-7 flex flex-wrap items-start justify-between gap-5">
+          <div>
+            {section === "dashboard" && (
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                {context.workspace.type === "personal"
+                  ? "Workspace pribadi"
+                  : context.workspace.name}
+              </p>
+            )}
+            <h1 className="text-[27px] font-semibold leading-tight tracking-[-.8px]">
+              {section === "dashboard"
+                ? "Selamat datang kembali"
+                : current.label}
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {section === "dashboard"
+                ? "Gambaran keuanganmu, dalam satu tempat."
+                : current.description}
+            </p>
+          </div>
+          {showPeriod && (
+            <div className="flex flex-wrap items-center gap-2">
+              {periodSelection ? (
+                <form
+                  action={`/${section}`}
+                  method="get"
+                  className="flex flex-wrap items-center gap-2"
+                >
+                  <input
+                    type="hidden"
+                    name="workspaceId"
+                    value={context.workspace.id}
+                  />
+                  <label className="relative">
+                    <span className="sr-only">Periode yang ditampilkan</span>
+                    <CalendarDays
+                      className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                    <select
+                      name="periodId"
+                      defaultValue={displayedPeriod.id}
+                      className="min-h-10 rounded-lg border bg-card py-2 pl-9 pr-8 text-xs"
+                    >
+                      {periodSelection.periods.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {`${periodFormat.format(item.startDate)}–${periodFormat.format(
+                            new Date(
+                              item.endDateExclusive.valueOf() - 86_400_000,
+                            ),
+                          )}${item.id === activePeriod.id ? " · aktif" : ""}${item.isTransition ? " · transisi" : ""}`}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <Button type="submit" variant="outline" className="min-h-10">
+                    Tampilkan
+                  </Button>
+                </form>
+              ) : (
+                <span className="inline-flex min-h-10 items-center gap-2 rounded-lg border bg-card px-3 text-xs">
                   <CalendarDays
-                    className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground"
+                    className="size-4 text-muted-foreground"
                     aria-hidden="true"
                   />
-                  <select
-                    name="periodId"
-                    defaultValue={displayedPeriod.id}
-                    className="min-h-10 rounded-lg border bg-card py-2 pl-9 pr-8 text-xs"
+                  {period}
+                </span>
+              )}
+              {section === "dashboard" && (
+                <Button asChild className="min-h-10">
+                  <Link
+                    href={`${sectionHref("transactions", context.workspace.id)}&create=1`}
                   >
-                    {periodSelection.periods.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {`${periodFormat.format(item.startDate)}–${periodFormat.format(
-                          new Date(
-                            item.endDateExclusive.valueOf() - 86_400_000,
-                          ),
-                        )}${item.id === activePeriod.id ? " · aktif" : ""}${item.isTransition ? " · transisi" : ""}`}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <Button type="submit" variant="outline" className="min-h-10">
-                  Tampilkan
+                    <Plus className="size-4" />
+                    Catat transaksi
+                  </Link>
                 </Button>
-              </form>
-            ) : (
-              <span className="inline-flex min-h-10 items-center gap-2 rounded-lg border bg-card px-3 text-xs">
-                <CalendarDays
-                  className="size-4 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                {period}
-              </span>
-            )}
-            {section === "dashboard" && (
-              <Button asChild className="min-h-10">
-                <Link href={sectionHref("transactions", context.workspace.id)}>
-                  <Plus className="size-4" />
-                  Tambah transaksi
-                </Link>
-              </Button>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
+        <SectionContent
+          section={section}
+          access={{
+            workspaceId: context.workspace.id,
+            actorId: context.user.id,
+            role: context.membership.role,
+            timezone: context.workspace.timezone,
+            workspaceType: context.workspace.type,
+          }}
+          today={today}
+          error={typeof query.error === "string" ? query.error : undefined}
+          reportQuery={{
+            from: typeof query.from === "string" ? query.from : undefined,
+            to: typeof query.to === "string" ? query.to : undefined,
+            type: typeof query.type === "string" ? query.type : undefined,
+            accountId:
+              typeof query.accountId === "string" ? query.accountId : undefined,
+            categoryId:
+              typeof query.categoryId === "string"
+                ? query.categoryId
+                : undefined,
+            query: typeof query.query === "string" ? query.query : undefined,
+          }}
+          selectedPeriodId={
+            periodSelection?.selectedPeriod.id ?? activePeriod.id
+          }
+          reconcileAccountId={
+            typeof query.reconcileAccountId === "string"
+              ? query.reconcileAccountId
+              : undefined
+          }
+          reconcileDate={
+            typeof query.reconcileDate === "string"
+              ? query.reconcileDate
+              : undefined
+          }
+          transactionView={transactionView}
+          transactionPagination={parseTransactionPagination(query)}
+          openCreateTransaction={query.create === "1"}
+          settingsView={typeof query.view === "string" ? query.view : undefined}
+        />
       </div>
-      <SectionContent
-        section={section}
-        access={{
-          workspaceId: context.workspace.id,
-          actorId: context.user.id,
-          role: context.membership.role,
-          timezone: context.workspace.timezone,
-          workspaceType: context.workspace.type,
-        }}
-        today={today}
-        error={typeof query.error === "string" ? query.error : undefined}
-        reportQuery={{
-          from: typeof query.from === "string" ? query.from : undefined,
-          to: typeof query.to === "string" ? query.to : undefined,
-          type: typeof query.type === "string" ? query.type : undefined,
-          accountId:
-            typeof query.accountId === "string" ? query.accountId : undefined,
-          categoryId:
-            typeof query.categoryId === "string" ? query.categoryId : undefined,
-          query: typeof query.query === "string" ? query.query : undefined,
-        }}
-        selectedPeriodId={periodSelection?.selectedPeriod.id ?? activePeriod.id}
-        reconcileAccountId={
-          typeof query.reconcileAccountId === "string"
-            ? query.reconcileAccountId
-            : undefined
-        }
-        reconcileDate={
-          typeof query.reconcileDate === "string"
-            ? query.reconcileDate
-            : undefined
-        }
-        transactionView={transactionView}
-        transactionPagination={parseTransactionPagination(query)}
-      />
     </AppShell>
   );
 }

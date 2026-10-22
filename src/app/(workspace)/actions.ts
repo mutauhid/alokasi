@@ -139,7 +139,17 @@ function finish(
   workspaceId: string,
 ): never {
   revalidatePath(path);
-  redirect(`${path}?workspaceId=${workspaceId}&success=${message}`);
+  const settingsView =
+    path === "/settings"
+      ? message.startsWith("category-")
+        ? "categories"
+        : message.startsWith("cycle-")
+          ? "workspace"
+          : undefined
+      : undefined;
+  redirect(
+    `${path}?workspaceId=${workspaceId}${settingsView ? `&view=${settingsView}` : ""}&success=${message}`,
+  );
 }
 
 function fail(
@@ -153,8 +163,16 @@ function fail(
   message: string,
 ): never {
   const workspaceId = text(form, "workspaceId");
+  const settingsView =
+    path === "/settings"
+      ? message.startsWith("category-")
+        ? "categories"
+        : message.startsWith("cycle-")
+          ? "workspace"
+          : undefined
+      : undefined;
   redirect(
-    `${path}?${workspaceId ? `workspaceId=${encodeURIComponent(workspaceId)}&` : ""}error=${message}`,
+    `${path}?${workspaceId ? `workspaceId=${encodeURIComponent(workspaceId)}&` : ""}${settingsView ? `view=${settingsView}&` : ""}error=${message}`,
   );
 }
 

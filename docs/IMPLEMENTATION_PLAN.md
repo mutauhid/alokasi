@@ -1,6 +1,6 @@
 # Rencana implementasi dan status
 
-Diperbarui 12 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
+Diperbarui 22 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
 
 ## Status nyata
 
@@ -41,6 +41,8 @@ Diperbarui 12 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplika
 | Tahap 30 percakapan: bot Telegram | F24 dikerjakan pada `feat/telegram-expense-bot`: tautan penghubung sekali pakai, akun/kategori default, draf teks, koreksi dan konfirmasi dari chat pribadi, webhook terautentikasi, transaksi atomik dan idempoten. Konfigurasi bot, migrasi, serta smoke Telegram nyata menunggu environment |
 | Tahap 31 percakapan: pemasukan Telegram | Dikerjakan pada `feat/telegram-income`: awalan `pemasukan:`, nominal `jt`/`juta`, kategori pemasukan default terpisah, koreksi berdasarkan jenis draf, dan penyimpanan transaksi income atomik |
 | Tahap 32 percakapan: kategori otomatis Telegram | Dikerjakan pada `feat/telegram-auto-category`: riwayat judul identik diprioritaskan, dilanjutkan nama kategori dan kata kunci bawaan, dengan fallback aman ke kategori pengeluaran default |
+| Tahap 33 percakapan: penerapan mockup terbaru | Dikerjakan pada `feat/ui-motion-category-picker`: animasi halus lintas modul, skeleton dan komposisi Dashboard baru, modal tambah transaksi, radio card kategori manual/iPhone, action sheet transaksi/Budget/Akun, grafik Laporan aktual, dan panduan automasi bergambar lengkap |
+| Tahap 34 percakapan: navigasi Pengaturan | Dikerjakan pada `feat/ui-motion-category-picker`: Pengaturan dipisah menjadi Akun, Automasi, Kategori, Ruang & data, serta Zona berbahaya; URL dan redirect mempertahankan bagian aktif, data dimuat hanya untuk bagian yang dibuka, dan informasi status internal dihapus dari UI produksi |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Storage bukti permanen/provider OCR eksternal | Belum diimplementasikan; preview Shortcut sementara memakai database draf dengan retensi 24 jam, sedangkan consent, biaya, callback, data residency, dan lifecycle lampiran permanen masih terbuka |

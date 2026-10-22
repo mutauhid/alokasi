@@ -1,6 +1,6 @@
 # Catatan keputusan
 
-Diperbarui: 12 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
+Diperbarui: 22 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
 
 ## Keputusan dan kebutuhan pengguna
 
@@ -50,6 +50,7 @@ Diperbarui: 12 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent 
 | D43 | 14 Okt 2026 | Pengguna meminta bot Telegram untuk mencatat pesan seperti `beli kopi 25rb bca`, menyetujui konfirmasi dan koreksi langsung di Telegram, serta menunda VN | Aktifkan F24 pada branch `feat/telegram-expense-bot`: hubungkan identitas Telegram ke satu workspace, pilih akun/kategori default, baca pesan teks terstruktur sebagai draf, koreksi dengan balasan bot, dan catat tepat satu pengeluaran setelah tombol Simpan |
 | D44 | 19 Okt 2026 | Pengguna meminta pemasukan melalui Telegram dan nominal seperti `5jt` | Pesan tanpa awalan tetap pengeluaran; awalan `pemasukan:` membuat pemasukan. Sediakan kategori default terpisah per jenis, dukung `jt`/`juta`, dan pertahankan konfirmasi sebelum transaksi dicatat |
 | D45 | 19 Okt 2026 | Pengguna meminta kategori pengeluaran Telegram terisi otomatis tanpa mapping manual satu per satu | Prioritaskan riwayat transaksi workspace dengan judul identik, lalu nama kategori dan kamus kata kunci bawaan. Gunakan hanya kategori aktif; hasil ambigu kembali ke default dan tetap memerlukan konfirmasi |
+| D46 | 22 Okt 2026 | Pengguna menyetujui mockup animasi lintas modul, lalu meminta seluruh komposisi mockup terbaru diterapkan pada Dashboard, modal tambah transaksi, tindakan Budget/Akun, grafik Laporan, kategori radio berikon, serta panduan automasi bergambar | Implementasikan pada branch `feat/ui-motion-category-picker`: gerak halus yang menghormati reduced motion, Dashboard dengan susunan mockup, modal transaksi, action sheet Budget/Akun, grafik Laporan dari data aktual, radio card kategori, dan seluruh ilustrasi Telegram/Back Tap iPhone |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -144,6 +145,10 @@ D38 menghasilkan T37: halaman Riwayat membaca `page` dan `pageSize` dari URL, me
 D39 menghasilkan T38: kontrol ukuran menjadi Client Component kecil yang memanggil submit GET form saat pilihan berubah. Form tetap mengirim `workspaceId`, `page=1`, dan `pageSize`; query serta validasi paging tetap berada di server. Tombol Terapkan dihapus.
 
 D42 menghasilkan T39: endpoint Shortcut menerima `multipart/form-data` berisi teks OCR dan satu JPEG/PNG/WebP maksimal 4 MB, memeriksa MIME serta signature, lalu menyimpan byte pada `ReceiptDraft` privat maksimal 24 jam. Endpoint gambar membaca ulang login, membership Owner/Editor, workspace, pembuat, status draf, dan masa berlaku; submit/batal/kedaluwarsa menghapus byte. Gambar tidak menjadi lampiran transaksi atau ekspor. Form OCR memakai `title` wajib maksimal 100 karakter dan `note` terpisah; merchant hasil OCR hanya menjadi bagian catatan, sedangkan saran F22 mengisi judul/kategori. Pencarian riwayat memakai parameter `search` maksimal 100 karakter dan filter database case-insensitive terhadap judul atau nama kategori, tanpa mengubah query kandidat saran.
+
+D46 menghasilkan T40: penyegaran UI memakai animasi masuk singkat pada halaman dan kartu di seluruh modul, skeleton terstruktur saat navigasi menunggu data, serta animasi grafik/progress khusus Dashboard. Semua gerak tunduk pada `prefers-reduced-motion` dan tidak mengubah data maupun urutan fokus. Dashboard mengikuti komposisi tiga ringkasan, grafik arus kas dan budget berdampingan, lalu transaksi terbaru selebar halaman. Tambah transaksi memakai modal dan dapat dibuka dari Dashboard melalui query presentasional tanpa membuat transaksi sebelum submit. Pemilih kategori transaksi manual dan review iPhone memakai native radio yang divisualkan sebagai kartu ikon; satu kategori tetap wajib. Tindakan transaksi, Budget, dan Akun memakai tombol tiga titik serta bottom sheet; hapus Budget/transaksi dan arsip Akun memiliki konfirmasi tersendiri. Grafik Laporan membagi rentang filter menjadi maksimal empat kelompok dan menghitung pemasukan/pengeluaran dari transaksi terfilter. Panduan Telegram dan Back Tap iPhone tetap menyertakan ilustrasi langkah lengkap, khususnya Authorization, Form `text`/`image`, `reviewUrl`, dan pengaturan Back Tap.
+
+D47 menghasilkan T41: Pengaturan tidak lagi menumpuk seluruh modul dalam satu halaman panjang. Navigasi lokal memisahkan Akun, Automasi, Kategori, Ruang & data, dan Zona berbahaya melalui parameter URL `view`; hanya data bagian aktif yang dimuat server. Zona berbahaya hanya ditampilkan pada ruang pribadi, sedangkan hasil mutasi mengembalikan pengguna ke bagian asal. Ringkasan status implementasi dan keterangan internal global tidak ditampilkan pada UI produksi; otorisasi server tetap berlaku.
 
 ## Default kerja, bukan keputusan eksplisit pengguna
 
