@@ -114,3 +114,147 @@
     transform: scaleX(0);
   }
 }
+
+@keyframes workspace-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes workspace-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dashboard-bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes dashboard-progress-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes guide-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.workspace-page-motion {
+  animation: workspace-page-in 320ms ease-out both;
+}
+
+.workspace-page-motion .motion-page-heading {
+  animation: workspace-page-in 280ms ease-out both;
+}
+
+.workspace-page-motion [data-slot="card"] {
+  animation: workspace-card-in 360ms ease-out both;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.workspace-page-motion [data-slot="card"]:nth-child(2) {
+  animation-delay: 45ms;
+}
+
+.workspace-page-motion [data-slot="card"]:nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.workspace-page-motion [data-slot="card"]:nth-child(4) {
+  animation-delay: 135ms;
+}
+
+.workspace-nav-link[aria-current="page"] {
+  position: relative;
+}
+
+.workspace-nav-link[aria-current="page"]::before {
+  position: absolute;
+  top: 50%;
+  left: 0.35rem;
+  width: 0.2rem;
+  height: 1.25rem;
+  content: "";
+  background: currentColor;
+  border-radius: 999px;
+  transform: translateY(-50%);
+}
+
+.dashboard-chart-bar {
+  transform-origin: bottom;
+  animation: dashboard-bar-grow 560ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.dashboard-progress-fill {
+  transform-origin: left;
+  animation: dashboard-progress-grow 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.motion-guide-step {
+  animation: guide-step-in 240ms ease-out both;
+}
+
+.loading-shimmer {
+  background-image: linear-gradient(
+    105deg,
+    transparent 30%,
+    color-mix(in srgb, var(--foreground) 8%, transparent) 45%,
+    transparent 60%
+  );
+  background-size: 220% 100%;
+  animation: loading-shimmer 1.35s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-page-motion,
+  .workspace-page-motion .motion-page-heading,
+  .workspace-page-motion [data-slot="card"],
+  .dashboard-chart-bar,
+  .dashboard-progress-fill,
+  .motion-guide-step {
+    opacity: 1;
+    transform: none;
+  }
+
+  .loading-shimmer {
+    background-image: none;
+  }
+}

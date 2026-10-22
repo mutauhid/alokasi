@@ -735,3 +735,30 @@ Migrasi `20261019000000_telegram_income`, test integrasi PostgreSQL, dan smoke b
 | TGC-03 | Nama kategori khusus yang tertulis dalam judul dapat dipilih tanpa mapping tambahan |
 | TGC-04 | Hasil ambigu, kategori arsip, atau kategori yang tidak tersedia memakai kategori default |
 | Verifikasi lokal | Lint, TypeScript, build produksi, dan 22 file/129 unit test lulus |
+
+## Hasil tahap 33 — penerapan mockup terbaru, 22 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| UI-01 | Wrapper seluruh workspace menganimasikan heading/kartu, sementara `prefers-reduced-motion` menghapus gerak dan shimmer |
+| UI-02 | Skeleton loading mengikuti struktur kartu ringkasan, grafik, dan panel Dashboard; grafik serta progress aktual memiliki animasi dari titik asal |
+| UI-03 | Form manual dan review iPhone memakai radio native bernama `categoryId`, ikon kategori, indikator pilihan, required validation, serta focus ring |
+| UI-04 | Riwayat memakai tombol tiga titik berlabel transaksi, bottom sheet responsif untuk edit/hapus, dan dialog konfirmasi sebelum penghapusan |
+| UI-05 | Panduan automasi tetap memuat seluruh ilustrasi Telegram/iPhone termasuk Authorization, Form `text`/`image`, `reviewUrl`, dan Back Tap |
+| UI-06 | Dashboard memakai tiga ringkasan, grafik arus kas + budget berdampingan, dan transaksi terbaru selebar halaman; nilai tetap berasal dari service dashboard |
+| UI-07 | Tambah transaksi memakai modal dari halaman Transaksi; `create=1` hanya membuka modal dari Dashboard dan tidak membuat transaksi sebelum submit |
+| UI-08 | Budget dan Akun memakai trigger tiga titik serta bottom sheet; hapus budget dan arsip akun memiliki dialog konfirmasi dengan dampak yang dijelaskan |
+| UI-09 | Grafik Laporan menghitung maksimal empat kelompok waktu dari transaksi yang sudah terfilter; progress kategori memakai total aktual dan tidak memakai fixture |
+| Verifikasi lokal | Targeted Prettier, lint, TypeScript, build produksi Webpack, `git diff --check`, 22 file/129 unit test, dan 14 smoke Playwright Microsoft Edge desktop/mobile lulus |
+
+## Hasil tahap 34 — navigasi Pengaturan, 22 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| SETTINGS-01 | Navigasi lokal menyediakan Akun, Automasi, Kategori, Ruang & data, serta Zona berbahaya dengan status aktif dan label aksesibel |
+| SETTINGS-02 | Parameter `view` dan `workspaceId` dipertahankan pada tautan; redirect profil, kategori, siklus, dan penghapusan akun kembali ke bagian yang relevan |
+| SETTINGS-03 | Server hanya memanggil service data untuk bagian aktif; Viewer mendapat state izin Automasi dan Zona berbahaya disembunyikan pada ruang bersama |
+| SETTINGS-04 | Daftar status implementasi dan banner penjelasan verifikasi server tidak lagi dirender; ACL dan pemeriksaan server tidak diubah |
+| Verifikasi lokal | Targeted Prettier, lint, TypeScript, build produksi Webpack, `git diff --check`, dan 22 file/129 unit test lulus |
+
+Build Turbopack lokal tidak dapat dijadikan bukti pada mesin ini karena worker PostCSS masih mengambil Node 14 sistem, sedangkan proyek mensyaratkan Node 24. Build Next.js 16 dengan Node 24 dan compiler Webpack selesai beserta typecheck, page-data collection, dan 29 static pages. Smoke Edge mencakup rute publik/auth pada dua viewport; pemeriksaan halaman workspace terautentikasi—termasuk radio kategori, bottom sheet, dan panduan bergambar—tetap perlu dilakukan pada preview Vercel sebelum merge.

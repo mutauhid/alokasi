@@ -33,6 +33,56 @@ function displayDate(date: Date) {
   }).format(date);
 }
 
+function buildCashFlowBuckets(
+  transactions: Array<{
+    type: "income" | "expense" | "transfer";
+    amount: bigint;
+    transactionDate: Date;
+  }>,
+  from: Date,
+  toExclusive: Date,
+) {
+  const day = 86_400_000;
+  const days = Math.max(
+    1,
+    Math.ceil((toExclusive.valueOf() - from.valueOf()) / day),
+  );
+  const bucketCount = Math.min(4, Math.max(1, Math.ceil(days / 7)));
+  const range = toExclusive.valueOf() - from.valueOf();
+  const formatter = new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  });
+  const buckets = Array.from({ length: bucketCount }, (_, index) => {
+    const start = new Date(
+      from.valueOf() + Math.floor((range * index) / bucketCount),
+    );
+    const endExclusive = new Date(
+      from.valueOf() + Math.floor((range * (index + 1)) / bucketCount),
+    );
+    return {
+      income: 0n,
+      expense: 0n,
+      start,
+      endExclusive,
+      label: `${formatter.format(start)}–${formatter.format(new Date(endExclusive.valueOf() - day))}`,
+    };
+  });
+  for (const transaction of transactions) {
+    const offset = transaction.transactionDate.valueOf() - from.valueOf();
+    const index = Math.min(
+      bucketCount - 1,
+      Math.max(0, Math.floor((offset * bucketCount) / Math.max(1, range))),
+    );
+    if (transaction.type === "income")
+      buckets[index].income += transaction.amount;
+    if (transaction.type === "expense")
+      buckets[index].expense += transaction.amount;
+  }
+  return buckets;
+}
+
 function exportHref(filters: {
   workspaceId: string;
   fromValue: string;
@@ -66,6 +116,21 @@ export async function ReportsSection({
   query: ReportQuery;
 }) {
   const report = await getReportOverview(workspaceId, today, query);
+  const cashFlowBuckets = buildCashFlowBuckets(
+    report.transactions,
+    report.filters.from,
+    report.filters.toExclusive,
+  );
+  const cashFlowMaximum = cashFlowBuckets.reduce((maximum, bucket) => {
+    const bucketMaximum =
+      bucket.income > bucket.expense ? bucket.income : bucket.expense;
+    return bucketMaximum > maximum ? bucketMaximum : maximum;
+  }, 0n);
+  const chartHeight = (value: bigint) =>
+    value > 0n && cashFlowMaximum > 0n
+      ? Math.max(4, Number((value * 128n) / cashFlowMaximum))
+      : 0;
+  const categoryMaximum = report.categoryTotals[0]?.amount ?? 0n;
 
   return (
     <div className="space-y-5">
@@ -221,7 +286,67 @@ export async function ReportsSection({
         ))}
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
+      <div className="grid gap-5 xl:grid-cols-[1.4fr_1fr]">
+        <Card className="shadow-none">
+          <CardHeader>
+            <CardTitle>Arus kas</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Perbandingan pemasukan dan pengeluaran pada rentang filter.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-5 flex flex-wrap gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="size-2 rounded-sm bg-primary" /> Pemasukan
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="size-2 rounded-sm bg-amber-600" /> Pengeluaran
+              </span>
+            </div>
+            <div
+              className="grid h-48 items-end gap-3 border-b bg-[repeating-linear-gradient(to_top,transparent_0,transparent_47px,var(--border)_48px,transparent_49px)]"
+              style={{
+                gridTemplateColumns: `repeat(${cashFlowBuckets.length}, minmax(0, 1fr))`,
+              }}
+              role="img"
+              aria-label="Grafik arus kas sesuai rentang laporan"
+            >
+              {cashFlowBuckets.map((bucket, index) => (
+                <div
+                  key={bucket.start.toISOString()}
+                  className="flex h-full min-w-0 flex-col justify-end"
+                >
+                  <div className="flex h-32 items-end justify-center gap-1.5 sm:gap-2">
+                    <div
+                      className="dashboard-chart-bar w-4 rounded-t bg-primary sm:w-6"
+                      style={{
+                        height: `${chartHeight(bucket.income)}px`,
+                        animationDelay: `${index * 70}ms`,
+                      }}
+                      title={`Pemasukan ${rupiah(bucket.income)}`}
+                    />
+                    <div
+                      className="dashboard-chart-bar w-4 rounded-t bg-amber-600 sm:w-6"
+                      style={{
+                        height: `${chartHeight(bucket.expense)}px`,
+                        animationDelay: `${index * 70 + 45}ms`,
+                      }}
+                      title={`Pengeluaran ${rupiah(bucket.expense)}`}
+                    />
+                  </div>
+                  <p className="mt-2 truncate text-center text-[10px] text-muted-foreground sm:text-xs">
+                    {bucket.label}
+                  </p>
+                  <span className="sr-only">
+                    {bucket.label}: pemasukan {rupiah(bucket.income)},
+                    pengeluaran {rupiah(bucket.expense)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="shadow-none">
           <CardHeader>
             <CardTitle>Pengeluaran per kategori</CardTitle>
@@ -235,18 +360,27 @@ export async function ReportsSection({
                 Tidak ada pengeluaran pada filter ini.
               </p>
             ) : (
-              <ul className="divide-y">
-                {report.categoryTotals.map((category) => (
-                  <li
-                    key={category.name}
-                    className="flex justify-between gap-3 py-3 first:pt-0 last:pb-0"
-                  >
-                    <span className="text-sm text-muted-foreground">
-                      {category.name}
-                    </span>
-                    <span className="text-sm font-medium">
-                      {rupiah(category.amount)}
-                    </span>
+              <ul className="space-y-4">
+                {report.categoryTotals.slice(0, 6).map((category, index) => (
+                  <li key={category.name} className="space-y-2">
+                    <div className="flex justify-between gap-3 text-sm">
+                      <span>{category.name}</span>
+                      <span className="font-medium">
+                        {rupiah(category.amount)}
+                      </span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="dashboard-progress-fill h-full rounded-full bg-primary"
+                        style={{
+                          width:
+                            categoryMaximum > 0n
+                              ? `${Number((category.amount * 100n) / categoryMaximum)}%`
+                              : "0%",
+                          animationDelay: `${120 + index * 65}ms`,
+                        }}
+                      />
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -254,7 +388,7 @@ export async function ReportsSection({
           </CardContent>
         </Card>
 
-        <Card className="shadow-none">
+        <Card className="shadow-none xl:col-span-2">
           <CardHeader>
             <CardTitle>Budget versus aktual</CardTitle>
             <p className="text-sm text-muted-foreground">

@@ -1,12 +1,11 @@
+import Link from "next/link";
 import {
-  CalendarDays,
-  Check,
-  CircleDashed,
+  Bot,
   Download,
   KeyRound,
   Mail,
   ShieldAlert,
-  Settings2,
+  SlidersHorizontal,
   Tags,
   UserRound,
 } from "lucide-react";
@@ -39,9 +38,60 @@ import { listActiveCategoryOptions } from "@/modules/categories/service";
 import { getShortcutIntegration } from "@/modules/shortcut-integration/service";
 import { TelegramIntegrationCard } from "@/components/telegram-integration-card";
 import { getTelegramSettings } from "@/modules/telegram-integration/service";
+import { cn } from "@/lib/utils";
 
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
+
+type SettingsView =
+  "account" | "automation" | "categories" | "workspace" | "danger";
+
+const settingsNavigation = [
+  {
+    id: "account",
+    label: "Akun",
+    description: "Profil dan password",
+    icon: UserRound,
+  },
+  {
+    id: "automation",
+    label: "Automasi",
+    description: "iPhone dan Telegram",
+    icon: Bot,
+  },
+  {
+    id: "categories",
+    label: "Kategori",
+    description: "Pemasukan dan pengeluaran",
+    icon: Tags,
+  },
+  {
+    id: "workspace",
+    label: "Ruang & data",
+    description: "Siklus dan ekspor",
+    icon: SlidersHorizontal,
+  },
+  {
+    id: "danger",
+    label: "Zona berbahaya",
+    description: "Penghapusan akun",
+    icon: ShieldAlert,
+  },
+] as const satisfies ReadonlyArray<{
+  id: SettingsView;
+  label: string;
+  description: string;
+  icon: typeof UserRound;
+}>;
+
+function normalizeSettingsView(
+  view: string | undefined,
+  workspaceType: WorkspaceAccess["workspaceType"],
+): SettingsView {
+  const match = settingsNavigation.find((item) => item.id === view)?.id;
+  if (match === "danger" && workspaceType !== "personal") return "account";
+  return match ?? "account";
+}
 
 const messages: Record<string, string> = {
   "category-invalid": "Nama kategori wajib diisi dan maksimal 50 karakter.",
@@ -91,267 +141,389 @@ export async function SettingsSection({
   today,
   error,
   success,
+  view,
 }: {
   access: WorkspaceAccess;
   today: Date;
   error?: string;
   success?: string;
+  view?: string;
 }) {
   const workspaceId = access.workspaceId;
   const canManage = access.role === "owner";
-  const [
-    categories,
-    cycle,
-    deletion,
-    profile,
-    shortcut,
-    telegram,
-    shortcutAccounts,
-    shortcutCategories,
-  ] = await Promise.all([
-    listCategories(access.workspaceId),
-    getCycleOverview(access.workspaceId, today),
-    access.workspaceType === "personal"
-      ? getAccountDeletionSummary(access.actorId)
-      : Promise.resolve(null),
-    getUserProfile(access.actorId),
-    getShortcutIntegration(access),
-    access.role !== "viewer"
-      ? getTelegramSettings(access)
-      : Promise.resolve({ configured: false as const }),
-    access.role !== "viewer"
-      ? listActiveAccountOptions(access.workspaceId)
-      : Promise.resolve([]),
-    access.role !== "viewer"
-      ? listActiveCategoryOptions(access.workspaceId)
-      : Promise.resolve([]),
-  ]);
-  const accountDeletionConfigured = Boolean(getAuthAdminConfig());
+  const activeView = normalizeSettingsView(view, access.workspaceType);
+  const profile =
+    activeView === "account" ? await getUserProfile(access.actorId) : null;
+  const categories =
+    activeView === "categories" ? await listCategories(access.workspaceId) : [];
+  const cycle =
+    activeView === "workspace"
+      ? await getCycleOverview(access.workspaceId, today)
+      : null;
+  const deletion =
+    activeView === "danger" && access.workspaceType === "personal"
+      ? await getAccountDeletionSummary(access.actorId)
+      : null;
+  const [shortcut, telegram, shortcutAccounts, shortcutCategories] =
+    activeView === "automation" && access.role !== "viewer"
+      ? await Promise.all([
+          getShortcutIntegration(access),
+          getTelegramSettings(access),
+          listActiveAccountOptions(access.workspaceId),
+          listActiveCategoryOptions(access.workspaceId),
+        ])
+      : [null, null, [], []];
+  const accountDeletionConfigured =
+    activeView === "danger" && Boolean(getAuthAdminConfig());
   const status = error ?? success;
+  const activeNavigation = settingsNavigation.find(
+    (item) => item.id === activeView,
+  )!;
   return (
-    <div className="space-y-5">
-      {status && messages[status] && (
-        <p
-          role="status"
-          className={
-            error
-              ? "rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
-              : "rounded-lg bg-secondary p-3 text-sm"
-          }
-        >
-          {messages[status]}
-        </p>
-      )}
-      <Card className="shadow-none">
-        <CardHeader>
-          <UserRound className="mb-2 size-5 text-primary" aria-hidden="true" />
-          <CardTitle>Profil akun</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Data ini berlaku untuk semua ruang keuangan yang kamu akses.
-          </p>
-        </CardHeader>
-        <CardContent className="grid gap-5 lg:grid-cols-2">
-          <div className="space-y-4 rounded-xl border bg-background/50 p-4">
-            <div className="flex items-center gap-3">
-              <span className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <UserRound className="size-5" aria-hidden="true" />
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">
-                  {profile.displayName ?? "Pengguna Alokasi"}
-                </p>
-                <p className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-                  <Mail className="size-3.5 shrink-0" aria-hidden="true" />
-                  {profile.email}
-                </p>
-              </div>
-            </div>
-            <form action={updateProfileAction} className="space-y-3">
-              <input type="hidden" name="workspaceId" value={workspaceId} />
-              <label className="block text-sm font-medium">
-                Nama tampilan
-                <input
-                  name="displayName"
-                  required
-                  maxLength={100}
-                  autoComplete="name"
-                  defaultValue={profile.displayName ?? ""}
-                  className={inputClass}
-                />
-              </label>
-              <Button type="submit" variant="secondary">
-                Simpan profil
-              </Button>
-            </form>
-          </div>
-          <div className="space-y-4 rounded-xl border bg-background/50 p-4">
-            <div className="flex items-start gap-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <KeyRound className="size-5" aria-hidden="true" />
-              </span>
-              <div>
-                <p className="text-sm font-semibold">Ganti password</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Setelah berhasil, semua sesi akan dikeluarkan dan kamu perlu
-                  login kembali.
-                </p>
-              </div>
-            </div>
-            <form action={changePasswordAction} className="space-y-3">
-              <input type="hidden" name="workspaceId" value={workspaceId} />
-              <label className="block text-sm font-medium">
-                Password saat ini
-                <input
-                  type="password"
-                  name="currentPassword"
-                  required
-                  maxLength={256}
-                  autoComplete="current-password"
-                  className={inputClass}
-                />
-              </label>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="block text-sm font-medium">
-                  Password baru
-                  <input
-                    type="password"
-                    name="newPassword"
-                    required
-                    minLength={8}
-                    maxLength={128}
-                    autoComplete="new-password"
-                    className={inputClass}
-                  />
-                </label>
-                <label className="block text-sm font-medium">
-                  Ulangi password baru
-                  <input
-                    type="password"
-                    name="confirmation"
-                    required
-                    minLength={8}
-                    maxLength={128}
-                    autoComplete="new-password"
-                    className={inputClass}
-                  />
-                </label>
-              </div>
-              <Button type="submit" variant="outline">
-                Perbarui password
-              </Button>
-            </form>
-          </div>
-        </CardContent>
-      </Card>
-      {access.role !== "viewer" && (
-        <ShortcutIntegrationCard
-          workspaceId={workspaceId}
-          accounts={shortcutAccounts.map(({ id, name }) => ({ id, name }))}
-          categories={shortcutCategories
-            .filter((category) => category.type === "expense")
-            .map(({ id, name }) => ({ id, name }))}
-          initialState={{
-            configured: shortcut.configured,
-            accountName: shortcut.accountName,
-            categoryName: shortcut.categoryName,
-            expiresAt: shortcut.expiresAt?.toISOString(),
-            lastUsedAt: shortcut.lastUsedAt?.toISOString(),
-          }}
-        />
-      )}
-      {access.role !== "viewer" && (
-        <TelegramIntegrationCard
-          workspaceId={workspaceId}
-          accounts={shortcutAccounts.map(({ id, name }) => ({ id, name }))}
-          expenseCategories={shortcutCategories
-            .filter((category) => category.type === "expense")
-            .map(({ id, name }) => ({ id, name }))}
-          incomeCategories={shortcutCategories
-            .filter((category) => category.type === "income")
-            .map(({ id, name }) => ({ id, name }))}
-          initialState={telegram}
-        />
-      )}
-      <Card className="shadow-none">
-        <CardHeader>
-          <CardTitle>Kategori</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Owner dapat mengelola kategori pemasukan dan pengeluaran untuk ruang
-            ini.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {canManage && (
-            <form
-              action={createCategoryAction}
-              className="grid gap-4 sm:grid-cols-[1fr_180px_auto]"
-            >
-              <input type="hidden" name="workspaceId" value={workspaceId} />
-              <label className="text-sm font-medium">
-                Nama kategori
-                <input
-                  name="name"
-                  required
-                  maxLength={50}
-                  className={inputClass}
-                />
-              </label>
-              <label className="text-sm font-medium">
-                Jenis
-                <select
-                  name="type"
-                  defaultValue="expense"
-                  className={inputClass}
-                >
-                  <option value="expense">Pengeluaran</option>
-                  <option value="income">Pemasukan</option>
-                </select>
-              </label>
-              <div className="flex items-end">
-                <Button type="submit" className="min-h-11 w-full">
-                  Tambah
-                </Button>
-              </div>
-            </form>
-          )}
-
-          {(["expense", "income"] as const).map((type) => (
-            <section key={type} aria-labelledby={`category-${type}`}>
-              <h3
-                id={`category-${type}`}
-                className="mb-3 text-sm font-semibold"
+    <div className="grid items-start gap-6 lg:grid-cols-[230px_minmax(0,1fr)]">
+      <nav
+        aria-label="Bagian pengaturan"
+        className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:sticky lg:top-6 lg:grid-cols-1"
+      >
+        {settingsNavigation
+          .filter(
+            (item) =>
+              item.id !== "danger" || access.workspaceType === "personal",
+          )
+          .map((item) => {
+            const Icon = item.icon;
+            const active = item.id === activeView;
+            return (
+              <Link
+                key={item.id}
+                href={`/settings?workspaceId=${encodeURIComponent(workspaceId)}&view=${item.id}`}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "group flex min-h-16 items-center gap-3 rounded-xl border px-3 py-2.5 transition-[border-color,background-color,transform] duration-200 motion-safe:hover:-translate-y-0.5",
+                  active
+                    ? "border-primary/40 bg-primary/10 text-foreground"
+                    : "bg-card text-muted-foreground hover:border-primary/25 hover:bg-accent/60 hover:text-foreground",
+                )}
               >
-                {type === "expense" ? "Pengeluaran" : "Pemasukan"}
-              </h3>
-              <ul className="grid gap-3 md:grid-cols-2">
-                {categories
-                  .filter((category) => category.type === type)
-                  .map((category) => (
-                    <li key={category.id} className="rounded-xl border p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <span
-                          className={
-                            category.archivedAt
-                              ? "text-muted-foreground line-through"
-                              : "font-medium"
-                          }
-                        >
-                          {category.name}
-                        </span>
-                        {category.archivedAt && (
-                          <Badge variant="outline">Arsip</Badge>
-                        )}
-                      </div>
-                      {canManage && (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {!category.archivedAt && (
-                            <details className="min-w-40 flex-1 rounded-lg border p-2 text-sm">
-                              <summary className="cursor-pointer px-1 font-medium">
-                                Ubah nama
-                              </summary>
+                <span
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-lg",
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground group-hover:text-foreground",
+                  )}
+                >
+                  <Icon className="size-4.5" aria-hidden="true" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">
+                    {item.label}
+                  </span>
+                  <span className="hidden text-xs text-muted-foreground lg:block">
+                    {item.description}
+                  </span>
+                </span>
+              </Link>
+            );
+          })}
+      </nav>
+
+      <section
+        className="min-w-0 space-y-5"
+        aria-labelledby="settings-view-title"
+      >
+        <div>
+          <h2 id="settings-view-title" className="text-xl font-semibold">
+            {activeNavigation.label}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {activeNavigation.description}
+          </p>
+        </div>
+        {status && messages[status] && (
+          <p
+            role="status"
+            className={
+              error
+                ? "rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
+                : "rounded-lg bg-secondary p-3 text-sm"
+            }
+          >
+            {messages[status]}
+          </p>
+        )}
+        {activeView === "account" && profile && (
+          <Card className="shadow-none">
+            <CardHeader>
+              <UserRound
+                className="mb-2 size-5 text-primary"
+                aria-hidden="true"
+              />
+              <CardTitle>Profil akun</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Data ini berlaku untuk semua ruang keuangan yang kamu akses.
+              </p>
+            </CardHeader>
+            <CardContent className="grid gap-5 lg:grid-cols-2">
+              <div className="space-y-4 rounded-xl border bg-background/50 p-4">
+                <div className="flex items-center gap-3">
+                  <span className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <UserRound className="size-5" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">
+                      {profile.displayName ?? "Pengguna Alokasi"}
+                    </p>
+                    <p className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+                      <Mail className="size-3.5 shrink-0" aria-hidden="true" />
+                      {profile.email}
+                    </p>
+                  </div>
+                </div>
+                <form action={updateProfileAction} className="space-y-3">
+                  <input type="hidden" name="workspaceId" value={workspaceId} />
+                  <label className="block text-sm font-medium">
+                    Nama tampilan
+                    <input
+                      name="displayName"
+                      required
+                      maxLength={100}
+                      autoComplete="name"
+                      defaultValue={profile.displayName ?? ""}
+                      className={inputClass}
+                    />
+                  </label>
+                  <Button type="submit" variant="secondary">
+                    Simpan profil
+                  </Button>
+                </form>
+              </div>
+              <div className="space-y-4 rounded-xl border bg-background/50 p-4">
+                <div className="flex items-start gap-3">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <KeyRound className="size-5" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold">Ganti password</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Setelah berhasil, semua sesi akan dikeluarkan dan kamu
+                      perlu login kembali.
+                    </p>
+                  </div>
+                </div>
+                <form action={changePasswordAction} className="space-y-3">
+                  <input type="hidden" name="workspaceId" value={workspaceId} />
+                  <label className="block text-sm font-medium">
+                    Password saat ini
+                    <input
+                      type="password"
+                      name="currentPassword"
+                      required
+                      maxLength={256}
+                      autoComplete="current-password"
+                      className={inputClass}
+                    />
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block text-sm font-medium">
+                      Password baru
+                      <input
+                        type="password"
+                        name="newPassword"
+                        required
+                        minLength={8}
+                        maxLength={128}
+                        autoComplete="new-password"
+                        className={inputClass}
+                      />
+                    </label>
+                    <label className="block text-sm font-medium">
+                      Ulangi password baru
+                      <input
+                        type="password"
+                        name="confirmation"
+                        required
+                        minLength={8}
+                        maxLength={128}
+                        autoComplete="new-password"
+                        className={inputClass}
+                      />
+                    </label>
+                  </div>
+                  <Button type="submit" variant="outline">
+                    Perbarui password
+                  </Button>
+                </form>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeView === "automation" &&
+          (access.role !== "viewer" && shortcut && telegram ? (
+            <>
+              <ShortcutIntegrationCard
+                workspaceId={workspaceId}
+                accounts={shortcutAccounts.map(({ id, name }) => ({
+                  id,
+                  name,
+                }))}
+                categories={shortcutCategories
+                  .filter((category) => category.type === "expense")
+                  .map(({ id, name }) => ({ id, name }))}
+                initialState={{
+                  configured: shortcut.configured,
+                  accountName: shortcut.accountName,
+                  categoryName: shortcut.categoryName,
+                  expiresAt: shortcut.expiresAt?.toISOString(),
+                  lastUsedAt: shortcut.lastUsedAt?.toISOString(),
+                }}
+              />
+              <TelegramIntegrationCard
+                workspaceId={workspaceId}
+                accounts={shortcutAccounts.map(({ id, name }) => ({
+                  id,
+                  name,
+                }))}
+                expenseCategories={shortcutCategories
+                  .filter((category) => category.type === "expense")
+                  .map(({ id, name }) => ({ id, name }))}
+                incomeCategories={shortcutCategories
+                  .filter((category) => category.type === "income")
+                  .map(({ id, name }) => ({ id, name }))}
+                initialState={telegram}
+              />
+            </>
+          ) : (
+            <Card className="shadow-none">
+              <CardContent className="py-8 text-sm text-muted-foreground">
+                Automasi iPhone dan Telegram hanya dapat dikonfigurasi oleh
+                Owner atau Editor ruang ini.
+              </CardContent>
+            </Card>
+          ))}
+
+        {activeView === "categories" && (
+          <Card className="shadow-none">
+            <CardHeader>
+              <CardTitle>Kategori</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Owner dapat mengelola kategori pemasukan dan pengeluaran untuk
+                ruang ini.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {canManage && (
+                <form
+                  action={createCategoryAction}
+                  className="grid gap-4 sm:grid-cols-[1fr_180px_auto]"
+                >
+                  <input type="hidden" name="workspaceId" value={workspaceId} />
+                  <label className="text-sm font-medium">
+                    Nama kategori
+                    <input
+                      name="name"
+                      required
+                      maxLength={50}
+                      className={inputClass}
+                    />
+                  </label>
+                  <label className="text-sm font-medium">
+                    Jenis
+                    <select
+                      name="type"
+                      defaultValue="expense"
+                      className={inputClass}
+                    >
+                      <option value="expense">Pengeluaran</option>
+                      <option value="income">Pemasukan</option>
+                    </select>
+                  </label>
+                  <div className="flex items-end">
+                    <Button type="submit" className="min-h-11 w-full">
+                      Tambah
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              {(["expense", "income"] as const).map((type) => (
+                <section key={type} aria-labelledby={`category-${type}`}>
+                  <h3
+                    id={`category-${type}`}
+                    className="mb-3 text-sm font-semibold"
+                  >
+                    {type === "expense" ? "Pengeluaran" : "Pemasukan"}
+                  </h3>
+                  <ul className="grid gap-3 md:grid-cols-2">
+                    {categories
+                      .filter((category) => category.type === type)
+                      .map((category) => (
+                        <li key={category.id} className="rounded-xl border p-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <span
+                              className={
+                                category.archivedAt
+                                  ? "text-muted-foreground line-through"
+                                  : "font-medium"
+                              }
+                            >
+                              {category.name}
+                            </span>
+                            {category.archivedAt && (
+                              <Badge variant="outline">Arsip</Badge>
+                            )}
+                          </div>
+                          {canManage && (
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              {!category.archivedAt && (
+                                <details className="min-w-40 flex-1 rounded-lg border p-2 text-sm">
+                                  <summary className="cursor-pointer px-1 font-medium">
+                                    Ubah nama
+                                  </summary>
+                                  <form
+                                    action={renameCategoryAction}
+                                    className="mt-2 space-y-2"
+                                  >
+                                    <input
+                                      type="hidden"
+                                      name="workspaceId"
+                                      value={workspaceId}
+                                    />
+                                    <input
+                                      type="hidden"
+                                      name="id"
+                                      value={category.id}
+                                    />
+                                    <input
+                                      type="hidden"
+                                      name="version"
+                                      value={category.version}
+                                    />
+                                    <input
+                                      aria-label={`Nama baru untuk ${category.name}`}
+                                      name="name"
+                                      required
+                                      maxLength={50}
+                                      defaultValue={category.name}
+                                      className={inputClass}
+                                    />
+                                    <Button
+                                      type="submit"
+                                      variant="secondary"
+                                      className="w-full"
+                                    >
+                                      Simpan
+                                    </Button>
+                                  </form>
+                                </details>
+                              )}
                               <form
-                                action={renameCategoryAction}
-                                className="mt-2 space-y-2"
+                                action={
+                                  category.archivedAt
+                                    ? restoreCategoryAction
+                                    : archiveCategoryAction
+                                }
                               >
                                 <input
                                   type="hidden"
@@ -368,279 +540,176 @@ export async function SettingsSection({
                                   name="version"
                                   value={category.version}
                                 />
-                                <input
-                                  aria-label={`Nama baru untuk ${category.name}`}
-                                  name="name"
-                                  required
-                                  maxLength={50}
-                                  defaultValue={category.name}
-                                  className={inputClass}
-                                />
-                                <Button
-                                  type="submit"
-                                  variant="secondary"
-                                  className="w-full"
-                                >
-                                  Simpan
+                                <Button type="submit" variant="outline">
+                                  {category.archivedAt
+                                    ? "Pulihkan"
+                                    : "Arsipkan"}
                                 </Button>
                               </form>
-                            </details>
+                            </div>
                           )}
-                          <form
-                            action={
-                              category.archivedAt
-                                ? restoreCategoryAction
-                                : archiveCategoryAction
-                            }
-                          >
-                            <input
-                              type="hidden"
-                              name="workspaceId"
-                              value={workspaceId}
-                            />
-                            <input
-                              type="hidden"
-                              name="id"
-                              value={category.id}
-                            />
-                            <input
-                              type="hidden"
-                              name="version"
-                              value={category.version}
-                            />
-                            <Button type="submit" variant="outline">
-                              {category.archivedAt ? "Pulihkan" : "Arsipkan"}
-                            </Button>
-                          </form>
-                        </div>
-                      )}
-                    </li>
-                  ))}
-              </ul>
-            </section>
-          ))}
-        </CardContent>
-      </Card>
-
-      {deletion && (
-        <Card className="border-destructive/40 shadow-none">
-          <CardHeader>
-            <ShieldAlert
-              className="mb-2 size-5 text-destructive"
-              aria-hidden="true"
-            />
-            <CardTitle>Hapus akun</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Menghapus ruang pribadi dan menutup akses ke seluruh ruang.
-              Transaksi yang pernah kamu catat di ruang bersama tetap tersimpan
-              dengan identitas anonim.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                ["Transaksi pribadi", deletion.personal.transactions],
-                ["Rekonsiliasi saldo", deletion.personal.reconciliations],
-                [
-                  "Template transaksi berulang",
-                  deletion.personal.recurringTemplates,
-                ],
-                ["Budget pribadi", deletion.personal.budgets],
-                ["Akun keuangan", deletion.personal.accounts],
-                ["Membership bersama", deletion.sharedMemberships],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-xl border p-3">
-                  <p className="text-xs text-muted-foreground">{label}</p>
-                  <p className="mt-1 font-semibold">{value}</p>
-                </div>
+                        </li>
+                      ))}
+                  </ul>
+                </section>
               ))}
-            </div>
-            {deletion.ownedShared.length > 0 && (
-              <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
-                <p className="font-medium">
-                  Selesaikan kepemilikan ruang bersama terlebih dahulu:
-                </p>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
-                  {deletion.ownedShared.map((workspace) => (
-                    <li key={workspace.id}>{workspace.name}</li>
-                  ))}
-                </ul>
-                <p className="mt-2 text-muted-foreground">
-                  Alihkan kepemilikan kepada anggota lain atau hapus ruangnya
-                  melalui halaman Anggota &amp; akses.
-                </p>
-              </div>
-            )}
-            {!accountDeletionConfigured && (
-              <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-                Fitur hapus akun belum dikonfigurasi oleh operator aplikasi.
+            </CardContent>
+          </Card>
+        )}
+
+        {activeView === "danger" && deletion && (
+          <Card className="border-destructive/40 shadow-none">
+            <CardHeader>
+              <ShieldAlert
+                className="mb-2 size-5 text-destructive"
+                aria-hidden="true"
+              />
+              <CardTitle>Hapus akun</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Menghapus ruang pribadi dan menutup akses ke seluruh ruang.
+                Transaksi yang pernah kamu catat di ruang bersama tetap
+                tersimpan dengan identitas anonim.
               </p>
-            )}
-            <DeleteAccountForm
-              workspaceId={workspaceId}
-              email={deletion.email}
-              configured={accountDeletionConfigured}
-              blocked={deletion.ownedShared.length > 0}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      <Card className="shadow-none">
-        <CardHeader>
-          <CardTitle>Ekspor data ruang</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Unduh salinan terstruktur berisi akun, kategori, aturan periode,
-            budget, rekonsiliasi saldo, dan seluruh transaksi termasuk data
-            arsip.
-          </p>
-        </CardHeader>
-        <CardContent>
-          {canManage ? (
-            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-background/50 p-4">
-              <div>
-                <p className="text-sm font-medium">Format JSON · IDR integer</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Nominal disimpan sebagai teks integer agar tidak kehilangan
-                  presisi. Token autentikasi dan teks OCR mentah tidak
-                  disertakan.
-                </p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  ["Transaksi pribadi", deletion.personal.transactions],
+                  ["Rekonsiliasi saldo", deletion.personal.reconciliations],
+                  [
+                    "Template transaksi berulang",
+                    deletion.personal.recurringTemplates,
+                  ],
+                  ["Budget pribadi", deletion.personal.budgets],
+                  ["Akun keuangan", deletion.personal.accounts],
+                  ["Membership bersama", deletion.sharedMemberships],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-xl border p-3">
+                    <p className="text-xs text-muted-foreground">{label}</p>
+                    <p className="mt-1 font-semibold">{value}</p>
+                  </div>
+                ))}
               </div>
-              <Button asChild variant="outline">
-                <a
-                  href={`/api/reports/workspace.json?workspaceId=${encodeURIComponent(workspaceId)}`}
-                >
-                  <Download aria-hidden="true" />
-                  Unduh data ruang
-                </a>
-              </Button>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Hanya Owner yang dapat mengekspor seluruh data ruang.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+              {deletion.ownedShared.length > 0 && (
+                <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
+                  <p className="font-medium">
+                    Selesaikan kepemilikan ruang bersama terlebih dahulu:
+                  </p>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+                    {deletion.ownedShared.map((workspace) => (
+                      <li key={workspace.id}>{workspace.name}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-muted-foreground">
+                    Alihkan kepemilikan kepada anggota lain atau hapus ruangnya
+                    melalui halaman Anggota &amp; akses.
+                  </p>
+                </div>
+              )}
+              {!accountDeletionConfigured && (
+                <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                  Fitur hapus akun belum dikonfigurasi oleh operator aplikasi.
+                </p>
+              )}
+              <DeleteAccountForm
+                workspaceId={workspaceId}
+                email={deletion.email}
+                configured={accountDeletionConfigured}
+                blocked={deletion.ownedShared.length > 0}
+              />
+            </CardContent>
+          </Card>
+        )}
 
-      <Card className="shadow-none">
-        <CardHeader>
-          <CardTitle>Siklus budget</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Saat ini dimulai tanggal {cycle.setting.startDay}. Perubahan Owner
-            langsung menyesuaikan periode aktif dan agregatnya.
-          </p>
-          {cycle.pendingSetting && (
-            <p className="text-sm text-muted-foreground">
-              Rencana lama tanggal {cycle.pendingSetting.startDay} untuk{" "}
-              {cycle.pendingSetting.effectiveDate.toLocaleDateString("id-ID", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-                timeZone: "UTC",
-              })}
-              {" akan digantikan jika perubahan langsung disimpan."}
-            </p>
-          )}
-        </CardHeader>
-        <CardContent>
-          {canManage ? (
-            <CycleSettingsForm
-              workspaceId={workspaceId}
-              currentDay={
-                cycle.pendingSetting?.startDay ?? cycle.setting.startDay
-              }
-              version={cycle.pendingSetting?.version ?? cycle.setting.version}
-              activeStart={cycle.period.startDate.toISOString().slice(0, 10)}
-              today={today.toISOString().slice(0, 10)}
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Hanya Owner yang dapat mengubah siklus ruang.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+        {activeView === "workspace" && cycle && (
+          <>
+            <Card className="shadow-none">
+              <CardHeader>
+                <CardTitle>Ekspor data ruang</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Unduh salinan terstruktur berisi akun, kategori, aturan
+                  periode, budget, rekonsiliasi saldo, dan seluruh transaksi
+                  termasuk data arsip.
+                </p>
+              </CardHeader>
+              <CardContent>
+                {canManage ? (
+                  <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-background/50 p-4">
+                    <div>
+                      <p className="text-sm font-medium">
+                        Format JSON · IDR integer
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Nominal disimpan sebagai teks integer agar tidak
+                        kehilangan presisi. Token autentikasi dan teks OCR
+                        mentah tidak disertakan.
+                      </p>
+                    </div>
+                    <Button asChild variant="outline">
+                      <a
+                        href={`/api/reports/workspace.json?workspaceId=${encodeURIComponent(workspaceId)}`}
+                      >
+                        <Download aria-hidden="true" />
+                        Unduh data ruang
+                      </a>
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Hanya Owner yang dapat mengekspor seluruh data ruang.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
 
-      <Card className="shadow-none">
-        <CardHeader>
-          <CardTitle>Status aplikasi</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Fitur inti dan integrasi perangkat yang telah tersedia.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <ul className="divide-y">
-            {[
-              { label: "Navigasi dan tampilan responsif", done: true },
-              { label: "Database PostgreSQL", done: true },
-              { label: "Login dan ruang pribadi", done: true },
-              { label: "Akun dan kategori", done: true },
-              { label: "Pemasukan, pengeluaran, dan transfer", done: true },
-              { label: "Budget dan dashboard", done: true },
-              { label: "Laporan dan ekspor transaksi", done: true },
-              { label: "Ruang bersama dan peran anggota", done: true },
-              { label: "Periode mengikuti tanggal gajian", done: true },
-              { label: "Ekspor lengkap ruang", done: true },
-              { label: "Penghapusan ruang dan akun", done: true },
-              { label: "Shortcut iPhone dengan konfirmasi", done: true },
-            ].map((item) => (
-              <li
-                key={item.label}
-                className="flex items-center justify-between gap-3 py-4 first:pt-0"
-              >
-                <span className="flex items-center gap-3 text-sm">
-                  {item.done ? (
-                    <Check className="size-4 text-primary" aria-hidden="true" />
-                  ) : (
-                    <CircleDashed
-                      className="size-4 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                  )}
-                  {item.label}
-                </span>
-                <Badge variant={item.done ? "secondary" : "outline"}>
-                  {item.done ? "Tersedia" : "Tahap berikutnya"}
-                </Badge>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="shadow-none">
-          <CardHeader>
-            <Tags className="mb-2 size-5 text-primary" aria-hidden="true" />
-            <CardTitle className="text-base">Kategori per ruang</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Nama kategori arsip tetap dicadangkan untuk menjaga histori.
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="shadow-none">
-          <CardHeader>
-            <CalendarDays
-              className="mb-2 size-5 text-primary"
-              aria-hidden="true"
-            />
-            <CardTitle className="text-base">Periode budget</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Batas periode dapat dimulai tanggal 1–31 dan ditampilkan sebagai
-              rentang tanggal penuh.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      <p className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Settings2 className="size-4" aria-hidden="true" />
-        Setiap perubahan akun dan kategori dicatat sebagai audit metadata.
-      </p>
+            <Card className="shadow-none">
+              <CardHeader>
+                <CardTitle>Siklus budget</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Saat ini dimulai tanggal {cycle.setting.startDay}. Perubahan
+                  Owner langsung menyesuaikan periode aktif dan agregatnya.
+                </p>
+                {cycle.pendingSetting && (
+                  <p className="text-sm text-muted-foreground">
+                    Rencana lama tanggal {cycle.pendingSetting.startDay} untuk{" "}
+                    {cycle.pendingSetting.effectiveDate.toLocaleDateString(
+                      "id-ID",
+                      {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                        timeZone: "UTC",
+                      },
+                    )}
+                    {" akan digantikan jika perubahan langsung disimpan."}
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent>
+                {canManage ? (
+                  <CycleSettingsForm
+                    workspaceId={workspaceId}
+                    currentDay={
+                      cycle.pendingSetting?.startDay ?? cycle.setting.startDay
+                    }
+                    version={
+                      cycle.pendingSetting?.version ?? cycle.setting.version
+                    }
+                    activeStart={cycle.period.startDate
+                      .toISOString()
+                      .slice(0, 10)}
+                    today={today.toISOString().slice(0, 10)}
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Hanya Owner yang dapat mengubah siklus ruang.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </section>
     </div>
   );
 }

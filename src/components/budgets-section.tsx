@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteBudgetButton } from "@/components/delete-budget-button";
+import { TransactionActions } from "@/components/transaction-actions";
 import { budgetPercent, budgetStatus } from "@/modules/finance/domain";
 
 const inputClass =
@@ -328,11 +329,12 @@ export async function BudgetsSection({
                       </span>
                     </div>
                     {canEdit && (
-                      <details className="mt-4 rounded-lg border p-3 text-sm">
-                        <summary className="cursor-pointer font-medium">
-                          Ubah budget
-                        </summary>
-                        <div className="mt-3 space-y-3">
+                      <div className="mt-4 flex justify-end border-t pt-4">
+                        <TransactionActions
+                          title={item.category.name}
+                          heading="Atur budget"
+                          triggerLabel={`Atur budget ${item.category.name}`}
+                        >
                           <form
                             action={updateBudgetAction}
                             className="space-y-3"
@@ -371,8 +373,8 @@ export async function BudgetsSection({
                             id={item.id}
                             version={item.version}
                           />
-                        </div>
-                      </details>
+                        </TransactionActions>
+                      </div>
                     )}
                   </li>
                 );

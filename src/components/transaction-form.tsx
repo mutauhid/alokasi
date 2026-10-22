@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { RupiahInput } from "@/components/ui/rupiah-input";
 import { TransactionTitleField } from "@/components/transaction-title-field";
+import { CategoryRadioGroup } from "@/components/category-radio-group";
 import type { TransactionSuggestion } from "@/modules/transactions/suggestions";
 
 type Option = { id: string; name: string };
@@ -78,7 +79,7 @@ export function TransactionForm({
     <form
       action={action}
       className={
-        compact ? "grid gap-3" : "grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+        compact ? "grid gap-4" : "grid gap-4 md:grid-cols-2 xl:grid-cols-4"
       }
     >
       <input type="hidden" name="workspaceId" value={workspaceId} />
@@ -171,23 +172,15 @@ export function TransactionForm({
           </select>
         </label>
       ) : (
-        <label className="text-sm font-medium">
-          Kategori
-          <select
-            name="categoryId"
-            required
+        <div className={compact ? "" : "md:col-span-2 xl:col-span-4"}>
+          <CategoryRadioGroup
+            categories={availableCategories}
             value={categoryId}
-            onChange={(event) => setCategoryId(event.target.value)}
-            className={inputClass}
-          >
-            <option value="">Pilih kategori</option>
-            {availableCategories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
+            onValueChange={setCategoryId}
+            type={type}
+            hint="Pilih satu kategori yang paling sesuai."
+          />
+        </div>
       )}
       <label
         className={`text-sm font-medium ${compact ? "" : "md:col-span-2 xl:col-span-3"}`}

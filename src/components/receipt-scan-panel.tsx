@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RupiahInput } from "@/components/ui/rupiah-input";
 import { TransactionTitleField } from "@/components/transaction-title-field";
+import { CategoryRadioGroup } from "@/components/category-radio-group";
 import type { TransactionSuggestion } from "@/modules/transactions/suggestions";
 
 type Option = { id: string; name: string };
@@ -56,7 +57,7 @@ function ReceiptSuggestedFields({
 
   return (
     <>
-      <div>
+      <div className="md:col-span-2">
         <TransactionTitleField
           value={title}
           onValueChange={setTitle}
@@ -65,26 +66,14 @@ function ReceiptSuggestedFields({
           onApplySuggestion={applySuggestion}
         />
       </div>
-      <label className="text-sm font-medium">
-        Kategori
-        <select
-          name="categoryId"
-          required
-          value={categoryId}
-          onChange={(event) => setCategoryId(event.target.value)}
-          className={inputClass}
-        >
-          <option value="">Pilih kategori</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-        <span className="mt-1 block text-xs text-muted-foreground">
-          Saran kategori wajib diperiksa.
-        </span>
-      </label>
+      <CategoryRadioGroup
+        categories={categories}
+        value={categoryId}
+        onValueChange={setCategoryId}
+        type="expense"
+        hint="Saran kategori wajib diperiksa."
+        className="md:col-span-2"
+      />
     </>
   );
 }
