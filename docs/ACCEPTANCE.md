@@ -742,7 +742,7 @@ Migrasi `20261019000000_telegram_income`, test integrasi PostgreSQL, dan smoke b
 |---|---|
 | UI-01 | Wrapper seluruh workspace menganimasikan heading/kartu, sementara `prefers-reduced-motion` menghapus gerak dan shimmer |
 | UI-02 | Skeleton loading mengikuti struktur kartu ringkasan, grafik, dan panel Dashboard; grafik serta progress aktual memiliki animasi dari titik asal |
-| UI-03 | Form manual dan review iPhone memakai radio native bernama `categoryId`, ikon kategori, indikator pilihan, required validation, serta focus ring |
+| UI-03 | Form manual dan review iPhone memakai radio native bernama `categoryId`, ikon kategori, indikator pilihan, required validation, serta focus ring; layar sempit memakai satu kolom agar nama kategori tidak pecah di tengah kata |
 | UI-04 | Riwayat memakai tombol tiga titik berlabel transaksi, bottom sheet responsif untuk edit/hapus, dan dialog konfirmasi sebelum penghapusan |
 | UI-05 | Panduan automasi tetap memuat seluruh ilustrasi Telegram/iPhone termasuk Authorization, Form `text`/`image`, `reviewUrl`, dan Back Tap |
 | UI-06 | Dashboard memakai tiga ringkasan, grafik arus kas + budget berdampingan, dan transaksi terbaru selebar halaman; nilai tetap berasal dari service dashboard |
