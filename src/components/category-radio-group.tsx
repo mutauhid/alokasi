@@ -24,7 +24,7 @@ export function CategoryRadioGroup({
   return (
     <fieldset className={cn("min-w-0", className)}>
       <legend className="text-sm font-medium">Kategori</legend>
-      <div className="mt-2 grid grid-cols-2 gap-2 xl:grid-cols-3">
+      <div className="mt-2 grid grid-cols-1 gap-2 min-[480px]:grid-cols-2 xl:grid-cols-3">
         {categories.map((category) => {
           const { icon: Icon, tone } = categoryIconDetails(category.name, type);
           const selected = value === category.id;
@@ -55,7 +55,7 @@ export function CategoryRadioGroup({
               >
                 <Icon className="size-4" aria-hidden="true" />
               </span>
-              <span className="min-w-0 flex-1 break-words font-medium leading-snug">
+              <span className="min-w-0 flex-1 break-normal font-medium leading-snug">
                 {category.name}
               </span>
               <span
