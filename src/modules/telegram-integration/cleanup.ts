@@ -15,6 +15,9 @@ export async function deleteTelegramConnections(
   await tx.telegramBudgetAlert.deleteMany({
     where: { connectionId: { in: ids } },
   });
+  await tx.telegramRecurringReminder.deleteMany({
+    where: { connectionId: { in: ids } },
+  });
   await tx.telegramDraft.deleteMany({ where: { connectionId: { in: ids } } });
   await tx.telegramConnection.deleteMany({ where: { id: { in: ids } } });
 }

@@ -77,6 +77,41 @@ export function TelegramIntegrationCard({
             className="rounded-xl border bg-secondary/35 p-4"
           >
             <input type="hidden" name="workspaceId" value={workspaceId} />
+            <input type="hidden" name="intent" value="recurring-reminders" />
+            <label className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                name="enabled"
+                defaultChecked={state.recurringRemindersEnabled}
+                disabled={!state.linked || pending}
+                className="mt-1 size-4 accent-primary"
+              />
+              <span>
+                <span className="block text-sm font-medium">
+                  Pengingat transaksi berulang
+                </span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Dikirim sekali ketika template jatuh tempo. Saldo baru berubah
+                  setelah transaksi dicatat dari menu Pengingat.
+                </span>
+              </span>
+            </label>
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={!state.linked || pending}
+              className="mt-3"
+            >
+              Simpan pengingat
+            </Button>
+          </form>
+        )}
+        {state.configured && (
+          <form
+            action={action}
+            className="rounded-xl border bg-secondary/35 p-4"
+          >
+            <input type="hidden" name="workspaceId" value={workspaceId} />
             <input type="hidden" name="intent" value="weekly-summary" />
             <label className="flex items-start gap-3">
               <input

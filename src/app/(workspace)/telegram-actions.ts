@@ -8,6 +8,7 @@ import {
   revokeTelegram,
   TelegramInputError,
   updateTelegramBudgetAlerts,
+  updateTelegramRecurringReminders,
   updateTelegramWeeklySummary,
 } from "@/modules/telegram-integration/service";
 
@@ -22,6 +23,7 @@ export type TelegramActionState = {
   incomeCategoryId?: string;
   link?: string;
   budgetAlertsEnabled?: boolean;
+  recurringRemindersEnabled?: boolean;
   weeklySummaryEnabled?: boolean;
   message?: string;
   error?: string;
@@ -43,6 +45,19 @@ export async function telegramIntegrationAction(
     ["owner", "editor"],
   );
   try {
+    if (value(form, "intent") === "recurring-reminders") {
+      const enabled = value(form, "enabled") === "on";
+      await updateTelegramRecurringReminders(access, enabled);
+      revalidatePath("/settings");
+      return {
+        ...previous,
+        recurringRemindersEnabled: enabled,
+        message: enabled
+          ? "Pengingat transaksi berulang Telegram diaktifkan."
+          : "Pengingat transaksi berulang Telegram dinonaktifkan.",
+        error: undefined,
+      };
+    }
     if (value(form, "intent") === "weekly-summary") {
       const enabled = value(form, "enabled") === "on";
       await updateTelegramWeeklySummary(access, enabled);
@@ -75,6 +90,7 @@ export async function telegramIntegrationAction(
       return {
         configured: false,
         budgetAlertsEnabled: false,
+        recurringRemindersEnabled: false,
         weeklySummaryEnabled: false,
         message:
           "Telegram diputuskan. Bot tidak lagi dapat mencatat transaksi.",

@@ -187,6 +187,12 @@ realisasi budget, atau keberhasilan mutasi pengguna.
 Ringkasan mingguan memakai Vercel Cron sebagai pemicu GET harian. Endpoint
 dilindungi Bearer `CRON_SECRET`; service menentukan hari Senin dari timezone
 workspace dan menyimpan claim minggu pada koneksi sebelum memanggil Bot API.
+Pengingat transaksi berulang memakai cron harian yang sama dan tabel outbox
+PostgreSQL unik per koneksi/template/tanggal. Pengiriman tidak memanggil service
+pencatatan transaksi; tindakan finansial tetap berada pada service F11.
+Aturan kategori pribadi disimpan di PostgreSQL dengan unique key ternormalisasi
+per workspace/user. Pencocokan berupa frasa literal—tanpa regex, AI, atau provider
+baru—dan hanya membaca kategori expense aktif milik workspace koneksi.
 
 Referensi menjelaskan kemampuan teknologi. Struktur service, schema privat, pemilihan ORM, dan fase implementasi di atas adalah keputusan desain Alokasi.
 

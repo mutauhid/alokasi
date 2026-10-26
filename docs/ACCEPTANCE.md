@@ -811,3 +811,33 @@ branch di-push.
 Unit test domain dan autentikasi cron telah ditambahkan. Test integrasi PostgreSQL
 untuk opt-in dan deduplikasi memerlukan `TEST_DATABASE_URL` yang telah menerima
 migrasi `20261026010000_telegram_weekly_summary`.
+
+## Hasil tahap 38 — pengingat transaksi berulang Telegram, 26 Oktober 2026
+
+| ID | Kriteria penerimaan |
+|---|---|
+| TGRR-01 | Toggle hanya dapat diaktifkan oleh Owner/Editor setelah chat pribadi terhubung |
+| TGRR-02 | Cron memakai tanggal lokal workspace dan hanya memilih template aktif yang sudah jatuh tempo |
+| TGRR-03 | Owner menerima seluruh template ruang; Editor hanya template yang dibuatnya |
+| TGRR-04 | Satu koneksi menerima satu pesan untuk satu template/tanggal jatuh tempo walau cron diulang |
+| TGRR-05 | Pesan memuat judul, nominal, tanggal, akun, kategori, dan menegaskan saldo belum berubah |
+| TGRR-06 | Pengiriman tidak membuat transaksi, tidak memajukan jadwal, dan outbox dibersihkan sebelum koneksi dihapus |
+
+Unit test domain/boundary cron telah ditambahkan. Test integrasi PostgreSQL untuk
+opt-in, no-side-effect, dan deduplikasi memerlukan migrasi
+`20261026020000_telegram_recurring_reminders` pada `TEST_DATABASE_URL` khusus.
+
+## Hasil tahap 39 — aturan kategori pribadi, 26 Oktober 2026
+
+| ID | Kriteria penerimaan |
+|---|---|
+| PCR-01 | Owner/Editor dapat membuat dan menghapus aturan miliknya sendiri; Viewer serta anggota lain tidak dapat membacanya |
+| PCR-02 | Kata kunci 2–60 karakter dinormalisasi sehingga variasi case, spasi, dan tanda baca tidak membuat duplikat |
+| PCR-03 | Hanya kategori expense aktif dari workspace yang sama dapat dipilih |
+| PCR-04 | Frasa cocok terpanjang menang dan diprioritaskan sebelum riwayat/kamus bawaan Telegram |
+| PCR-05 | Kategori arsip diabaikan; transaksi lama dan saldo tidak berubah ketika aturan dibuat atau dihapus |
+| PCR-06 | Aturan dibersihkan saat membership dicabut/keluar serta akun/workspace dihapus, dan tidak masuk ekspor finansial |
+
+Unit test normalisasi/prioritas telah ditambahkan. Test integrasi PostgreSQL untuk
+CRUD, duplikat, dan klasifikasi draf memerlukan migrasi
+`20261026030000_personal_category_rules` pada `TEST_DATABASE_URL` khusus.

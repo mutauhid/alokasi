@@ -90,8 +90,46 @@ export async function getTelegramSettings(access: Access) {
     incomeCategoryName: incomeCategory?.name ?? undefined,
     linkExpiresAt: connection.linkExpiresAt,
     budgetAlertsEnabled: connection.budgetAlertsEnabled,
+    recurringRemindersEnabled: connection.recurringRemindersEnabled,
     weeklySummaryEnabled: connection.weeklySummaryEnabled,
   };
+}
+
+export async function updateTelegramRecurringReminders(
+  access: Access,
+  enabled: boolean,
+) {
+  requireWriter(access.role);
+  const db = getDatabase();
+  await db.$transaction(async (tx) => {
+    const connection = await tx.telegramConnection.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: access.workspaceId,
+          userId: access.actorId,
+        },
+      },
+      select: { id: true, telegramChatId: true },
+    });
+    if (!connection?.telegramChatId)
+      throw new TelegramInputError(
+        "Hubungkan Telegram sebelum mengaktifkan pengingat berulang.",
+      );
+    await tx.telegramConnection.update({
+      where: { id: connection.id },
+      data: { recurringRemindersEnabled: enabled },
+    });
+    await tx.auditEvent.create({
+      data: {
+        workspaceId: access.workspaceId,
+        actorId: access.actorId,
+        entityType: "telegram",
+        entityId: connection.id,
+        action: "recurring_reminders_updated",
+        changedFields: ["recurring_reminders_enabled"],
+      },
+    });
+  });
 }
 
 export async function updateTelegramWeeklySummary(
@@ -297,6 +335,9 @@ export async function revokeTelegram(access: Access) {
     await tx.telegramBudgetAlert.deleteMany({
       where: { connectionId: connection.id },
     });
+    await tx.telegramRecurringReminder.deleteMany({
+      where: { connectionId: connection.id },
+    });
     await tx.telegramDraft.deleteMany({
       where: { connectionId: connection.id },
     });
@@ -414,7 +455,7 @@ export async function createTelegramDraft(
     parsed.type === "income"
       ? connection.defaultIncomeCategoryId
       : connection.defaultCategoryId;
-  const [accounts, categories, history] = await Promise.all([
+  const [accounts, categories, history, personalRules] = await Promise.all([
     db.financialAccount.findMany({
       where: { workspaceId: connection.workspaceId, archivedAt: null },
       select: { id: true, name: true },
@@ -449,6 +490,16 @@ export async function createTelegramDraft(
           take: 100,
         })
       : Promise.resolve([]),
+    parsed.type === "expense"
+      ? db.personalCategoryRule.findMany({
+          where: {
+            workspaceId: connection.workspaceId,
+            userId: connection.userId,
+            category: { archivedAt: null },
+          },
+          select: { keywordKey: true, categoryId: true },
+        })
+      : Promise.resolve([]),
   ]);
   const account = parsed.accountHint
     ? selectByHint(accounts, parsed.accountHint)
@@ -473,6 +524,7 @@ export async function createTelegramDraft(
               title: parsed.title,
               categories,
               history,
+              personalRules,
               defaultCategoryId: defaultCategory.id,
             }).categoryId,
         ) ?? defaultCategory)

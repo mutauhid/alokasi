@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Prisma } from "@/generated/prisma/client";
 import { deleteTelegramConnections } from "@/modules/telegram-integration/cleanup";
+import { deletePersonalCategoryRules } from "@/modules/category-rules/cleanup";
 
 /** Delete every row owned by a workspace in foreign-key-safe order. */
 export async function deleteWorkspaceData(
@@ -18,6 +19,7 @@ export async function deleteWorkspaceData(
   });
   await tx.invitation.deleteMany({ where: { workspaceId } });
   await deleteTelegramConnections(tx, { workspaceId });
+  await deletePersonalCategoryRules(tx, { workspaceId });
   await tx.auditEvent.deleteMany({ where: { workspaceId } });
   await tx.receiptDraft.deleteMany({ where: { workspaceId } });
   await tx.balanceReconciliation.deleteMany({ where: { workspaceId } });
