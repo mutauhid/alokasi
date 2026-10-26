@@ -192,25 +192,28 @@ model Invitation {
 }
 
 model TelegramConnection {
-  id                      String                @id @default(uuid()) @db.Uuid
-  workspaceId             String                @map("workspace_id") @db.Uuid
-  userId                  String                @map("user_id") @db.Uuid
-  telegramUserId          String?               @unique @map("telegram_user_id") @db.VarChar(32)
-  telegramChatId          String?               @map("telegram_chat_id") @db.VarChar(32)
-  linkCodeHash            String?               @unique @map("link_code_hash") @db.VarChar(64)
-  linkExpiresAt           DateTime?             @map("link_expires_at") @db.Timestamptz(3)
-  defaultAccountId        String                @map("default_account_id") @db.Uuid
-  defaultCategoryId       String                @map("default_category_id") @db.Uuid
-  defaultIncomeCategoryId String?               @map("default_income_category_id") @db.Uuid
-  linkedAt                DateTime?             @map("linked_at") @db.Timestamptz(3)
-  createdAt               DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt               DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
-  workspace               Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  user                    User                  @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  membership              Membership            @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
-  drafts                  TelegramDraft[]
-  budgetAlerts            TelegramBudgetAlert[]
-  budgetAlertsEnabled     Boolean               @default(false) @map("budget_alerts_enabled")
+  id                       String                @id @default(uuid()) @db.Uuid
+  workspaceId              String                @map("workspace_id") @db.Uuid
+  userId                   String                @map("user_id") @db.Uuid
+  telegramUserId           String?               @unique @map("telegram_user_id") @db.VarChar(32)
+  telegramChatId           String?               @map("telegram_chat_id") @db.VarChar(32)
+  linkCodeHash             String?               @unique @map("link_code_hash") @db.VarChar(64)
+  linkExpiresAt            DateTime?             @map("link_expires_at") @db.Timestamptz(3)
+  defaultAccountId         String                @map("default_account_id") @db.Uuid
+  defaultCategoryId        String                @map("default_category_id") @db.Uuid
+  defaultIncomeCategoryId  String?               @map("default_income_category_id") @db.Uuid
+  linkedAt                 DateTime?             @map("linked_at") @db.Timestamptz(3)
+  createdAt                DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace                Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user                     User                  @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  membership               Membership            @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  drafts                   TelegramDraft[]
+  budgetAlerts             TelegramBudgetAlert[]
+  budgetAlertsEnabled      Boolean               @default(false) @map("budget_alerts_enabled")
+  weeklySummaryEnabled     Boolean               @default(false) @map("weekly_summary_enabled")
+  weeklySummaryClaimedWeek DateTime?             @map("weekly_summary_claimed_week") @db.Date
+  weeklySummarySentAt      DateTime?             @map("weekly_summary_sent_at") @db.Timestamptz(3)
 
   @@unique([workspaceId, userId])
   @@unique([workspaceId, id])

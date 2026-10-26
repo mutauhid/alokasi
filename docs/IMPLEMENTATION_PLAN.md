@@ -347,6 +347,14 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Pertahankan jalur transaksi berulang yang idempoten tanpa prompt tambahan. Tidak ada tabel, migrasi, dependency, atau AI/provider eksternal baru.
 - Tambahkan unit test fingerprint/serialisasi dan test PostgreSQL untuk warning, override, serta pembuktian bahwa judul sama dengan nominal berbeda tetap dapat disimpan.
 
+## Hasil tahap 37 — ringkasan mingguan Telegram, 26 Oktober 2026
+
+- Tambahkan toggle opt-in per koneksi di Pengaturan → Automasi dan tolak aktivasi sebelum chat pribadi terhubung.
+- Tambahkan endpoint cron yang dilindungi `CRON_SECRET`; jalankan setiap hari lalu pilih hanya workspace yang sedang berada pada hari Senin.
+- Ringkas transaksi aktif minggu lengkap sebelumnya menjadi pemasukan, pengeluaran, arus kas bersih, jumlah transaksi, serta kategori expense terbesar.
+- Claim koneksi/minggu sebelum pengiriman untuk mencegah pesan ganda saat cron diulang atau berjalan paralel.
+- Tambahkan migrasi, test domain dan boundary cron, test integrasi deduplikasi, serta panduan setup Vercel/Telegram.
+
 ## Backlog kandidat — bukan komitmen aktif
 
 F11 transaksi berulang diaktifkan melalui D33 dan F15 rekonsiliasi melalui D37. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, F14 utang/piutang, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.

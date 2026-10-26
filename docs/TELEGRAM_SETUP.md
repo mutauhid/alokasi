@@ -31,6 +31,11 @@ setelah Simpan. Voice note belum didukung.
 6. Setelah bot berstatus Terhubung, aktifkan **Peringatan budget 80% dan 100%**
    bila ingin menerima notifikasi. Pengaturan ini hanya berlaku bagi akun
    Telegram pengguna yang mengaktifkannya, termasuk di ruang bersama.
+7. Untuk ringkasan mingguan, buat `CRON_SECRET` acak dan simpan di environment
+   Vercel. Terapkan migrasi `20261026010000_telegram_weekly_summary`, deploy
+   konfigurasi `vercel.json`, lalu aktifkan **Ringkasan keuangan mingguan**.
+   Vercel memanggil endpoint setiap hari; aplikasi hanya mengirim pada Senin
+   menurut zona waktu ruang untuk minggu Senin–Minggu yang telah selesai.
 
 Domain kustom tidak diperlukan; URL HTTPS Vercel yang aktif dapat dipakai.
 Setiap akun Telegram hanya dapat terhubung ke satu workspace pada fase ini.
@@ -75,3 +80,7 @@ Migrasi dan webhook produksi hanya dilakukan setelah hasil preview benar.
 Untuk fitur peringatan budget, terapkan juga migrasi
 `20261026000000_telegram_budget_alerts`, aktifkan toggle, lalu uji transaksi
 yang membawa kategori dari di bawah 80% ke 80% dan kemudian ke 100%.
+Untuk ringkasan mingguan, cron Vercel hanya berjalan pada deployment production.
+Preview dapat diuji manual dengan request GET ke
+`/api/cron/telegram-weekly-summary` memakai header
+`Authorization: Bearer <CRON_SECRET>` pada hari Senin sesuai zona waktu ruang.

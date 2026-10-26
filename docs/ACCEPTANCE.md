@@ -796,3 +796,18 @@ Test integrasi PostgreSQL untuk warning/override Telegram telah ditambahkan,
 tetapi belum dijalankan lokal karena `.env.test.local` tidak tersedia. Tidak
 ada migrasi database pada tahap ini; suite tersebut akan dijalankan CI saat
 branch di-push.
+
+## Hasil tahap 37 — ringkasan mingguan Telegram, 26 Oktober 2026
+
+| ID | Kriteria penerimaan |
+|---|---|
+| TGWS-01 | Owner/Editor dapat mengaktifkan ringkasan hanya setelah koneksi Telegram pribadi terhubung; Viewer tetap ditolak server |
+| TGWS-02 | Endpoint cron menolak secret kosong/salah dan tidak membuka hasil finansial ke request publik |
+| TGWS-03 | Ringkasan hanya dikirim pada Senin menurut zona waktu workspace untuk Senin–Minggu yang sudah selesai |
+| TGWS-04 | Pesan memuat pemasukan, pengeluaran, arus kas bersih, jumlah transaksi, serta kategori expense terbesar dari transaksi aktif |
+| TGWS-05 | Invocation berulang/paralel tidak mengirim minggu yang sama lebih dari sekali ke koneksi yang sama |
+| TGWS-06 | Ringkasan tidak mengubah saldo, budget, laporan, transaksi, atau audit finansial |
+
+Unit test domain dan autentikasi cron telah ditambahkan. Test integrasi PostgreSQL
+untuk opt-in dan deduplikasi memerlukan `TEST_DATABASE_URL` yang telah menerima
+migrasi `20261026010000_telegram_weekly_summary`.

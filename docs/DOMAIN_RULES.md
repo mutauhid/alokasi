@@ -213,6 +213,10 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 - Peringatan budget bersifat opt-in per koneksi Telegram. Hanya pengeluaran yang sudah tersimpan yang dihitung; draf tidak pernah memicu notifikasi.
 - Ambang 80% dan 100% dikirim maksimal sekali per koneksi, kategori, dan periode budget. Jika satu transaksi langsung melewati 100%, hanya ambang tertinggi yang dikirim pada saat itu.
 - Realisasi memakai transaksi expense aktif dalam batas `[startDate,endDateExclusive)` milik budget. Pesan dikirim setelah commit ke chat pribadi pembuat transaksi; kegagalan pengiriman tidak menggagalkan atau menghapus transaksi.
+- Ringkasan mingguan bersifat opt-in per koneksi. Hanya Owner/Editor aktif dengan chat pribadi terhubung yang menjadi penerima.
+- Minggu mengikuti tanggal lokal workspace: Senin inklusif sampai Senin berikutnya eksklusif. Pesan baru dikirim pada hari Senin setelah satu minggu selesai.
+- Ringkasan hanya menghitung transaksi aktif. Pemasukan dan pengeluaran menentukan arus kas; transfer tidak mengubah kedua total tersebut tetapi tetap masuk jumlah transaksi.
+- Satu koneksi hanya boleh diklaim sekali untuk awal minggu yang sama agar retry atau cron paralel tidak menggandakan pesan. Ringkasan tidak membuat transaksi, audit finansial, atau snapshot laporan baru.
 
 ### F15 — rekonsiliasi saldo
 

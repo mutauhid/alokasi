@@ -23,7 +23,9 @@ import {
   getTelegramDraft,
   revokeTelegram,
   updateTelegramBudgetAlerts,
+  updateTelegramWeeklySummary,
 } from "../../src/modules/telegram-integration/service";
+import { runTelegramWeeklySummaries } from "../../src/modules/telegram-integration/weekly-summary";
 
 vi.mock("server-only", () => ({}));
 
@@ -125,6 +127,93 @@ afterEach(async () => {
 });
 
 describe("Telegram expense integration", () => {
+  it("sends one opted-in summary for a completed workspace week", async () => {
+    await expect(
+      updateTelegramWeeklySummary(
+        { workspaceId, actorId: ownerId, role: "owner" },
+        true,
+      ),
+    ).rejects.toThrow("Hubungkan Telegram");
+    const code = await configureTelegram(
+      { workspaceId, actorId: ownerId, role: "owner" },
+      mandiriId,
+      categoryId,
+      incomeCategoryId,
+    );
+    await connectTelegram(code, "1010101010", "1010101010");
+    await updateTelegramWeeklySummary(
+      { workspaceId, actorId: ownerId, role: "owner" },
+      true,
+    );
+    await Promise.all([
+      db.transaction.create({
+        data: {
+          workspaceId,
+          createdBy: ownerId,
+          updatedBy: ownerId,
+          type: "income",
+          title: "Gaji",
+          amount: 5_000_000n,
+          transactionDate: new Date("2026-10-19T00:00:00.000Z"),
+          accountId: mandiriId,
+          categoryId: incomeCategoryId,
+          idempotencyKey: "weekly-income",
+          requestHash: "a".repeat(64),
+        },
+      }),
+      db.transaction.create({
+        data: {
+          workspaceId,
+          createdBy: ownerId,
+          updatedBy: ownerId,
+          type: "expense",
+          title: "Bensin",
+          amount: 50_000n,
+          transactionDate: new Date("2026-10-25T00:00:00.000Z"),
+          accountId: mandiriId,
+          categoryId: transportCategoryId,
+          idempotencyKey: "weekly-expense",
+          requestHash: "b".repeat(64),
+        },
+      }),
+    ]);
+    const originalToken = process.env.TELEGRAM_BOT_TOKEN;
+    process.env.TELEGRAM_BOT_TOKEN = "test-token";
+    const send = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(() =>
+        Promise.resolve(Response.json({ ok: true, result: { message_id: 1 } })),
+      );
+    try {
+      expect(
+        await runTelegramWeeklySummaries(new Date("2026-10-26T01:00:00.000Z")),
+      ).toMatchObject({ sent: 1, failed: 0 });
+      expect(
+        await runTelegramWeeklySummaries(new Date("2026-10-26T02:00:00.000Z")),
+      ).toMatchObject({ sent: 0, skipped: 1 });
+      expect(send).toHaveBeenCalledTimes(1);
+      expect(String(send.mock.calls[0]?.[1]?.body)).toContain(
+        "Arus kas bersih: Rp4.950.000",
+      );
+      expect(
+        await db.telegramConnection.findUniqueOrThrow({
+          where: {
+            workspaceId_userId: { workspaceId, userId: ownerId },
+          },
+          select: {
+            weeklySummaryClaimedWeek: true,
+            weeklySummarySentAt: true,
+          },
+        }),
+      ).toMatchObject({
+        weeklySummaryClaimedWeek: new Date("2026-10-19T00:00:00.000Z"),
+      });
+    } finally {
+      if (originalToken === undefined) delete process.env.TELEGRAM_BOT_TOKEN;
+      else process.env.TELEGRAM_BOT_TOKEN = originalToken;
+    }
+  });
+
   it("warns about a recent duplicate and saves after explicit confirmation", async () => {
     const code = await configureTelegram(
       { workspaceId, actorId: ownerId, role: "owner" },
