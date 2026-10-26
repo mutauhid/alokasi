@@ -8,6 +8,7 @@ import { getBudgetOverview } from "@/modules/budgets/service";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RupiahInput } from "@/components/ui/rupiah-input";
 import { DeleteBudgetButton } from "@/components/delete-budget-button";
 import { TransactionActions } from "@/components/transaction-actions";
 import { budgetPercent, budgetStatus } from "@/modules/finance/domain";
@@ -166,11 +167,8 @@ export async function BudgetsSection({
                 </label>
                 <label className="text-sm font-medium">
                   Limit rupiah
-                  <input
+                  <RupiahInput
                     name="limitAmount"
-                    type="number"
-                    min="1"
-                    step="1"
                     required
                     className={inputClass}
                   />
@@ -350,12 +348,9 @@ export async function BudgetsSection({
                               name="version"
                               value={item.version}
                             />
-                            <input
+                            <RupiahInput
                               aria-label={`Limit baru ${item.category.name}`}
                               name="limitAmount"
-                              type="number"
-                              min="1"
-                              step="1"
                               required
                               defaultValue={item.limitAmount.toString()}
                               className={inputClass}

@@ -742,13 +742,14 @@ Migrasi `20261019000000_telegram_income`, test integrasi PostgreSQL, dan smoke b
 |---|---|
 | UI-01 | Wrapper seluruh workspace menganimasikan heading/kartu, sementara `prefers-reduced-motion` menghapus gerak dan shimmer |
 | UI-02 | Skeleton loading mengikuti struktur kartu ringkasan, grafik, dan panel Dashboard; grafik serta progress aktual memiliki animasi dari titik asal |
-| UI-03 | Form manual dan review iPhone memakai radio native bernama `categoryId`, ikon kategori, indikator pilihan, required validation, serta focus ring; layar sempit memakai satu kolom agar nama kategori tidak pecah di tengah kata |
+| UI-03 | Form manual dan review iPhone memakai radio native bernama `categoryId`, ikon kategori, indikator pilihan, required validation, serta focus ring; layar mobile tetap dua kolom dengan nama memakai lebar kartu penuh agar tidak pecah di tengah kata |
 | UI-04 | Riwayat memakai tombol tiga titik berlabel transaksi, bottom sheet responsif untuk edit/hapus, dan dialog konfirmasi sebelum penghapusan |
 | UI-05 | Panduan automasi tetap memuat seluruh ilustrasi Telegram/iPhone termasuk Authorization, Form `text`/`image`, `reviewUrl`, dan Back Tap |
 | UI-06 | Dashboard memakai tiga ringkasan, grafik arus kas + budget berdampingan, dan transaksi terbaru selebar halaman; nilai tetap berasal dari service dashboard |
 | UI-07 | Tambah transaksi memakai modal dari halaman Transaksi; `create=1` hanya membuka modal dari Dashboard dan tidak membuat transaksi sebelum submit |
 | UI-08 | Budget dan Akun memakai trigger tiga titik serta bottom sheet; hapus budget dan arsip akun memiliki dialog konfirmasi dengan dampak yang dijelaskan |
 | UI-09 | Grafik Laporan menghitung maksimal empat kelompok waktu dari transaksi yang sudah terfilter; progress kategori memakai total aktual dan tidak memakai fixture |
+| UI-10 | Input create dan edit limit Budget memakai formatter Rupiah bersama; nilai tampilan berkelompok tetapi payload tetap digit integer |
 | Verifikasi lokal | Targeted Prettier, lint, TypeScript, build produksi Webpack, `git diff --check`, 22 file/129 unit test, dan 14 smoke Playwright Microsoft Edge desktop/mobile lulus |
 
 ## Hasil tahap 34 — navigasi Pengaturan, 22 Oktober 2026
