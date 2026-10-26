@@ -192,8 +192,8 @@ describe("Telegram expense integration", () => {
     process.env.TELEGRAM_BOT_TOKEN = "test-token";
     const send = vi
       .spyOn(globalThis, "fetch")
-      .mockResolvedValue(
-        Response.json({ ok: true, result: { message_id: 1 } }),
+      .mockImplementation(() =>
+        Promise.resolve(Response.json({ ok: true, result: { message_id: 1 } })),
       );
     try {
       for (const [amount, key] of [
