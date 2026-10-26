@@ -121,6 +121,7 @@ model Workspace {
   telegramConnections             TelegramConnection[]
   telegramBudgetAlerts            TelegramBudgetAlert[]
   telegramRecurringReminders      TelegramRecurringReminder[]
+  personalCategoryRules           PersonalCategoryRule[]
 
   @@map("workspaces")
   @@schema("app")
@@ -165,6 +166,7 @@ model Membership {
   recurringTemplates        RecurringTransactionTemplate[] @relation("RecurringTemplateCreator")
   reconciliations           BalanceReconciliation[]        @relation("ReconciliationCreator")
   telegramConnection        TelegramConnection?
+  personalCategoryRules     PersonalCategoryRule[]
 
   @@unique([workspaceId, userId])
   @@unique([workspaceId, id])
@@ -294,6 +296,27 @@ model TelegramRecurringReminder {
   @@schema("app")
 }
 
+model PersonalCategoryRule {
+  id          String          @id @default(uuid()) @db.Uuid
+  workspaceId String          @map("workspace_id") @db.Uuid
+  userId      String          @map("user_id") @db.Uuid
+  keyword     String          @db.VarChar(60)
+  keywordKey  String          @map("keyword_key") @db.VarChar(100)
+  categoryId  String          @map("category_id") @db.Uuid
+  type        TransactionType @default(expense)
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  membership  Membership      @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  category    Category        @relation(fields: [workspaceId, categoryId, type], references: [workspaceId, id, type], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, userId, keywordKey])
+  @@index([workspaceId, userId])
+  @@index([workspaceId, categoryId])
+  @@map("personal_category_rules")
+  @@schema("app")
+}
+
 model FinancialAccount {
   id                 String                         @id @default(uuid()) @db.Uuid
   workspaceId        String                         @map("workspace_id") @db.Uuid
@@ -363,6 +386,7 @@ model Category {
   suggestedDrafts    ReceiptDraft[]                 @relation("ReceiptDraftSuggestedCategory")
   selectedDrafts     ReceiptDraft[]                 @relation("ReceiptDraftSelectedCategory")
   recurringTemplates RecurringTransactionTemplate[]
+  personalRules      PersonalCategoryRule[]
 
   @@unique([workspaceId, id, type])
   @@unique([workspaceId, type, nameKey])

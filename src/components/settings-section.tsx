@@ -38,6 +38,8 @@ import { listActiveCategoryOptions } from "@/modules/categories/service";
 import { getShortcutIntegration } from "@/modules/shortcut-integration/service";
 import { TelegramIntegrationCard } from "@/components/telegram-integration-card";
 import { getTelegramSettings } from "@/modules/telegram-integration/service";
+import { listPersonalCategoryRules } from "@/modules/category-rules/service";
+import { PersonalCategoryRulesCard } from "@/components/personal-category-rules-card";
 import { cn } from "@/lib/utils";
 
 const inputClass =
@@ -164,15 +166,22 @@ export async function SettingsSection({
     activeView === "danger" && access.workspaceType === "personal"
       ? await getAccountDeletionSummary(access.actorId)
       : null;
-  const [shortcut, telegram, shortcutAccounts, shortcutCategories] =
+  const [
+    shortcut,
+    telegram,
+    shortcutAccounts,
+    shortcutCategories,
+    categoryRules,
+  ] =
     activeView === "automation" && access.role !== "viewer"
       ? await Promise.all([
           getShortcutIntegration(access),
           getTelegramSettings(access),
           listActiveAccountOptions(access.workspaceId),
           listActiveCategoryOptions(access.workspaceId),
+          listPersonalCategoryRules(access),
         ])
-      : [null, null, [], []];
+      : [null, null, [], [], []];
   const accountDeletionConfigured =
     activeView === "danger" && Boolean(getAuthAdminConfig());
   const status = error ?? success;
@@ -392,6 +401,18 @@ export async function SettingsSection({
                   .filter((category) => category.type === "income")
                   .map(({ id, name }) => ({ id, name }))}
                 initialState={telegram}
+              />
+              <PersonalCategoryRulesCard
+                workspaceId={workspaceId}
+                categories={shortcutCategories
+                  .filter((category) => category.type === "expense")
+                  .map(({ id, name }) => ({ id, name }))}
+                rules={categoryRules.map((rule) => ({
+                  id: rule.id,
+                  keyword: rule.keyword,
+                  categoryName: rule.category.name,
+                  archived: Boolean(rule.category.archivedAt),
+                }))}
               />
             </>
           ) : (

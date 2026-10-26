@@ -28,6 +28,11 @@ import {
 } from "../../src/modules/telegram-integration/service";
 import { runTelegramRecurringReminders } from "../../src/modules/telegram-integration/recurring-reminders";
 import { runTelegramWeeklySummaries } from "../../src/modules/telegram-integration/weekly-summary";
+import {
+  createPersonalCategoryRule,
+  deletePersonalCategoryRule,
+  listPersonalCategoryRules,
+} from "../../src/modules/category-rules/service";
 
 vi.mock("server-only", () => ({}));
 
@@ -129,6 +134,38 @@ afterEach(async () => {
 });
 
 describe("Telegram expense integration", () => {
+  it("uses only the current member personal category rule", async () => {
+    const access = { workspaceId, actorId: ownerId, role: "owner" as const };
+    const rule = await createPersonalCategoryRule(access, {
+      keyword: "kopi spesial",
+      categoryId: transportCategoryId,
+    });
+    await expect(
+      createPersonalCategoryRule(access, {
+        keyword: "  KOPI   SPESIAL ",
+        categoryId,
+      }),
+    ).rejects.toThrow("DUPLICATE");
+    const code = await configureTelegram(
+      access,
+      mandiriId,
+      categoryId,
+      incomeCategoryId,
+    );
+    await connectTelegram(code, "3030303030", "3030303030");
+    const connection = await findTelegramConnection("3030303030", "3030303030");
+    if (!connection) throw new Error("Connection missing");
+    const result = await createTelegramDraft(
+      connection,
+      303,
+      "beli kopi spesial 25rb",
+    );
+    expect(result.draft.categoryId).toBe(transportCategoryId);
+    expect(await listPersonalCategoryRules(access)).toHaveLength(1);
+    await deletePersonalCategoryRule(access, rule.id);
+    expect(await listPersonalCategoryRules(access)).toEqual([]);
+  });
+
   it("sends each opted-in recurring due occurrence only once", async () => {
     await expect(
       updateTelegramRecurringReminders(

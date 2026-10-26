@@ -220,6 +220,10 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 - Pengingat transaksi berulang bersifat opt-in per koneksi dan dikirim sekali untuk kombinasi koneksi, template, dan tanggal jatuh tempo. Template overdue yang belum ditindak tidak diulang setiap hari.
 - Owner menerima template aktif ruang; Editor hanya template yang dibuatnya. Viewer, membership dicabut, user nonaktif, koneksi tanpa chat, dan template arsip tidak menerima pesan.
 - Tanggal jatuh tempo dibandingkan dengan tanggal lokal workspace. Notifikasi tidak memajukan template dan tidak mengubah saldo; pengguna tetap memilih Catat sekarang atau Lewati periode pada alur F11.
+- Aturan kategori pribadi hanya berlaku untuk pembuat aturan pada workspace tersebut. Owner dan Editor dapat mengelola aturan sendiri; Viewer tidak dapat membaca atau memakainya.
+- Kata kunci dicocokkan sebagai frasa utuh setelah normalisasi huruf, Unicode, tanda baca, dan spasi. Jika beberapa aturan cocok, frasa terpanjang menang secara deterministik.
+- Prioritas kategori pengeluaran Telegram adalah aturan pribadi, riwayat judul identik, nama kategori, kamus bawaan, lalu kategori default. Kategori arsip dan aturan milik anggota lain selalu diabaikan.
+- Aturan adalah preferensi automasi, bukan data finansial. Membuat/menghapus aturan tidak mengubah transaksi lama dan tidak masuk ekspor finansial lengkap ruang.
 
 ### F15 — rekonsiliasi saldo
 

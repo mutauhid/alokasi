@@ -41,6 +41,10 @@ setelah Simpan. Voice note belum didukung.
    `vercel.json`, lalu aktifkan **Pengingat transaksi berulang**. Pesan dikirim
    sekali saat jatuh tempo; transaksi belum masuk saldo sampai pengguna memilih
    Catat sekarang dari menu Pengingat.
+9. Untuk mapping kategori pribadi, terapkan migrasi
+   `20261026030000_personal_category_rules`. Buka **Pengaturan → Automasi →
+   Aturan kategori pribadi**, isi frasa seperti `bensin motor`, lalu pilih
+   kategori. Aturan hanya berlaku bagi akun Alokasi/Telegram yang membuatnya.
 
 Domain kustom tidak diperlukan; URL HTTPS Vercel yang aktif dapat dipakai.
 Setiap akun Telegram hanya dapat terhubung ke satu workspace pada fase ini.
@@ -93,3 +97,6 @@ Endpoint pengingat berulang dapat diuji dengan pola header yang sama pada
 `/api/cron/telegram-recurring-reminders` setelah membuat template dengan tanggal
 jatuh tempo hari ini. Pastikan pesan terkirim sekali dan jumlah transaksi tidak
 berubah sebelum Catat sekarang dipilih.
+Uji aturan pribadi dengan frasa yang juga ada pada kamus bawaan. Pastikan mapping
+pribadi menang, lalu hapus aturan dan pastikan bot kembali memakai riwayat,
+kamus, atau kategori default. Draf tetap perlu dikonfirmasi sebelum tersimpan.

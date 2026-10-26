@@ -6,9 +6,10 @@ type HistoricalTransaction = {
   categoryId: string | null;
   transactionDate: Date;
 };
+type PersonalRule = { keywordKey: string; categoryId: string };
 
 export type TelegramCategorySuggestionSource =
-  "history" | "category-name" | "keyword" | "default";
+  "personal-rule" | "history" | "category-name" | "keyword" | "default";
 
 type CategorySuggestion = {
   categoryId: string;
@@ -173,13 +174,32 @@ export function suggestTelegramExpenseCategory({
   title,
   categories,
   history,
+  personalRules = [],
   defaultCategoryId,
 }: {
   title: string;
   categories: CategoryOption[];
   history: HistoricalTransaction[];
+  personalRules?: PersonalRule[];
   defaultCategoryId: string;
 }): CategorySuggestion {
+  const normalizedTitle = searchable(title);
+  const activeIds = new Set(categories.map((category) => category.id));
+  const personalRule = personalRules
+    .filter(
+      (rule) =>
+        activeIds.has(rule.categoryId) &&
+        containsPhrase(normalizedTitle, searchable(rule.keywordKey)),
+    )
+    .sort(
+      (left, right) =>
+        searchable(right.keywordKey).length -
+          searchable(left.keywordKey).length ||
+        left.keywordKey.localeCompare(right.keywordKey, "id-ID"),
+    )[0];
+  if (personalRule)
+    return { categoryId: personalRule.categoryId, source: "personal-rule" };
+
   const historicalCategoryId = suggestionFromHistory(
     title,
     categories,
@@ -188,7 +208,6 @@ export function suggestTelegramExpenseCategory({
   if (historicalCategoryId)
     return { categoryId: historicalCategoryId, source: "history" };
 
-  const normalizedTitle = searchable(title);
   const categoryNameMatches = categories.filter((category) => {
     const name = searchable(category.name);
     return (
