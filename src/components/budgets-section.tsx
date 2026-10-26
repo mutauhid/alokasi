@@ -12,6 +12,7 @@ import { RupiahInput } from "@/components/ui/rupiah-input";
 import { DeleteBudgetButton } from "@/components/delete-budget-button";
 import { TransactionActions } from "@/components/transaction-actions";
 import { budgetPercent, budgetStatus } from "@/modules/finance/domain";
+import { SensitiveAmount } from "@/components/amount-privacy";
 
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
@@ -110,7 +111,7 @@ export async function BudgetsSection({
           <CardContent>
             <p className="text-xs text-muted-foreground">Total limit</p>
             <p className="mt-2 text-xl font-semibold">
-              {rupiah(overview.totalLimit)}
+              <SensitiveAmount>{rupiah(overview.totalLimit)}</SensitiveAmount>
             </p>
           </CardContent>
         </Card>
@@ -118,7 +119,9 @@ export async function BudgetsSection({
           <CardContent>
             <p className="text-xs text-muted-foreground">Realisasi berbudget</p>
             <p className="mt-2 text-xl font-semibold">
-              {rupiah(overview.budgetedActual)}
+              <SensitiveAmount>
+                {rupiah(overview.budgetedActual)}
+              </SensitiveAmount>
             </p>
           </CardContent>
         </Card>
@@ -126,7 +129,7 @@ export async function BudgetsSection({
           <CardContent>
             <p className="text-xs text-muted-foreground">Belum dianggarkan</p>
             <p className="mt-2 text-xl font-semibold">
-              {rupiah(overview.unbudgeted)}
+              <SensitiveAmount>{rupiah(overview.unbudgeted)}</SensitiveAmount>
             </p>
           </CardContent>
         </Card>
@@ -241,7 +244,9 @@ export async function BudgetsSection({
                         </span>
                       </label>
                       <span className="shrink-0 text-sm font-medium">
-                        {rupiah(item.limitAmount)}
+                        <SensitiveAmount>
+                          {rupiah(item.limitAmount)}
+                        </SensitiveAmount>
                       </span>
                     </li>
                   ))}
@@ -290,7 +295,13 @@ export async function BudgetsSection({
                       <div>
                         <p className="font-medium">{item.category.name}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          {rupiah(item.actual)} dari {rupiah(item.limitAmount)}
+                          <SensitiveAmount>
+                            {rupiah(item.actual)}
+                          </SensitiveAmount>{" "}
+                          dari{" "}
+                          <SensitiveAmount>
+                            {rupiah(item.limitAmount)}
+                          </SensitiveAmount>
                         </p>
                       </div>
                       <Badge
@@ -321,9 +332,10 @@ export async function BudgetsSection({
                       <span
                         className={remaining < 0n ? "text-destructive" : ""}
                       >
-                        {remaining < 0n
-                          ? `Lebih ${rupiah(-remaining)}`
-                          : `Sisa ${rupiah(remaining)}`}
+                        {remaining < 0n ? "Lebih " : "Sisa "}
+                        <SensitiveAmount>
+                          {rupiah(remaining < 0n ? -remaining : remaining)}
+                        </SensitiveAmount>
                       </span>
                     </div>
                     {canEdit && (

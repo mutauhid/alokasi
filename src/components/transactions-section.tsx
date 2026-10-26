@@ -25,6 +25,7 @@ import { AutomationGuideDialog } from "@/components/automation-guide-dialog";
 import { CreateTransactionDialog } from "@/components/create-transaction-dialog";
 import { getActiveReceiptDraft } from "@/modules/receipts/service";
 import { receiptDraftView } from "@/modules/receipts/form-state";
+import { SensitiveAmount } from "@/components/amount-privacy";
 
 const messages: Record<string, string> = {
   "transaction-invalid":
@@ -343,7 +344,9 @@ export async function TransactionsSection({
                         className={`col-start-2 font-semibold sm:col-start-3 sm:row-start-1 sm:whitespace-nowrap sm:text-right ${transaction.type === "expense" ? "text-destructive" : transaction.type === "income" ? "text-primary" : ""}`}
                       >
                         {detail.sign}
-                        {rupiah(transaction.amount)}
+                        <SensitiveAmount>
+                          {rupiah(transaction.amount)}
+                        </SensitiveAmount>
                       </p>
                     </div>
                     {canMutate && (

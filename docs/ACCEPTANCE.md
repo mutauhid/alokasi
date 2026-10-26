@@ -841,3 +841,31 @@ opt-in, no-side-effect, dan deduplikasi memerlukan migrasi
 Unit test normalisasi/prioritas telah ditambahkan. Test integrasi PostgreSQL untuk
 CRUD, duplikat, dan klasifikasi draf memerlukan migrasi
 `20261026030000_personal_category_rules` pada `TEST_DATABASE_URL` khusus.
+
+## Hasil tahap 40 — Web Push notifikasi, 26 Oktober 2026
+
+| ID | Kriteria penerimaan |
+|---|---|
+| PUSH-01 | Permission diminta dari tombol pengguna; subscription disimpan per user/perangkat dan endpoint milik user lain tidak dapat diambil alih |
+| PUSH-02 | Preferensi budget, ringkasan, transaksi berulang, saldo menipis, draf tertunda, dan aktivitas bersama dibatasi workspace/user aktif |
+| PUSH-03 | Outbox unik per subscription/dedupe key mencegah retry mengirim kejadian logis yang sama dua kali; 404/410 mencabut endpoint mati |
+| PUSH-04 | Jam tenang menunda delivery menurut zona waktu ruang; opsi privasi menyimpan payload generik tanpa nominal/nama akun |
+| PUSH-05 | Saldo menipis hanya memicu pada transisi melewati batas ke bawah; draf submitted/cancelled/kedaluwarsa tidak diingatkan |
+| PUSH-06 | Aktivitas bersama mengecualikan pelaku dan ruang pribadi. Deep link selalu path lokal dan halaman tujuan memvalidasi akses kembali |
+| PUSH-07 | Logout mencabut perangkat aktif; revoke/leave/delete membersihkan preference, state, outbox, dan subscription sesuai scope |
+| PUSH-08 | Worker tetap tidak mencache API/RSC/data finansial dan fitur tidak menyimpan atau menyinkronkan transaksi offline |
+
+Unit test domain jam tenang/privasi/deep-link, boundary cron, dan worker Push
+ditambahkan. Migrasi `20261026040000_web_push_notifications`, VAPID environment,
+serta smoke notifikasi perangkat nyata wajib diterapkan pada environment target.
+
+## Hasil tahap 41 — Mode privasi nominal, 26 Oktober 2026
+
+| ID | Kriteria penerimaan |
+|---|---|
+| PRIVACY-01 | Tombol mata global memiliki label aksesibel dan menyamarkan/menampilkan seluruh nominal baca-saja tanpa reload |
+| PRIVACY-02 | Pilihan tersimpan per browser, bertahan saat navigasi, dan perubahan tersinkron ke tab lain |
+| PRIVACY-03 | Render awal tersamarkan sehingga preferensi privat tidak menampilkan kilatan nominal sebelum hydration |
+| PRIVACY-04 | Dashboard, Transaksi, Budget, Akun, Pengingat, Laporan, tooltip grafik, serta teks pembaca layar mengikuti mode yang sama |
+| PRIVACY-05 | Input/edit nominal, kalkulasi, persentase, grafik, ekspor, dan nilai database tidak berubah |
+| PRIVACY-06 | Privasi payload Web Push tetap independen dan memakai tombol mata tersendiri dengan keterangan layar terkunci |

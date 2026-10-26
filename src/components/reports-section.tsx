@@ -6,6 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TransactionCategoryIcon } from "@/components/transaction-category-icon";
+import {
+  SensitiveAmount,
+  SensitiveChartBar,
+} from "@/components/amount-privacy";
 
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
@@ -279,7 +283,7 @@ export async function ReportsSection({
               <p
                 className={`mt-2 text-xl font-semibold ${label === "Pengeluaran" || (label === "Arus kas bersih" && value < 0n) ? "text-destructive" : ""}`}
               >
-                {rupiah(value)}
+                <SensitiveAmount>{rupiah(value)}</SensitiveAmount>
               </p>
             </CardContent>
           </Card>
@@ -317,29 +321,33 @@ export async function ReportsSection({
                   className="flex h-full min-w-0 flex-col justify-end"
                 >
                   <div className="flex h-32 items-end justify-center gap-1.5 sm:gap-2">
-                    <div
+                    <SensitiveChartBar
                       className="dashboard-chart-bar w-4 rounded-t bg-primary sm:w-6"
                       style={{
                         height: `${chartHeight(bucket.income)}px`,
                         animationDelay: `${index * 70}ms`,
                       }}
-                      title={`Pemasukan ${rupiah(bucket.income)}`}
+                      label="Pemasukan"
+                      value={rupiah(bucket.income)}
                     />
-                    <div
+                    <SensitiveChartBar
                       className="dashboard-chart-bar w-4 rounded-t bg-amber-600 sm:w-6"
                       style={{
                         height: `${chartHeight(bucket.expense)}px`,
                         animationDelay: `${index * 70 + 45}ms`,
                       }}
-                      title={`Pengeluaran ${rupiah(bucket.expense)}`}
+                      label="Pengeluaran"
+                      value={rupiah(bucket.expense)}
                     />
                   </div>
                   <p className="mt-2 truncate text-center text-[10px] text-muted-foreground sm:text-xs">
                     {bucket.label}
                   </p>
                   <span className="sr-only">
-                    {bucket.label}: pemasukan {rupiah(bucket.income)},
-                    pengeluaran {rupiah(bucket.expense)}
+                    {bucket.label}: pemasukan{" "}
+                    <SensitiveAmount>{rupiah(bucket.income)}</SensitiveAmount>,
+                    pengeluaran{" "}
+                    <SensitiveAmount>{rupiah(bucket.expense)}</SensitiveAmount>
                   </span>
                 </div>
               ))}
@@ -366,7 +374,9 @@ export async function ReportsSection({
                     <div className="flex justify-between gap-3 text-sm">
                       <span>{category.name}</span>
                       <span className="font-medium">
-                        {rupiah(category.amount)}
+                        <SensitiveAmount>
+                          {rupiah(category.amount)}
+                        </SensitiveAmount>
                       </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -418,7 +428,13 @@ export async function ReportsSection({
                           {item.category.name}
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          {rupiah(item.actual)} dari {rupiah(item.limitAmount)}{" "}
+                          <SensitiveAmount>
+                            {rupiah(item.actual)}
+                          </SensitiveAmount>{" "}
+                          dari{" "}
+                          <SensitiveAmount>
+                            {rupiah(item.limitAmount)}
+                          </SensitiveAmount>{" "}
                           · {percent.toString()}%
                         </p>
                       </div>
@@ -481,7 +497,9 @@ export async function ReportsSection({
                       className={`col-start-2 justify-self-end whitespace-nowrap text-sm font-semibold sm:col-start-3 sm:row-start-1 ${transaction.type === "expense" ? "text-destructive" : transaction.type === "income" ? "text-primary" : ""}`}
                     >
                       {detail.sign}
-                      {rupiah(transaction.amount)}
+                      <SensitiveAmount>
+                        {rupiah(transaction.amount)}
+                      </SensitiveAmount>
                     </span>
                   </li>
                 );

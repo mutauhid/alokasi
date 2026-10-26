@@ -14,6 +14,10 @@ import { getDashboardOverview } from "@/modules/dashboard/service";
 import { sectionHref } from "@/lib/navigation";
 import { calendarDayDifference } from "@/modules/recurring/domain";
 import { TransactionCategoryIcon } from "@/components/transaction-category-icon";
+import {
+  SensitiveAmount,
+  SensitiveChartBar,
+} from "@/components/amount-privacy";
 
 function rupiah(value: bigint) {
   return new Intl.NumberFormat("id-ID", {
@@ -120,7 +124,7 @@ export async function Dashboard({
                 </span>
               </div>
               <p className="my-3 text-[28px] font-semibold leading-none tracking-tight">
-                {rupiah(value)}
+                <SensitiveAmount>{rupiah(value)}</SensitiveAmount>
               </p>
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs text-muted-foreground">{note}</p>
@@ -189,7 +193,9 @@ export async function Dashboard({
                       className={`text-sm font-semibold ${reminder.type === "expense" ? "text-destructive" : "text-primary"}`}
                     >
                       {reminder.type === "expense" ? "−" : "+"}
-                      {rupiah(reminder.amount)}
+                      <SensitiveAmount>
+                        {rupiah(reminder.amount)}
+                      </SensitiveAmount>
                     </span>
                   </li>
                 );
@@ -239,29 +245,33 @@ export async function Dashboard({
                     className="flex h-full min-w-0 flex-col justify-end"
                   >
                     <div className="flex h-36 items-end justify-center gap-1 sm:gap-2">
-                      <div
+                      <SensitiveChartBar
                         className="dashboard-chart-bar w-3 rounded-t bg-primary sm:w-5"
                         style={{
                           height: `${trendHeight(item.income)}px`,
                           animationDelay: `${index * 70}ms`,
                         }}
-                        title={`Pemasukan ${rupiah(item.income)}`}
+                        label="Pemasukan"
+                        value={rupiah(item.income)}
                       />
-                      <div
+                      <SensitiveChartBar
                         className="dashboard-chart-bar w-3 rounded-t bg-amber-600 sm:w-5"
                         style={{
                           height: `${trendHeight(item.expense)}px`,
                           animationDelay: `${index * 70 + 45}ms`,
                         }}
-                        title={`Pengeluaran ${rupiah(item.expense)}`}
+                        label="Pengeluaran"
+                        value={rupiah(item.expense)}
                       />
                     </div>
                     <p className="mt-2 truncate text-center text-[10px] text-muted-foreground sm:text-xs">
                       {shortPeriod(item.startDate, item.endDateExclusive)}
                     </p>
                     <span className="sr-only">
-                      Pemasukan {rupiah(item.income)}, pengeluaran{" "}
-                      {rupiah(item.expense)}
+                      Pemasukan{" "}
+                      <SensitiveAmount>{rupiah(item.income)}</SensitiveAmount>,
+                      pengeluaran{" "}
+                      <SensitiveAmount>{rupiah(item.expense)}</SensitiveAmount>
                     </span>
                   </div>
                 ))}
@@ -271,13 +281,13 @@ export async function Dashboard({
               <div>
                 <p className="text-[11px] text-muted-foreground">Pemasukan</p>
                 <p className="mt-1 text-sm font-semibold">
-                  {rupiah(data.income)}
+                  <SensitiveAmount>{rupiah(data.income)}</SensitiveAmount>
                 </p>
               </div>
               <div>
                 <p className="text-[11px] text-muted-foreground">Pengeluaran</p>
                 <p className="mt-1 text-sm font-semibold text-destructive">
-                  {rupiah(data.expense)}
+                  <SensitiveAmount>{rupiah(data.expense)}</SensitiveAmount>
                 </p>
               </div>
               <div>
@@ -287,7 +297,7 @@ export async function Dashboard({
                 <p
                   className={`mt-1 text-sm font-semibold ${data.netCashFlow < 0n ? "text-destructive" : "text-primary"}`}
                 >
-                  {rupiah(data.netCashFlow)}
+                  <SensitiveAmount>{rupiah(data.netCashFlow)}</SensitiveAmount>
                 </p>
               </div>
             </div>
@@ -350,8 +360,12 @@ export async function Dashboard({
                         />
                       </div>
                       <p className="text-[11px] text-muted-foreground">
-                        {rupiah(item.actual)} / {rupiah(item.limitAmount)} ·{" "}
-                        {budgetStatus(item.actual, item.limitAmount)}
+                        <SensitiveAmount>{rupiah(item.actual)}</SensitiveAmount>{" "}
+                        /{" "}
+                        <SensitiveAmount>
+                          {rupiah(item.limitAmount)}
+                        </SensitiveAmount>{" "}
+                        · {budgetStatus(item.actual, item.limitAmount)}
                       </p>
                     </div>
                   );
@@ -419,7 +433,9 @@ export async function Dashboard({
                       : transaction.type === "income"
                         ? "+"
                         : ""}
-                    {rupiah(transaction.amount)}
+                    <SensitiveAmount>
+                      {rupiah(transaction.amount)}
+                    </SensitiveAmount>
                   </span>
                 </li>
               ))}

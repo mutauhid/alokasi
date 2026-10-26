@@ -36,13 +36,28 @@ export function AccountMenu({
     setSignOutFailed(false);
 
     try {
+      const pushSubscription =
+        "serviceWorker" in navigator
+          ? await navigator.serviceWorker.ready
+              .then((registration) =>
+                registration.pushManager.getSubscription(),
+              )
+              .catch(() => null)
+          : null;
       const response = await fetch(event.currentTarget.action, {
         method: "POST",
         credentials: "same-origin",
-        headers: { Accept: "text/html" },
+        headers: {
+          Accept: "text/html",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          pushEndpoint: pushSubscription?.endpoint ?? "",
+        }),
       });
 
       if (!response.ok) throw new Error("Sign out request failed");
+      await pushSubscription?.unsubscribe().catch(() => false);
       window.location.replace(response.url || "/login?signedOut=1");
     } catch {
       setSigningOut(false);

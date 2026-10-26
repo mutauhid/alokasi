@@ -4,6 +4,10 @@ import { getDatabase } from "@/server/db/client";
 import { deleteWorkspaceData } from "@/modules/workspaces/delete-data";
 import { deleteTelegramConnections } from "@/modules/telegram-integration/cleanup";
 import { deletePersonalCategoryRules } from "@/modules/category-rules/cleanup";
+import {
+  deleteUserWebPushSubscriptions,
+  deleteWorkspaceWebPushData,
+} from "@/modules/web-push/cleanup";
 import { UserDomainError } from "./errors";
 
 export async function getAccountDeletionSummary(actorId: string) {
@@ -161,6 +165,10 @@ export async function deleteApplicationAccount(input: {
           userId: input.actorId,
           workspace: { type: "shared" },
         });
+        await deleteWorkspaceWebPushData(tx, {
+          userId: input.actorId,
+          workspace: { type: "shared" },
+        });
         await tx.workspace.updateMany({
           where: { ownershipTransferToMembershipId: { in: membershipIds } },
           data: {
@@ -194,6 +202,7 @@ export async function deleteApplicationAccount(input: {
       }
 
       await deleteWorkspaceData(tx, user.personalWorkspace.id);
+      await deleteUserWebPushSubscriptions(tx, input.actorId);
       await tx.user.update({
         where: { id: input.actorId },
         data: {

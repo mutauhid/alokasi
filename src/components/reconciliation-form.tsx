@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ArrowLeftRight, CheckCircle2, Scale } from "lucide-react";
 import { createBalanceReconciliationAction } from "@/app/(workspace)/actions";
 import { Button } from "@/components/ui/button";
+import { SensitiveAmount } from "@/components/amount-privacy";
 
 const MAX_POSITIVE = "9223372036854775807";
 const MAX_NEGATIVE_MAGNITUDE = "9223372036854775808";
@@ -122,7 +123,11 @@ export function ReconciliationForm({
                 : "text-foreground"
             }
           >
-            {difference === null ? "—" : rupiah(difference)}
+            {difference === null ? (
+              "—"
+            ) : (
+              <SensitiveAmount>{rupiah(difference)}</SensitiveAmount>
+            )}
           </strong>
         </div>
         {difference !== null && difference !== 0n && (

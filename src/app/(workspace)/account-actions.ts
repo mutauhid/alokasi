@@ -19,6 +19,7 @@ import {
   requireVerifiedIdentity,
 } from "@/server/auth/identity";
 import { createSupabaseServerClient } from "@/server/auth/server";
+import { revokeAllWebPushSubscriptions } from "@/modules/web-push/service";
 
 function text(form: FormData, name: string) {
   const value = form.get(name);
@@ -81,7 +82,7 @@ export async function changePasswordAction(form: FormData) {
     confirmation: text(form, "confirmation"),
   });
   if (!input.success) settingsError(workspaceId, "password-invalid");
-  const { identity } = await accountMutationContext(workspaceId);
+  const { identity, access } = await accountMutationContext(workspaceId);
   if (
     !(await reauthenticateWithPassword(identity, input.data.currentPassword))
   ) {
@@ -92,6 +93,7 @@ export async function changePasswordAction(form: FormData) {
     password: input.data.newPassword,
   });
   if (error) settingsError(workspaceId, "password-failed");
+  await revokeAllWebPushSubscriptions(access.actorId).catch(() => undefined);
   await supabase.auth.signOut({ scope: "global" }).catch(() => undefined);
   redirect("/login?passwordChanged=1");
 }

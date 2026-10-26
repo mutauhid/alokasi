@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { calendarDayDifference } from "@/modules/recurring/domain";
 import type { listRecurringTemplates } from "@/modules/recurring/service";
 import type { WorkspaceAccess } from "@/modules/workspaces/service";
+import { SensitiveAmount } from "@/components/amount-privacy";
 
 type Template = Awaited<ReturnType<typeof listRecurringTemplates>>[number];
 type Option = { id: string; name: string };
@@ -150,7 +151,9 @@ export function RecurringTransactionsPanel({
                       className={`font-semibold ${template.type === "expense" ? "text-destructive" : "text-primary"}`}
                     >
                       {template.type === "expense" ? "−" : "+"}
-                      {rupiah(template.amount)}
+                      <SensitiveAmount>
+                        {rupiah(template.amount)}
+                      </SensitiveAmount>
                     </p>
                   </div>
 

@@ -40,6 +40,9 @@ import { TelegramIntegrationCard } from "@/components/telegram-integration-card"
 import { getTelegramSettings } from "@/modules/telegram-integration/service";
 import { listPersonalCategoryRules } from "@/modules/category-rules/service";
 import { PersonalCategoryRulesCard } from "@/components/personal-category-rules-card";
+import { WebPushNotificationCard } from "@/components/web-push-notification-card";
+import { formatClockMinutes } from "@/modules/web-push/domain";
+import { getWebPushSettings } from "@/modules/web-push/service";
 import { cn } from "@/lib/utils";
 
 const inputClass =
@@ -58,7 +61,7 @@ const settingsNavigation = [
   {
     id: "automation",
     label: "Automasi",
-    description: "iPhone dan Telegram",
+    description: "iPhone, Telegram, dan notifikasi",
     icon: Bot,
   },
   {
@@ -166,6 +169,8 @@ export async function SettingsSection({
     activeView === "danger" && access.workspaceType === "personal"
       ? await getAccountDeletionSummary(access.actorId)
       : null;
+  const webPush =
+    activeView === "automation" ? await getWebPushSettings(access) : null;
   const [
     shortcut,
     telegram,
@@ -366,6 +371,29 @@ export async function SettingsSection({
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {activeView === "automation" && webPush && (
+          <WebPushNotificationCard
+            workspaceId={workspaceId}
+            workspaceType={access.workspaceType}
+            initial={{
+              budgetAlertsEnabled: webPush.budgetAlertsEnabled,
+              weeklySummaryEnabled: webPush.weeklySummaryEnabled,
+              recurringRemindersEnabled: webPush.recurringRemindersEnabled,
+              lowBalanceEnabled: webPush.lowBalanceEnabled,
+              lowBalanceThreshold:
+                webPush.lowBalanceThreshold?.toString() ?? "",
+              staleDraftsEnabled: webPush.staleDraftsEnabled,
+              sharedActivityEnabled: webPush.sharedActivityEnabled,
+              quietHoursStart: formatClockMinutes(webPush.quietHoursStart),
+              quietHoursEnd: formatClockMinutes(webPush.quietHoursEnd),
+              hideSensitiveContent: webPush.hideSensitiveContent,
+              activeDevices: webPush.activeDevices,
+              configured: webPush.configured,
+              publicKey: webPush.publicKey,
+            }}
+          />
         )}
 
         {activeView === "automation" &&
