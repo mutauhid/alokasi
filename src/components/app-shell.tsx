@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { AccountMenu } from "@/components/account-menu";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { AmountPrivacyToggle } from "@/components/amount-privacy";
 import {
   Sheet,
   SheetContent,
@@ -200,6 +201,7 @@ export function AppShell({
               />
             </div>
             <div className="flex items-center gap-3">
+              <AmountPrivacyToggle />
               <ThemeSwitcher />
               <Badge
                 variant="outline"

@@ -174,7 +174,7 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 ## 5. F11 — transaksi berulang
 
 - Template adalah jadwal/pengingat dan tidak pernah dihitung sebagai transaksi. Hanya baris `Transaction` hasil konfirmasi eksplisit yang memengaruhi saldo, budget, dashboard, dan laporan.
-- Baseline hanya pemasukan atau pengeluaran bulanan. Transfer, interval mingguan/tahunan, auto-post, email, dan push notification berada di luar irisan ini.
+- Baseline hanya pemasukan atau pengeluaran bulanan. Transfer, interval mingguan/tahunan, auto-post, dan email berada di luar irisan ini. F25 dapat mengingatkan jatuh tempo melalui Web Push, tetapi tidak mencatat atau memajukan template.
 - Nominal memakai integer rupiah positif. Akun aktif serta kategori aktif dengan jenis yang sama wajib berada dalam workspace template.
 - `next_due_date` menyimpan satu kejadian berikutnya. Hari 29–31 dipotong ke akhir bulan tanpa mengubah `recurrence_day`, sehingga jadwal kembali ke hari asli pada bulan yang cukup panjang.
 - Kejadian overdue diproses satu per satu. **Catat sekarang** membuat transaksi memakai tanggal jatuh tempo lalu memajukan jadwal; **Lewati periode** hanya memajukan jadwal.
@@ -193,6 +193,26 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 - Dukungan transaksi offline kelak memerlukan keputusan baru untuk IndexedDB, isolasi user/workspace pada perangkat bersama, logout/cleanup, idempotensi, auth kedaluwarsa, konflik referensi arsip, dan status sinkronisasi.
 
 ## 7. Kontrak lintas fitur
+
+### F25 — Web Push
+
+- Izin browser diminta hanya setelah tindakan pengguna. Satu subscription mewakili satu perangkat/browser dan terkait satu user; preferensi jenis notifikasi tetap terpisah per membership/workspace.
+- Notifikasi tidak menjadi sumber data finansial. Gagal mengantrekan atau mengirim tidak boleh membatalkan transaksi, rekonsiliasi, draf, maupun perubahan budget yang sudah valid.
+- Budget memakai ambang 80% dan 100% maksimal sekali per subscription, budget, dan ambang. Satu transaksi yang langsung mencapai 100% mengantrekan ambang tertinggi.
+- Ringkasan mingguan hanya dibentuk pada Senin lokal untuk minggu Senin–Minggu yang selesai. Pengingat transaksi berulang tidak membuat transaksi dan mengikuti izin Owner/Editor F11.
+- Saldo menipis menggunakan saldo catatan seluruh akun aktif dan satu batas pilihan pengguna untuk ruang tersebut. Notifikasi muncul pada transisi dari tidak-di-bawah menjadi di-bawah; saldo pulih mereset state agar penurunan berikutnya dapat diberi tahu.
+- Draf receipt `needs_review` dan draf Telegram `pending` diingatkan sekali setelah 24 jam. Draf submitted, cancelled, atau Telegram yang kedaluwarsa tidak menjadi kandidat.
+- Aktivitas ruang bersama dikirim kepada anggota aktif lain yang opt-in ketika transaksi dibuat, diubah, atau dihapus. Ruang pribadi dan pelaku transaksi tidak menerima aktivitasnya sendiri.
+- Jam tenang mengikuti zona waktu workspace dan menunda outbox sampai periode berakhir. Opsi privasi mengganti judul/isi dengan pesan generik sebelum payload disimpan dan dikirim.
+- URL notifikasi wajib path lokal. Halaman tujuan tetap memvalidasi sesi, user aktif, membership, role, dan workspace; notifikasi tidak memberi hak akses baru.
+- Logout mencabut subscription perangkat yang dipakai. Pencabutan/keluar membership menghapus preferensi, state, dan delivery ruang; penghapusan akun juga membersihkan seluruh subscription pengguna.
+
+### F26 — mode privasi nominal
+
+- Mode privasi hanya mengubah presentasi pada browser. Nilai asli, perhitungan, request server, ekspor, audit, saldo, budget, dan laporan tidak berubah.
+- Satu tombol mata berlaku untuk seluruh nominal baca-saja lintas workspace dan modul pada browser tersebut. Pilihan disimpan lokal dan disinkronkan antartab; perangkat lain memiliki pilihan sendiri.
+- Render awal menyamarkan nominal untuk mencegah kilatan data sebelum JavaScript membaca preferensi. Field input/edit tetap terlihat agar pengguna dapat memeriksa nilai yang akan disimpan.
+- Mode ini melindungi dari pengamatan kasual di layar, bukan menggantikan autentikasi, otorisasi, enkripsi, atau kebijakan privasi Web Push.
 
 ### Peringatan transaksi duplikat
 

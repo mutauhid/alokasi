@@ -9,6 +9,7 @@ import {
 } from "@/modules/finance/domain";
 import { FinanceDomainError } from "@/modules/finance/errors";
 import { getDatabase } from "@/server/db/client";
+import { safelyRefreshAndDeliverWebPush } from "@/modules/web-push/events";
 
 type ReconciliationContext = {
   workspaceId: string;
@@ -94,7 +95,7 @@ export async function createBalanceReconciliation(
     throw new FinanceDomainError("RECONCILIATION_FUTURE_DATE");
   }
   const hash = requestHash(input);
-  return getDatabase().$transaction(async (tx) => {
+  const reconciliation = await getDatabase().$transaction(async (tx) => {
     await tx.$queryRaw`
       SELECT id FROM app.financial_accounts
       WHERE workspace_id = ${context.workspaceId}::uuid
@@ -190,6 +191,8 @@ export async function createBalanceReconciliation(
     });
     return reconciliation;
   });
+  await safelyRefreshAndDeliverWebPush(context.workspaceId);
+  return reconciliation;
 }
 
 export async function getAccountReconciliationOverview(

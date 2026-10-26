@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReconciliationForm } from "@/components/reconciliation-form";
 import { TransactionActions } from "@/components/transaction-actions";
 import { ArchiveAccountButton } from "@/components/archive-account-button";
+import { SensitiveAmount } from "@/components/amount-privacy";
 
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
@@ -199,7 +200,9 @@ export async function AccountsSection({
                       Saldo menurut Alokasi
                     </p>
                     <p className="mt-1 text-lg font-semibold">
-                      {rupiah(reconciliation.recordedBalance)}
+                      <SensitiveAmount>
+                        {rupiah(reconciliation.recordedBalance)}
+                      </SensitiveAmount>
                     </p>
                   </div>
                   <div className="rounded-xl border p-4">
@@ -255,8 +258,14 @@ export async function AccountsSection({
                           </Badge>
                         </div>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          Catatan {rupiah(item.recordedBalance)} · aktual{" "}
-                          {rupiah(item.actualBalance)}
+                          Catatan{" "}
+                          <SensitiveAmount>
+                            {rupiah(item.recordedBalance)}
+                          </SensitiveAmount>{" "}
+                          · aktual{" "}
+                          <SensitiveAmount>
+                            {rupiah(item.actualBalance)}
+                          </SensitiveAmount>
                           {item.note ? ` · ${item.note}` : ""}
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">
@@ -274,11 +283,17 @@ export async function AccountsSection({
                               : "font-medium text-destructive"
                           }
                         >
-                          Selisih {rupiah(item.difference)}
+                          Selisih{" "}
+                          <SensitiveAmount>
+                            {rupiah(item.difference)}
+                          </SensitiveAmount>
                         </p>
                         {item.adjustmentAmount !== 0n && (
                           <p className="mt-1 text-xs text-muted-foreground">
-                            Penyesuaian {rupiah(item.adjustmentAmount)}
+                            Penyesuaian{" "}
+                            <SensitiveAmount>
+                              {rupiah(item.adjustmentAmount)}
+                            </SensitiveAmount>
                           </p>
                         )}
                       </div>
@@ -379,7 +394,7 @@ export async function AccountsSection({
                   <p
                     className={`mt-1 text-xl font-semibold ${account.balance < 0n ? "text-destructive" : ""}`}
                   >
-                    {rupiah(account.balance)}
+                    <SensitiveAmount>{rupiah(account.balance)}</SensitiveAmount>
                   </p>
                 </div>
                 <div className="rounded-lg bg-muted/50 p-3 text-xs">
@@ -493,7 +508,7 @@ export async function AccountsSection({
                 >
                   <span>{account.name}</span>
                   <span className="text-muted-foreground">
-                    {rupiah(account.balance)}
+                    <SensitiveAmount>{rupiah(account.balance)}</SensitiveAmount>
                   </span>
                 </li>
               ))}

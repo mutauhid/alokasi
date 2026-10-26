@@ -7,6 +7,8 @@ import {
   budgetAlertMessage,
   budgetAlertThreshold,
 } from "./budget-alert-domain";
+import { refreshLowBalanceWebPush } from "@/modules/web-push/events";
+import { safelyDeliverWebPush } from "@/modules/web-push/service";
 
 type CreatedTransaction = {
   type: "income" | "expense" | "transfer";
@@ -157,5 +159,11 @@ export async function deliverPendingBudgetAlerts(input: {
     }
   } catch {
     // A Telegram or alert-storage failure must never undo a valid transaction.
+  }
+  try {
+    await refreshLowBalanceWebPush(input.workspaceId);
+    await safelyDeliverWebPush(input);
+  } catch {
+    // Web Push delivery must never undo a valid transaction either.
   }
 }

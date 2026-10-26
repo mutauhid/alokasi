@@ -109,6 +109,8 @@ Model keuangan bersama awal adalah dana bersama dengan akun, transaksi, dan budg
 | F22 | Saran pengisian transaksi | P1 diimplementasikan | Judul dan kategori dari riwayat ruang yang sama; pemfilteran lokal tanpa request per ketikan |
 | F23 | PWA installable | P1 diimplementasikan | Manifest, ikon, tampilan standalone, service worker aman, dan halaman offline; belum menyimpan atau menyinkronkan transaksi offline |
 | F24 | Pencatatan via Telegram | P1 dalam implementasi | Pesan teks menjadi draf pengeluaran, akun/kategori default, koreksi dan konfirmasi dalam chat pribadi, simpan transaksi hanya setelah konfirmasi; VN ditunda |
+| F25 | Web Push notifikasi | P1 diimplementasikan | Opt-in per perangkat dan ruang untuk budget, ringkasan mingguan, transaksi berulang, saldo menipis, draf tertunda, dan aktivitas ruang bersama; jam tenang serta penyamaran isi tersedia |
+| F26 | Mode privasi nominal | P1 diimplementasikan | Tombol mata global menyamarkan nominal baca-saja lintas modul, tersimpan lokal per browser, tanpa mengubah nilai database, ekspor, atau input transaksi |
 
 F12–F14 dan F16 tetap P1 kandidat. F11 diaktifkan pada 29 September 2026 setelah deployment produksi dilaporkan berhasil. F22 diaktifkan pada 30 September 2026. F23 diaktifkan pada 5 Oktober 2026 setelah pengguna memilih menunda F12. F15 diaktifkan pada 6 Oktober 2026. F18 dan F21 telah lebih dahulu diimplementasikan atas instruksi pengguna.
 

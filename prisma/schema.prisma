@@ -78,17 +78,38 @@ enum TelegramBudgetAlertStatus {
   @@schema("app")
 }
 
+enum WebPushNotificationType {
+  budget_alert
+  weekly_summary
+  recurring_reminder
+  low_balance
+  stale_draft
+  shared_activity
+
+  @@schema("app")
+}
+
+enum WebPushDeliveryStatus {
+  pending
+  sending
+  sent
+  failed
+
+  @@schema("app")
+}
+
 model User {
-  id                  String               @id @default(uuid()) @db.Uuid
-  authSubject         String?              @unique @map("auth_subject") @db.Uuid
-  email               String?              @db.VarChar(320)
-  displayName         String?              @map("display_name") @db.VarChar(100)
-  disabledAt          DateTime?            @map("disabled_at") @db.Timestamptz(3)
-  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt           DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
-  memberships         Membership[]
-  personalWorkspace   Workspace?
-  telegramConnections TelegramConnection[]
+  id                   String                @id @default(uuid()) @db.Uuid
+  authSubject          String?               @unique @map("auth_subject") @db.Uuid
+  email                String?               @db.VarChar(320)
+  displayName          String?               @map("display_name") @db.VarChar(100)
+  disabledAt           DateTime?             @map("disabled_at") @db.Timestamptz(3)
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  memberships          Membership[]
+  personalWorkspace    Workspace?
+  telegramConnections  TelegramConnection[]
+  webPushSubscriptions WebPushSubscription[]
 
   @@map("users")
   @@schema("app")
@@ -122,6 +143,9 @@ model Workspace {
   telegramBudgetAlerts            TelegramBudgetAlert[]
   telegramRecurringReminders      TelegramRecurringReminder[]
   personalCategoryRules           PersonalCategoryRule[]
+  webPushPreferences              WebPushPreference[]
+  webPushDeliveries               WebPushDelivery[]
+  webPushLowBalanceStates         WebPushLowBalanceState[]
 
   @@map("workspaces")
   @@schema("app")
@@ -167,11 +191,105 @@ model Membership {
   reconciliations           BalanceReconciliation[]        @relation("ReconciliationCreator")
   telegramConnection        TelegramConnection?
   personalCategoryRules     PersonalCategoryRule[]
+  webPushPreference         WebPushPreference?
+  webPushDeliveries         WebPushDelivery[]
+  webPushLowBalanceStates   WebPushLowBalanceState[]
 
   @@unique([workspaceId, userId])
   @@unique([workspaceId, id])
   @@index([userId, status])
   @@map("memberships")
+  @@schema("app")
+}
+
+model WebPushSubscription {
+  id           String            @id @default(uuid()) @db.Uuid
+  userId       String            @map("user_id") @db.Uuid
+  endpointHash String            @unique @map("endpoint_hash") @db.VarChar(64)
+  endpoint     String            @db.Text
+  p256dh       String            @db.VarChar(180)
+  auth         String            @db.VarChar(64)
+  userAgent    String?           @map("user_agent") @db.VarChar(300)
+  revokedAt    DateTime?         @map("revoked_at") @db.Timestamptz(3)
+  lastSeenAt   DateTime          @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  deliveries   WebPushDelivery[]
+
+  @@unique([userId, id])
+  @@index([userId, revokedAt])
+  @@map("web_push_subscriptions")
+  @@schema("app")
+}
+
+model WebPushPreference {
+  id                        String     @id @default(uuid()) @db.Uuid
+  workspaceId               String     @map("workspace_id") @db.Uuid
+  userId                    String     @map("user_id") @db.Uuid
+  budgetAlertsEnabled       Boolean    @default(true) @map("budget_alerts_enabled")
+  weeklySummaryEnabled      Boolean    @default(true) @map("weekly_summary_enabled")
+  recurringRemindersEnabled Boolean    @default(true) @map("recurring_reminders_enabled")
+  lowBalanceEnabled         Boolean    @default(false) @map("low_balance_enabled")
+  lowBalanceThreshold       BigInt?    @map("low_balance_threshold")
+  staleDraftsEnabled        Boolean    @default(true) @map("stale_drafts_enabled")
+  sharedActivityEnabled     Boolean    @default(true) @map("shared_activity_enabled")
+  quietHoursStart           Int?       @map("quiet_hours_start") @db.SmallInt
+  quietHoursEnd             Int?       @map("quiet_hours_end") @db.SmallInt
+  hideSensitiveContent      Boolean    @default(true) @map("hide_sensitive_content")
+  createdAt                 DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                 DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace                 Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  membership                Membership @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, userId])
+  @@map("web_push_preferences")
+  @@schema("app")
+}
+
+model WebPushDelivery {
+  id             String                  @id @default(uuid()) @db.Uuid
+  workspaceId    String                  @map("workspace_id") @db.Uuid
+  userId         String                  @map("user_id") @db.Uuid
+  subscriptionId String                  @map("subscription_id") @db.Uuid
+  type           WebPushNotificationType
+  dedupeKey      String                  @map("dedupe_key") @db.VarChar(220)
+  title          String                  @db.VarChar(120)
+  body           String                  @db.VarChar(300)
+  url            String                  @db.VarChar(500)
+  tag            String                  @db.VarChar(120)
+  status         WebPushDeliveryStatus   @default(pending)
+  availableAt    DateTime                @default(now()) @map("available_at") @db.Timestamptz(3)
+  attemptedAt    DateTime?               @map("attempted_at") @db.Timestamptz(3)
+  sentAt         DateTime?               @map("sent_at") @db.Timestamptz(3)
+  failureCode    String?                 @map("failure_code") @db.VarChar(40)
+  createdAt      DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  workspace      Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  membership     Membership              @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  subscription   WebPushSubscription     @relation(fields: [userId, subscriptionId], references: [userId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([subscriptionId, dedupeKey])
+  @@index([status, availableAt, createdAt])
+  @@index([workspaceId, userId, type])
+  @@map("web_push_deliveries")
+  @@schema("app")
+}
+
+model WebPushLowBalanceState {
+  id             String           @id @default(uuid()) @db.Uuid
+  workspaceId    String           @map("workspace_id") @db.Uuid
+  userId         String           @map("user_id") @db.Uuid
+  accountId      String           @map("account_id") @db.Uuid
+  isBelow        Boolean          @default(false) @map("is_below")
+  lastNotifiedAt DateTime?        @map("last_notified_at") @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace      Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  membership     Membership       @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  account        FinancialAccount @relation(fields: [workspaceId, accountId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, userId, accountId])
+  @@index([workspaceId, accountId])
+  @@map("web_push_low_balance_states")
   @@schema("app")
 }
 
@@ -318,22 +436,23 @@ model PersonalCategoryRule {
 }
 
 model FinancialAccount {
-  id                 String                         @id @default(uuid()) @db.Uuid
-  workspaceId        String                         @map("workspace_id") @db.Uuid
-  name               String                         @db.VarChar(100)
-  type               AccountType
-  openingBalance     BigInt                         @map("opening_balance")
-  openingDate        DateTime                       @map("opening_date") @db.Date
-  archivedAt         DateTime?                      @map("archived_at") @db.Timestamptz(3)
-  version            Int                            @default(1)
-  createdAt          DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt          DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
-  workspace          Workspace                      @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  outgoing           Transaction[]                  @relation("SourceAccount")
-  incoming           Transaction[]                  @relation("DestinationAccount")
-  receiptDrafts      ReceiptDraft[]                 @relation("ReceiptDraftAccount")
-  recurringTemplates RecurringTransactionTemplate[]
-  reconciliations    BalanceReconciliation[]
+  id                      String                         @id @default(uuid()) @db.Uuid
+  workspaceId             String                         @map("workspace_id") @db.Uuid
+  name                    String                         @db.VarChar(100)
+  type                    AccountType
+  openingBalance          BigInt                         @map("opening_balance")
+  openingDate             DateTime                       @map("opening_date") @db.Date
+  archivedAt              DateTime?                      @map("archived_at") @db.Timestamptz(3)
+  version                 Int                            @default(1)
+  createdAt               DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt               DateTime                       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace               Workspace                      @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  outgoing                Transaction[]                  @relation("SourceAccount")
+  incoming                Transaction[]                  @relation("DestinationAccount")
+  receiptDrafts           ReceiptDraft[]                 @relation("ReceiptDraftAccount")
+  recurringTemplates      RecurringTransactionTemplate[]
+  reconciliations         BalanceReconciliation[]
+  webPushLowBalanceStates WebPushLowBalanceState[]
 
   @@unique([workspaceId, id])
   @@index([workspaceId, archivedAt])

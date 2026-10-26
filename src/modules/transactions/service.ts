@@ -13,6 +13,11 @@ import {
   type TransactionPagination,
 } from "@/modules/transactions/pagination";
 import { assertNoUnconfirmedDuplicate } from "@/modules/transactions/duplicates";
+import {
+  queueBudgetWebPush,
+  queueSharedActivityWebPush,
+  safelyRefreshAndDeliverWebPush,
+} from "@/modules/web-push/events";
 
 type TransactionType = "income" | "expense" | "transfer";
 export type TransactionContext = {
@@ -155,6 +160,17 @@ export async function createTransactionInTransaction(
     },
   });
   await queueBudgetAlertForTransaction(tx, context, transaction);
+  try {
+    await queueBudgetWebPush(tx, context.workspaceId, transaction);
+    await queueSharedActivityWebPush(tx, {
+      workspaceId: context.workspaceId,
+      actorId: context.actorId,
+      action: "created",
+      transaction,
+    });
+  } catch {
+    // Optional notification bookkeeping must not reject the transaction.
+  }
   return transaction;
 }
 
@@ -282,7 +298,7 @@ export async function updateTransaction(
   if (context.role === "viewer")
     throw new FinanceDomainError("TRANSACTION_ACCESS_DENIED");
   const db = getDatabase();
-  return db.$transaction(async (tx) => {
+  await db.$transaction(async (tx) => {
     const existing = await tx.transaction.findFirst({
       where: {
         id: input.id,
@@ -337,7 +353,28 @@ export async function updateTransaction(
         ],
       },
     });
+    const transaction = {
+      id: input.id,
+      type: input.type,
+      title: input.title,
+      amount: input.amount,
+      categoryId: input.categoryId,
+      transactionDate: input.transactionDate,
+      version: input.version + 1,
+    };
+    try {
+      await queueBudgetWebPush(tx, context.workspaceId, transaction);
+      await queueSharedActivityWebPush(tx, {
+        workspaceId: context.workspaceId,
+        actorId: context.actorId,
+        action: "updated",
+        transaction,
+      });
+    } catch {
+      // Optional notification bookkeeping must not reject the transaction.
+    }
   });
+  await safelyRefreshAndDeliverWebPush(context.workspaceId);
 }
 
 export async function deleteTransaction(
@@ -346,7 +383,26 @@ export async function deleteTransaction(
 ) {
   if (context.role === "viewer")
     throw new FinanceDomainError("TRANSACTION_ACCESS_DENIED");
-  return getDatabase().$transaction(async (tx) => {
+  await getDatabase().$transaction(async (tx) => {
+    const existing = await tx.transaction.findFirst({
+      where: {
+        id: input.id,
+        workspaceId: context.workspaceId,
+        ...(context.role === "editor" ? { createdBy: context.actorId } : {}),
+        version: input.version,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        type: true,
+        title: true,
+        amount: true,
+        categoryId: true,
+        transactionDate: true,
+        version: true,
+      },
+    });
+    if (!existing) throw new FinanceDomainError("TRANSACTION_CONFLICT");
     const deleted = await tx.transaction.updateMany({
       where: {
         id: input.id,
@@ -373,5 +429,16 @@ export async function deleteTransaction(
         changedFields: ["deleted_at", "version"],
       },
     });
+    try {
+      await queueSharedActivityWebPush(tx, {
+        workspaceId: context.workspaceId,
+        actorId: context.actorId,
+        action: "deleted",
+        transaction: { ...existing, version: existing.version + 1 },
+      });
+    } catch {
+      // Optional notification bookkeeping must not reject the transaction.
+    }
   });
+  await safelyRefreshAndDeliverWebPush(context.workspaceId);
 }

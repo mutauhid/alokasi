@@ -126,6 +126,15 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Pesan offline menjelaskan bahwa transaksi belum dapat disimpan tanpa koneksi dan menyediakan tindakan “Coba lagi”. Jangan menampilkan toast sukses atau angka nol.
 - Custom install prompt bukan syarat baseline; browser/perangkat boleh menyediakan alur pemasangannya sendiri.
 
+## Notifikasi perangkat
+
+- Pengaturan → Automasi menampilkan status perangkat, tombol aktivasi yang memicu dialog izin browser, pilihan jenis notifikasi, batas saldo, jam tenang, dan opsi menyembunyikan rincian sensitif.
+- Izin tidak diminta otomatis saat halaman dimuat. Pesan browser tidak didahului klaim bahwa izin wajib; pengguna dapat mematikan perangkat saat ini dan tetap memakai Alokasi.
+- Notifikasi ringkas dan dapat ditindaklanjuti. Klik membuka modul terkait pada workspace yang sama; kegagalan akses setelah sesi/membership berubah ditangani halaman tujuan.
+- Toast tetap dipakai untuk hasil aksi ketika aplikasi sedang terbuka. Web Push dipakai untuk kejadian yang berguna ketika aplikasi berada di background dan tidak mengulang toast mutasi biasa.
+- Tombol mata di header mengontrol penyamaran nominal baca-saja secara global pada perangkat. Ikon, tooltip, `aria-label`, dan `aria-pressed` menjelaskan aksi/status; pilihan bertahan saat navigasi dan sinkron antartab.
+- Kontrol mata pada kartu Web Push hanya mengatur rincian yang boleh tampil di layar terkunci. Kontrol tersebut sengaja terpisah dari mode privasi halaman agar pengguna dapat, misalnya, melihat nominal di aplikasi tetapi tetap menyamarkan push.
+
 ## Rekonsiliasi saldo
 
 - Setiap kartu akun menampilkan status rekonsiliasi terakhir dan tindakan “Cocokkan saldo” bagi Owner/Editor atau “Lihat rekonsiliasi” bagi Viewer.
@@ -153,7 +162,7 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Pengaturan memakai navigasi lokal responsif dan menampilkan satu kelompok fungsi pada satu waktu: Akun, Automasi, Kategori, Ruang & data, atau Zona berbahaya.
 - Pilihan bagian tersimpan pada URL `view` bersama `workspaceId`, sehingga refresh, tombol kembali browser, tautan panduan, dan redirect setelah mutasi tetap membuka konteks yang sama.
 - Pada desktop navigasi menjadi kolom yang tetap terlihat saat konten digulir; pada mobile menjadi grid dua atau tiga kolom tanpa scroll horizontal.
-- Zona berbahaya hanya tersedia pada ruang pribadi. Viewer tetap dapat membuka Automasi untuk melihat penjelasan izin, tetapi tidak menerima kontrol konfigurasi.
+- Zona berbahaya hanya tersedia pada ruang pribadi. Viewer dapat mengatur Web Push miliknya sendiri, tetapi tidak menerima kontrol konfigurasi iPhone, Telegram, atau aturan kategori.
 - Halaman tidak menampilkan daftar status implementasi, rincian arsitektur, atau penjelasan validasi server yang ditujukan bagi developer. Perlindungan tersebut tetap dijalankan di backend.
 
 ## Lifecycle ruang bersama

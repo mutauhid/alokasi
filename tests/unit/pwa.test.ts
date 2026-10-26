@@ -35,4 +35,17 @@ describe("installable PWA boundary", () => {
     expect(source).not.toContain("/api/");
     expect(source).not.toContain("/transactions");
   });
+
+  it("shows push messages and opens only a local authenticated page", async () => {
+    const source = await readFile(
+      new URL("../../public/sw.js", import.meta.url),
+      "utf8",
+    );
+
+    expect(source).toContain('addEventListener("push"');
+    expect(source).toContain("showNotification");
+    expect(source).toContain('addEventListener("notificationclick"');
+    expect(source).toContain("self.location.origin");
+    expect(source).toContain("/^\\/(?!\\/)/u");
+  });
 });
