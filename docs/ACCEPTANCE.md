@@ -763,3 +763,20 @@ Migrasi `20261019000000_telegram_income`, test integrasi PostgreSQL, dan smoke b
 | Verifikasi lokal | Targeted Prettier, lint, TypeScript, build produksi Webpack, `git diff --check`, dan 22 file/129 unit test lulus |
 
 Build Turbopack lokal tidak dapat dijadikan bukti pada mesin ini karena worker PostCSS masih mengambil Node 14 sistem, sedangkan proyek mensyaratkan Node 24. Build Next.js 16 dengan Node 24 dan compiler Webpack selesai beserta typecheck, page-data collection, dan 29 static pages. Smoke Edge mencakup rute publik/auth pada dua viewport; pemeriksaan halaman workspace terautentikasi—termasuk radio kategori, bottom sheet, dan panduan bergambar—tetap perlu dilakukan pada preview Vercel sebelum merge.
+
+## Hasil tahap 35 — peringatan budget Telegram, 26 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| TGBA-01 | Owner/Editor dengan bot terhubung dapat mengaktifkan atau menonaktifkan peringatan; default mati dan Viewer tetap ditolak service |
+| TGBA-02 | Expense tersimpan dari seluruh jalur pembentukan transaksi mengantrekan ambang tertinggi 80%/100% berdasarkan kategori dan periode transaksi |
+| TGBA-03 | Kunci unik koneksi/budget/ambang serta claim status mencegah pengiriman ulang oleh request bersamaan atau transaksi berikutnya |
+| TGBA-04 | Pesan berisi kategori, terpakai, limit, sisa/kelebihan, dan rentang periode; hanya chat pembuat transaksi yang menerima |
+| TGBA-05 | Pengiriman dilakukan setelah commit dan seluruh kegagalan Telegram/outbox ditahan agar transaksi finansial tetap berhasil |
+| TGBA-06 | Revoke, penghapusan budget, pencabutan anggota, penghapusan akun, dan penghapusan ruang membersihkan alert sebelum parent dihapus |
+| Verifikasi lokal | Prisma validate/generate, lint, TypeScript, build produksi Webpack, `git diff --check`, serta 23 file/132 unit test lulus |
+
+`.env.test.local` tidak tersedia pada checkout ini, sehingga migrasi
+`20261026000000_telegram_budget_alerts` dan test integrasi PostgreSQL untuk
+opt-in/deduplikasi belum dijalankan lokal. Terapkan migrasi pada database
+preview, lalu lakukan smoke dengan bot nyata sebelum merge ke production.

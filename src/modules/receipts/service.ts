@@ -6,6 +6,7 @@ import {
   createTransactionInTransaction,
   type TransactionContext,
 } from "@/modules/transactions/service";
+import { deliverPendingBudgetAlerts } from "@/modules/telegram-integration/budget-alerts";
 import { getDatabase } from "@/server/db/client";
 import {
   type CreateLocalReceiptDraftInput,
@@ -449,8 +450,9 @@ export async function submitReceiptDraft(
       return transaction;
     });
 
+  let transaction;
   try {
-    return await submit();
+    transaction = await submit();
   } catch (error) {
     if (!isUniqueConflict(error)) throw error;
     const raced = await db.receiptDraft.findFirst({
@@ -464,6 +466,11 @@ export async function submitReceiptDraft(
     });
     if (!raced?.submittedTransaction)
       throw new FinanceDomainError("RECEIPT_CONFLICT");
-    return raced.submittedTransaction;
+    transaction = raced.submittedTransaction;
   }
+  await deliverPendingBudgetAlerts({
+    workspaceId: context.workspaceId,
+    userId: context.actorId,
+  });
+  return transaction;
 }

@@ -331,6 +331,14 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Daftar mobile memberi slot konsisten untuk judul, badge, metadata, nominal, dan tindakan; judul panjang membungkus tanpa mengubah posisi nominal secara acak.
 - Migrasi `20261012000000_receipt_evidence_preview` menambah byte preview, MIME, masa berlaku, dan judul terkoreksi. Hasil verifikasi dicatat di ACCEPTANCE.md setelah seluruh pemeriksaan selesai.
 
+## Hasil tahap 35 — peringatan budget Telegram, 26 Oktober 2026
+
+- Tambahkan toggle opt-in per koneksi pada Pengaturan → Automasi; bot harus sudah terhubung.
+- Saat expense tersimpan, hitung realisasi budget berdasarkan kategori dan periode tanggal transaksi, lalu buat outbox unik untuk ambang 80% atau 100%.
+- Jalur transaksi manual, draf iPhone, konfirmasi Telegram, dan posting pengingat berulang memakai hook domain yang sama.
+- Kirim pesan setelah commit dan tahan kegagalan integrasi agar transaksi keuangan tidak ikut gagal. Bersihkan outbox sebelum koneksi, budget, anggota, akun, atau ruang dihapus.
+- Tambahkan migrasi, unit test kalkulasi/pesan, test integrasi opt-in dan deduplikasi, serta dokumentasi setup/smoke preview.
+
 ## Backlog kandidat — bukan komitmen aktif
 
 F11 transaksi berulang diaktifkan melalui D33 dan F15 rekonsiliasi melalui D37. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, F14 utang/piutang, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.

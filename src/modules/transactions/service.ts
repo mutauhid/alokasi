@@ -5,6 +5,10 @@ import type { Prisma } from "@/generated/prisma/client";
 import { getDatabase } from "@/server/db/client";
 import { FinanceDomainError } from "@/modules/finance/errors";
 import {
+  deliverPendingBudgetAlerts,
+  queueBudgetAlertForTransaction,
+} from "@/modules/telegram-integration/budget-alerts";
+import {
   buildTransactionPageMeta,
   type TransactionPagination,
 } from "@/modules/transactions/pagination";
@@ -144,6 +148,7 @@ export async function createTransactionInTransaction(
       ],
     },
   });
+  await queueBudgetAlertForTransaction(tx, context, transaction);
   return transaction;
 }
 
@@ -226,8 +231,9 @@ export async function createTransaction(
   }
   const db = getDatabase();
   const hash = requestHash(input);
+  let transaction;
   try {
-    return await db.$transaction((tx) =>
+    transaction = await db.$transaction((tx) =>
       createTransactionInTransaction(tx, context, input),
     );
   } catch (error) {
@@ -251,8 +257,13 @@ export async function createTransaction(
     if (!raced || raced.requestHash !== hash) {
       throw new FinanceDomainError("TRANSACTION_IDEMPOTENCY_CONFLICT");
     }
-    return raced;
+    transaction = raced;
   }
+  await deliverPendingBudgetAlerts({
+    workspaceId: context.workspaceId,
+    userId: context.actorId,
+  });
+  return transaction;
 }
 
 export async function updateTransaction(

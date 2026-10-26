@@ -12,6 +12,9 @@ export async function deleteTelegramConnections(
   });
   if (!connections.length) return;
   const ids = connections.map((item) => item.id);
+  await tx.telegramBudgetAlert.deleteMany({
+    where: { connectionId: { in: ids } },
+  });
   await tx.telegramDraft.deleteMany({ where: { connectionId: { in: ids } } });
   await tx.telegramConnection.deleteMany({ where: { id: { in: ids } } });
 }

@@ -69,16 +69,25 @@ enum TelegramDraftStatus {
   @@schema("app")
 }
 
+enum TelegramBudgetAlertStatus {
+  pending
+  sending
+  sent
+  failed
+
+  @@schema("app")
+}
+
 model User {
-  id                String       @id @default(uuid()) @db.Uuid
-  authSubject       String?      @unique @map("auth_subject") @db.Uuid
-  email             String?      @db.VarChar(320)
-  displayName       String?      @map("display_name") @db.VarChar(100)
-  disabledAt        DateTime?    @map("disabled_at") @db.Timestamptz(3)
-  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
-  memberships       Membership[]
-  personalWorkspace Workspace?
+  id                  String               @id @default(uuid()) @db.Uuid
+  authSubject         String?              @unique @map("auth_subject") @db.Uuid
+  email               String?              @db.VarChar(320)
+  displayName         String?              @map("display_name") @db.VarChar(100)
+  disabledAt          DateTime?            @map("disabled_at") @db.Timestamptz(3)
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  memberships         Membership[]
+  personalWorkspace   Workspace?
   telegramConnections TelegramConnection[]
 
   @@map("users")
@@ -110,6 +119,7 @@ model Workspace {
   recurringTransactionTemplates   RecurringTransactionTemplate[]
   balanceReconciliations          BalanceReconciliation[]
   telegramConnections             TelegramConnection[]
+  telegramBudgetAlerts            TelegramBudgetAlert[]
 
   @@map("workspaces")
   @@schema("app")
@@ -153,7 +163,7 @@ model Membership {
   receiptDrafts             ReceiptDraft[]                 @relation("ReceiptDraftCreator")
   recurringTemplates        RecurringTransactionTemplate[] @relation("RecurringTemplateCreator")
   reconciliations           BalanceReconciliation[]        @relation("ReconciliationCreator")
-  telegramConnection       TelegramConnection?
+  telegramConnection        TelegramConnection?
 
   @@unique([workspaceId, userId])
   @@unique([workspaceId, id])
@@ -182,25 +192,28 @@ model Invitation {
 }
 
 model TelegramConnection {
-  id                      String          @id @default(uuid()) @db.Uuid
-  workspaceId             String          @map("workspace_id") @db.Uuid
-  userId                  String          @map("user_id") @db.Uuid
-  telegramUserId          String?         @unique @map("telegram_user_id") @db.VarChar(32)
-  telegramChatId          String?         @map("telegram_chat_id") @db.VarChar(32)
-  linkCodeHash            String?         @unique @map("link_code_hash") @db.VarChar(64)
-  linkExpiresAt           DateTime?       @map("link_expires_at") @db.Timestamptz(3)
-  defaultAccountId        String          @map("default_account_id") @db.Uuid
-  defaultCategoryId       String          @map("default_category_id") @db.Uuid
-  defaultIncomeCategoryId String?         @map("default_income_category_id") @db.Uuid
-  linkedAt                DateTime?       @map("linked_at") @db.Timestamptz(3)
-  createdAt               DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt               DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
-  workspace               Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  user                    User            @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  membership              Membership      @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  id                      String                @id @default(uuid()) @db.Uuid
+  workspaceId             String                @map("workspace_id") @db.Uuid
+  userId                  String                @map("user_id") @db.Uuid
+  telegramUserId          String?               @unique @map("telegram_user_id") @db.VarChar(32)
+  telegramChatId          String?               @map("telegram_chat_id") @db.VarChar(32)
+  linkCodeHash            String?               @unique @map("link_code_hash") @db.VarChar(64)
+  linkExpiresAt           DateTime?             @map("link_expires_at") @db.Timestamptz(3)
+  defaultAccountId        String                @map("default_account_id") @db.Uuid
+  defaultCategoryId       String                @map("default_category_id") @db.Uuid
+  defaultIncomeCategoryId String?               @map("default_income_category_id") @db.Uuid
+  linkedAt                DateTime?             @map("linked_at") @db.Timestamptz(3)
+  createdAt               DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt               DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace               Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user                    User                  @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  membership              Membership            @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
   drafts                  TelegramDraft[]
+  budgetAlerts            TelegramBudgetAlert[]
+  budgetAlertsEnabled     Boolean               @default(false) @map("budget_alerts_enabled")
 
   @@unique([workspaceId, userId])
+  @@unique([workspaceId, id])
   @@index([userId])
   @@map("telegram_connections")
   @@schema("app")
@@ -228,6 +241,29 @@ model TelegramDraft {
   @@unique([connectionId, sourceMessageId])
   @@index([connectionId, status, expiresAt])
   @@map("telegram_drafts")
+  @@schema("app")
+}
+
+model TelegramBudgetAlert {
+  id           String                    @id @default(uuid()) @db.Uuid
+  workspaceId  String                    @map("workspace_id") @db.Uuid
+  connectionId String                    @map("connection_id") @db.Uuid
+  budgetId     String                    @map("budget_id") @db.Uuid
+  threshold    Int                       @db.SmallInt
+  actualAmount BigInt                    @map("actual_amount")
+  limitAmount  BigInt                    @map("limit_amount")
+  status       TelegramBudgetAlertStatus @default(pending)
+  attemptedAt  DateTime?                 @map("attempted_at") @db.Timestamptz(3)
+  sentAt       DateTime?                 @map("sent_at") @db.Timestamptz(3)
+  createdAt    DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  workspace    Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  connection   TelegramConnection        @relation(fields: [workspaceId, connectionId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  budget       Budget                    @relation(fields: [workspaceId, budgetId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([connectionId, budgetId, threshold])
+  @@index([connectionId, status, createdAt])
+  @@index([workspaceId, budgetId])
+  @@map("telegram_budget_alerts")
   @@schema("app")
 }
 
@@ -450,18 +486,20 @@ model BudgetPeriod {
 }
 
 model Budget {
-  id           String          @id @default(uuid()) @db.Uuid
-  workspaceId  String          @map("workspace_id") @db.Uuid
-  categoryId   String          @map("category_id") @db.Uuid
-  categoryType TransactionType @default(expense) @map("category_type")
-  periodId     String          @map("period_id") @db.Uuid
-  limitAmount  BigInt          @map("limit_amount")
-  version      Int             @default(1)
-  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
-  category     Category        @relation(fields: [workspaceId, categoryId, categoryType], references: [workspaceId, id, type], onDelete: Restrict, onUpdate: Restrict)
-  period       BudgetPeriod    @relation(fields: [workspaceId, periodId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  id             String                @id @default(uuid()) @db.Uuid
+  workspaceId    String                @map("workspace_id") @db.Uuid
+  categoryId     String                @map("category_id") @db.Uuid
+  categoryType   TransactionType       @default(expense) @map("category_type")
+  periodId       String                @map("period_id") @db.Uuid
+  limitAmount    BigInt                @map("limit_amount")
+  version        Int                   @default(1)
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  category       Category              @relation(fields: [workspaceId, categoryId, categoryType], references: [workspaceId, id, type], onDelete: Restrict, onUpdate: Restrict)
+  period         BudgetPeriod          @relation(fields: [workspaceId, periodId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  telegramAlerts TelegramBudgetAlert[]
 
+  @@unique([workspaceId, id])
   @@unique([workspaceId, categoryId, periodId])
   @@index([workspaceId, periodId])
   @@map("budgets")

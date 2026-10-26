@@ -167,6 +167,12 @@ chat pribadi. Tidak diperlukan n8n, server tambahan, atau provider transkripsi
 untuk fase teks ini. Token bot dan secret webhook hanya berada di environment
 server; petunjuk operasional ada di [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md).
 
+Peringatan budget Telegram memakai tabel outbox PostgreSQL dengan kunci unik
+per koneksi, budget, dan ambang. Kandidat alert dibuat dalam transaksi database
+yang sama dengan transaksi keuangan, sedangkan panggilan Bot API dilakukan
+setelah commit. Status pengiriman bersifat operasional dan tidak mengubah saldo,
+realisasi budget, atau keberhasilan mutasi pengguna.
+
 ## 9. Rujukan resmi yang diperiksa
 
 - [Next.js: Backend for Frontend](https://nextjs.org/docs/app/guides/backend-for-frontend) — jalur server dan Route Handlers.

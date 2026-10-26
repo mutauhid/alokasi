@@ -28,6 +28,9 @@ setelah Simpan. Voice note belum didukung.
    serta kategori default pengeluaran dan pemasukan, lalu buka tautan bot
    dalam 15 menit.
    Pengguna Owner/Editor dapat menghubungkan bot; Viewer tidak.
+6. Setelah bot berstatus Terhubung, aktifkan **Peringatan budget 80% dan 100%**
+   bila ingin menerima notifikasi. Pengaturan ini hanya berlaku bagi akun
+   Telegram pengguna yang mengaktifkannya, termasuk di ruang bersama.
 
 Domain kustom tidak diperlukan; URL HTTPS Vercel yang aktif dapat dipakai.
 Setiap akun Telegram hanya dapat terhubung ke satu workspace pada fase ini.
@@ -56,6 +59,10 @@ Membuat tautan baru memutuskan koneksi lama pada workspace tersebut.
   pesan asli tidak disimpan di draf atau audit; draf hanya berisi field
   terstruktur. Revoke dilakukan melalui Pengaturan. Pesan Telegram tetap
   berada dalam riwayat Telegram sampai dihapus oleh pengguna.
+- Peringatan budget dikirim setelah pengeluaran dari form manual, Back Tap,
+  Telegram, atau pengingat berulang benar-benar tersimpan. Setiap ambang 80%
+  dan 100% dikirim maksimal sekali per kategori/periode. Gagal mengirim pesan
+  tidak membatalkan transaksi yang sudah tersimpan.
 
 ## Uji sebelum dipakai
 
@@ -65,3 +72,6 @@ tepat satu transaksi muncul. Uji juga `pemasukan: gaji 5jt bca` beserta
 kategori pemasukan default. Ulangi tekan Simpan, uji akun yang tidak dikenal,
 Batal, tautan kedaluwarsa, serta Viewer/revoke.
 Migrasi dan webhook produksi hanya dilakukan setelah hasil preview benar.
+Untuk fitur peringatan budget, terapkan juga migrasi
+`20261026000000_telegram_budget_alerts`, aktifkan toggle, lalu uji transaksi
+yang membawa kategori dari di bawah 80% ke 80% dan kemudian ke 100%.
