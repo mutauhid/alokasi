@@ -184,6 +184,10 @@ realisasi budget, atau keberhasilan mutasi pengguna.
 - [shadcn/ui](https://ui.shadcn.com/docs) — komponen yang kodenya dapat disesuaikan.
 - [Zod](https://zod.dev/) — validasi runtime TypeScript.
 
+Ringkasan mingguan memakai Vercel Cron sebagai pemicu GET harian. Endpoint
+dilindungi Bearer `CRON_SECRET`; service menentukan hari Senin dari timezone
+workspace dan menyimpan claim minggu pada koneksi sebelum memanggil Bot API.
+
 Referensi menjelaskan kemampuan teknologi. Struktur service, schema privat, pemilihan ORM, dan fase implementasi di atas adalah keputusan desain Alokasi.
 
 ## 10. Versi bootstrap dan batas dukungan

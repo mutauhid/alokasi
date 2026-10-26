@@ -8,6 +8,7 @@ import {
   revokeTelegram,
   TelegramInputError,
   updateTelegramBudgetAlerts,
+  updateTelegramWeeklySummary,
 } from "@/modules/telegram-integration/service";
 
 export type TelegramActionState = {
@@ -21,6 +22,7 @@ export type TelegramActionState = {
   incomeCategoryId?: string;
   link?: string;
   budgetAlertsEnabled?: boolean;
+  weeklySummaryEnabled?: boolean;
   message?: string;
   error?: string;
 };
@@ -41,6 +43,19 @@ export async function telegramIntegrationAction(
     ["owner", "editor"],
   );
   try {
+    if (value(form, "intent") === "weekly-summary") {
+      const enabled = value(form, "enabled") === "on";
+      await updateTelegramWeeklySummary(access, enabled);
+      revalidatePath("/settings");
+      return {
+        ...previous,
+        weeklySummaryEnabled: enabled,
+        message: enabled
+          ? "Ringkasan mingguan Telegram diaktifkan."
+          : "Ringkasan mingguan Telegram dinonaktifkan.",
+        error: undefined,
+      };
+    }
     if (value(form, "intent") === "budget-alerts") {
       const enabled = value(form, "enabled") === "on";
       await updateTelegramBudgetAlerts(access, enabled);
@@ -60,6 +75,7 @@ export async function telegramIntegrationAction(
       return {
         configured: false,
         budgetAlertsEnabled: false,
+        weeklySummaryEnabled: false,
         message:
           "Telegram diputuskan. Bot tidak lagi dapat mencatat transaksi.",
       };

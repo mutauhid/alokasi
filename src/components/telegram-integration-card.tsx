@@ -71,6 +71,41 @@ export function TelegramIntegrationCard({
               "Belum diatur"}
           </p>
         )}
+        {state.configured && (
+          <form
+            action={action}
+            className="rounded-xl border bg-secondary/35 p-4"
+          >
+            <input type="hidden" name="workspaceId" value={workspaceId} />
+            <input type="hidden" name="intent" value="weekly-summary" />
+            <label className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                name="enabled"
+                defaultChecked={state.weeklySummaryEnabled}
+                disabled={!state.linked || pending}
+                className="mt-1 size-4 accent-primary"
+              />
+              <span>
+                <span className="block text-sm font-medium">
+                  Ringkasan keuangan mingguan
+                </span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Dikirim setiap Senin untuk aktivitas Senin–Minggu sebelumnya,
+                  mengikuti zona waktu ruang.
+                </span>
+              </span>
+            </label>
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={!state.linked || pending}
+              className="mt-3"
+            >
+              Simpan ringkasan
+            </Button>
+          </form>
+        )}
         {state.link && (
           <a
             href={state.link}

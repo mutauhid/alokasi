@@ -90,7 +90,45 @@ export async function getTelegramSettings(access: Access) {
     incomeCategoryName: incomeCategory?.name ?? undefined,
     linkExpiresAt: connection.linkExpiresAt,
     budgetAlertsEnabled: connection.budgetAlertsEnabled,
+    weeklySummaryEnabled: connection.weeklySummaryEnabled,
   };
+}
+
+export async function updateTelegramWeeklySummary(
+  access: Access,
+  enabled: boolean,
+) {
+  requireWriter(access.role);
+  const db = getDatabase();
+  await db.$transaction(async (tx) => {
+    const connection = await tx.telegramConnection.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: access.workspaceId,
+          userId: access.actorId,
+        },
+      },
+      select: { id: true, telegramChatId: true },
+    });
+    if (!connection?.telegramChatId)
+      throw new TelegramInputError(
+        "Hubungkan Telegram sebelum mengaktifkan ringkasan mingguan.",
+      );
+    await tx.telegramConnection.update({
+      where: { id: connection.id },
+      data: { weeklySummaryEnabled: enabled },
+    });
+    await tx.auditEvent.create({
+      data: {
+        workspaceId: access.workspaceId,
+        actorId: access.actorId,
+        entityType: "telegram",
+        entityId: connection.id,
+        action: "weekly_summary_updated",
+        changedFields: ["weekly_summary_enabled"],
+      },
+    });
+  });
 }
 
 export async function updateTelegramBudgetAlerts(

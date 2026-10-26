@@ -30,6 +30,7 @@ DATABASE_URL=postgresql://RUNTIME_ROLE:...@HOST/postgres?schema=app
 DIRECT_URL=postgresql://MIGRATION_ROLE:...@HOST/postgres?schema=app
 DATABASE_SSL_ROOT_CERT=
 APP_URL=https://NAMA-PROYEK.vercel.app
+CRON_SECRET=GANTI_DENGAN_SECRET_ACAK_32_KARAKTER_ATAU_LEBIH
 ```
 
 Untuk koneksi Supabase yang memerlukan CA proyek, unduh root certificate dari
