@@ -11,6 +11,7 @@ import {
 import { getDatabase } from "../../src/server/db/client";
 import { deleteWorkspaceData } from "../../src/modules/workspaces/delete-data";
 import { createTransaction } from "../../src/modules/transactions/service";
+import { PotentialDuplicateTransactionError } from "../../src/modules/transactions/duplicates";
 import {
   configureTelegram,
   connectTelegram,
@@ -124,6 +125,68 @@ afterEach(async () => {
 });
 
 describe("Telegram expense integration", () => {
+  it("warns about a recent duplicate and saves after explicit confirmation", async () => {
+    const code = await configureTelegram(
+      { workspaceId, actorId: ownerId, role: "owner" },
+      mandiriId,
+      categoryId,
+      incomeCategoryId,
+    );
+    await connectTelegram(code, "6677889900", "6677889900");
+    const connection = await findTelegramConnection("6677889900", "6677889900");
+    if (!connection) throw new Error("Connection missing");
+    const result = await createTelegramDraft(connection, 99, "beli kopi 25rb");
+    await createTransaction(
+      {
+        workspaceId,
+        actorId: ownerId,
+        role: "owner",
+        today: result.draft.transactionDate,
+      },
+      {
+        type: "expense",
+        title: result.draft.title,
+        amount: result.draft.amount,
+        transactionDate: result.draft.transactionDate,
+        accountId: result.draft.accountId,
+        destinationAccountId: null,
+        categoryId: result.draft.categoryId,
+        note: null,
+        idempotencyKey: "existing-coffee",
+      },
+    );
+
+    let warning: PotentialDuplicateTransactionError | undefined;
+    try {
+      await confirmTelegramDraft(connection, result.draft.id);
+    } catch (error) {
+      if (error instanceof PotentialDuplicateTransactionError) warning = error;
+      else throw error;
+    }
+    expect(warning?.code).toBe("TRANSACTION_POSSIBLE_DUPLICATE");
+    expect(warning?.candidate).toMatchObject({
+      title: "beli kopi",
+      amount: 25_000n,
+      accountName: "Mandiri",
+    });
+    expect(
+      await confirmTelegramDraft(
+        connection,
+        result.draft.id,
+        warning?.confirmation,
+      ),
+    ).toBe("created");
+    const sameTitleDifferentAmount = await createTelegramDraft(
+      connection,
+      100,
+      "beli kopi 30rb",
+    );
+    expect(
+      await confirmTelegramDraft(connection, sameTitleDifferentAmount.draft.id),
+    ).toBe("created");
+    expect(await db.transaction.count({ where: { workspaceId } })).toBe(3);
+  });
+
   it("enables budget alerts only after the private bot connection is linked", async () => {
     await expect(
       updateTelegramBudgetAlerts(

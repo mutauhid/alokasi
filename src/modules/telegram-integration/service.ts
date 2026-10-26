@@ -674,6 +674,7 @@ export async function cancelTelegramDraft(
 export async function confirmTelegramDraft(
   connection: NonNullable<Awaited<ReturnType<typeof findTelegramConnection>>>,
   draftId: string,
+  duplicateConfirmation?: string,
 ) {
   const db = getDatabase();
   const result = await db.$transaction(
@@ -725,6 +726,7 @@ export async function confirmTelegramDraft(
           categoryId: draft.categoryId,
           note: draft.note,
           idempotencyKey: `telegram:${draft.id}`,
+          duplicateConfirmation,
         },
       );
       await tx.telegramDraft.update({

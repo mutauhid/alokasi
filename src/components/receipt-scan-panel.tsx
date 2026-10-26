@@ -1,7 +1,13 @@
 "use client";
 
 import { startTransition, useActionState, useEffect, useState } from "react";
-import { Camera, FileImage, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  Camera,
+  FileImage,
+  ShieldCheck,
+  Sparkles,
+  TriangleAlert,
+} from "lucide-react";
 import { receiptDraftAction } from "@/app/(workspace)/actions";
 import { initialReceiptDraftState } from "@/modules/receipts/form-state";
 import type { ReceiptDraftFormState } from "@/modules/receipts/form-state";
@@ -84,12 +90,14 @@ export function ReceiptScanPanel({
   categories,
   suggestions = [],
   initialState = initialReceiptDraftState,
+  timeZone,
 }: {
   workspaceId: string;
   accounts: Option[];
   categories: Option[];
   suggestions?: TransactionSuggestion[];
   initialState?: ReceiptDraftFormState;
+  timeZone: string;
 }) {
   const [state, action, pending] = useActionState(
     receiptDraftAction,
@@ -327,7 +335,7 @@ export function ReceiptScanPanel({
                 </p>
               )}
               <form
-                key={`${draft.id}-${draft.version}`}
+                key={`${draft.id}-${draft.version}-${state.duplicate?.confirmation ?? ""}`}
                 action={action}
                 className="grid gap-4 md:grid-cols-2"
               >
@@ -395,6 +403,40 @@ export function ReceiptScanPanel({
                     dikoreksi.
                   </span>
                 </label>
+                {state.duplicate && (
+                  <div
+                    role="alert"
+                    className="rounded-xl border border-amber-500/50 bg-amber-500/10 p-4 md:col-span-2"
+                  >
+                    <div className="flex gap-3">
+                      <TriangleAlert
+                        className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400"
+                        aria-hidden="true"
+                      />
+                      <div>
+                        <p className="font-semibold">
+                          Transaksi serupa baru saja dicatat
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {state.duplicate.title} · Rp
+                          {new Intl.NumberFormat("id-ID").format(
+                            BigInt(state.duplicate.amount),
+                          )}{" "}
+                          · {state.duplicate.accountName} · dicatat pukul{" "}
+                          {new Intl.DateTimeFormat("id-ID", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            timeZone,
+                          }).format(new Date(state.duplicate.createdAt))}
+                        </p>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Periksa kembali hasil OCR. Jika pembayaran ini memang
+                          berbeda, pilih Tetap simpan.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <Button
                   type="button"
                   variant="outline"
@@ -407,10 +449,16 @@ export function ReceiptScanPanel({
                 </Button>
                 <Button
                   type="submit"
+                  name={state.duplicate ? "duplicateConfirmation" : undefined}
+                  value={state.duplicate?.confirmation}
                   disabled={pending || !accounts.length || !categories.length}
                   className="min-h-11"
                 >
-                  {pending ? "Menyimpan…" : "Simpan pengeluaran"}
+                  {pending
+                    ? "Menyimpan…"
+                    : state.duplicate
+                      ? "Tetap simpan"
+                      : "Simpan pengeluaran"}
                 </Button>
               </form>
               <form action={action} className="mt-3">

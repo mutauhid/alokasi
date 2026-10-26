@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "../../src/app/api/integrations/telegram/webhook/route";
+import { duplicateSaveCallbackData } from "../../src/modules/telegram-integration/callback-data";
 
 vi.mock("server-only", () => ({}));
 
@@ -19,6 +20,17 @@ afterEach(() => {
 });
 
 describe("Telegram webhook boundary", () => {
+  it("keeps duplicate confirmation callback data within Telegram's limit", () => {
+    const value = duplicateSaveCallbackData(
+      "11111111-1111-4111-8111-111111111111",
+      "0123456789abcdef",
+    );
+    expect(value).toBe(
+      "force:11111111-1111-4111-8111-111111111111:0123456789abcdef",
+    );
+    expect(Buffer.byteLength(value)).toBeLessThanOrEqual(64);
+  });
+
   it("rejects requests without the configured secret", async () => {
     const response = await POST(
       new Request("https://example.invalid/api/integrations/telegram/webhook", {

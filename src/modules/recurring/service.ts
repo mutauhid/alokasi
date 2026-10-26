@@ -314,6 +314,7 @@ export async function postRecurringOccurrence(
         idempotencyKey: `recurring:${template.id}:${dueDate.toISOString().slice(0, 10)}`,
         recurringTemplateId: template.id,
         recurringDueDate: dueDate,
+        skipPotentialDuplicateCheck: true,
       });
       await tx.auditEvent.create({
         data: {

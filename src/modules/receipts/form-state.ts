@@ -1,4 +1,5 @@
 import { receiptTransactionNote } from "@/modules/receipts/domain";
+import type { DuplicateTransactionWarning } from "@/modules/transactions/duplicates";
 
 export type ReceiptDraftView = {
   id: string;
@@ -29,6 +30,7 @@ export type ReceiptDraftFormState = {
   phase: "idle" | "review";
   error?: string;
   message?: string;
+  duplicate?: DuplicateTransactionWarning;
   draft?: ReceiptDraftView;
 };
 
