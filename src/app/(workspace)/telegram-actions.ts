@@ -7,6 +7,7 @@ import {
   configureTelegram,
   revokeTelegram,
   TelegramInputError,
+  updateTelegramBudgetAlerts,
 } from "@/modules/telegram-integration/service";
 
 export type TelegramActionState = {
@@ -19,6 +20,7 @@ export type TelegramActionState = {
   categoryId?: string;
   incomeCategoryId?: string;
   link?: string;
+  budgetAlertsEnabled?: boolean;
   message?: string;
   error?: string;
 };
@@ -39,11 +41,25 @@ export async function telegramIntegrationAction(
     ["owner", "editor"],
   );
   try {
+    if (value(form, "intent") === "budget-alerts") {
+      const enabled = value(form, "enabled") === "on";
+      await updateTelegramBudgetAlerts(access, enabled);
+      revalidatePath("/settings");
+      return {
+        ...previous,
+        budgetAlertsEnabled: enabled,
+        message: enabled
+          ? "Notifikasi budget Telegram diaktifkan."
+          : "Notifikasi budget Telegram dinonaktifkan.",
+        error: undefined,
+      };
+    }
     if (value(form, "intent") === "revoke") {
       await revokeTelegram(access);
       revalidatePath("/settings");
       return {
         configured: false,
+        budgetAlertsEnabled: false,
         message:
           "Telegram diputuskan. Bot tidak lagi dapat mencatat transaksi.",
       };

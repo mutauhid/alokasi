@@ -3,6 +3,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { getDatabase } from "@/server/db/client";
 import { createTransactionInTransaction } from "@/modules/transactions/service";
+import { deliverPendingBudgetAlerts } from "./budget-alerts";
 import { parseTelegramTransactionMessage } from "./parser";
 import { suggestTelegramExpenseCategory } from "./category-suggestion";
 
@@ -88,7 +89,45 @@ export async function getTelegramSettings(access: Access) {
     incomeCategoryId: connection.defaultIncomeCategoryId ?? undefined,
     incomeCategoryName: incomeCategory?.name ?? undefined,
     linkExpiresAt: connection.linkExpiresAt,
+    budgetAlertsEnabled: connection.budgetAlertsEnabled,
   };
+}
+
+export async function updateTelegramBudgetAlerts(
+  access: Access,
+  enabled: boolean,
+) {
+  requireWriter(access.role);
+  const db = getDatabase();
+  await db.$transaction(async (tx) => {
+    const connection = await tx.telegramConnection.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: access.workspaceId,
+          userId: access.actorId,
+        },
+      },
+      select: { id: true, telegramChatId: true },
+    });
+    if (!connection?.telegramChatId)
+      throw new TelegramInputError(
+        "Hubungkan Telegram sebelum mengaktifkan notifikasi budget.",
+      );
+    await tx.telegramConnection.update({
+      where: { id: connection.id },
+      data: { budgetAlertsEnabled: enabled },
+    });
+    await tx.auditEvent.create({
+      data: {
+        workspaceId: access.workspaceId,
+        actorId: access.actorId,
+        entityType: "telegram",
+        entityId: connection.id,
+        action: "budget_alerts_updated",
+        changedFields: ["budget_alerts_enabled"],
+      },
+    });
+  });
 }
 
 export async function configureTelegram(
@@ -217,6 +256,9 @@ export async function revokeTelegram(access: Access) {
       select: { id: true },
     });
     if (!connection) return;
+    await tx.telegramBudgetAlert.deleteMany({
+      where: { connectionId: connection.id },
+    });
     await tx.telegramDraft.deleteMany({
       where: { connectionId: connection.id },
     });
@@ -634,7 +676,7 @@ export async function confirmTelegramDraft(
   draftId: string,
 ) {
   const db = getDatabase();
-  return db.$transaction(
+  const result = await db.$transaction(
     async (tx) => {
       await tx.$queryRaw`SELECT id FROM app.telegram_drafts WHERE id = ${draftId}::uuid AND connection_id = ${connection.id}::uuid FOR UPDATE`;
       const draft = await tx.telegramDraft.findFirst({
@@ -697,4 +739,11 @@ export async function confirmTelegramDraft(
     },
     { isolationLevel: "Serializable" },
   );
+  if (result === "created" || result === "already") {
+    await deliverPendingBudgetAlerts({
+      workspaceId: connection.workspaceId,
+      userId: connection.userId,
+    });
+  }
+  return result;
 }

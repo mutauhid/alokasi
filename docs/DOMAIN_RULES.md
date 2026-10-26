@@ -202,6 +202,9 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 - Pesan menghasilkan draf terstruktur tanpa efek ke saldo, budget, atau laporan. Koreksi lewat balasan bot mengubah draf saja. Draf kedaluwarsa setelah 24 jam.
 - Konfirmasi mengambil ulang status membership, user, akun, kategori, dan tanggal. Pembuatan transaksi, audit, serta perubahan status draf berlangsung atomik. Aksi ulang tidak mencatat transaksi kedua.
 - Tautan penghubung berlaku 15 menit dan hanya sekali pakai; database menyimpan hash kode. Webhook memeriksa secret Telegram. Revoke, penurunan peran ke Viewer, keluar ruang, dan penghapusan akun/ruang menghapus koneksi beserta draf.
+- Peringatan budget bersifat opt-in per koneksi Telegram. Hanya pengeluaran yang sudah tersimpan yang dihitung; draf tidak pernah memicu notifikasi.
+- Ambang 80% dan 100% dikirim maksimal sekali per koneksi, kategori, dan periode budget. Jika satu transaksi langsung melewati 100%, hanya ambang tertinggi yang dikirim pada saat itu.
+- Realisasi memakai transaksi expense aktif dalam batas `[startDate,endDateExclusive)` milik budget. Pesan dikirim setelah commit ke chat pribadi pembuat transaksi; kegagalan pengiriman tidak menggagalkan atau menghapus transaksi.
 
 ### F15 — rekonsiliasi saldo
 

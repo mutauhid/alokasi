@@ -81,6 +81,46 @@ export function TelegramIntegrationCard({
             Buka bot dan hubungkan Telegram
           </a>
         )}
+        {state.configured && (
+          <form
+            action={action}
+            className="rounded-xl border bg-secondary/35 p-4"
+          >
+            <input type="hidden" name="workspaceId" value={workspaceId} />
+            <input type="hidden" name="intent" value="budget-alerts" />
+            <label className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                name="enabled"
+                defaultChecked={state.budgetAlertsEnabled}
+                disabled={!state.linked || pending}
+                className="mt-1 size-4 accent-primary"
+              />
+              <span>
+                <span className="block text-sm font-medium">
+                  Peringatan budget 80% dan 100%
+                </span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Dikirim sekali per kategori dan periode ke Telegram Anda
+                  setelah pengeluaran tersimpan.
+                </span>
+              </span>
+            </label>
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={!state.linked || pending}
+              className="mt-3"
+            >
+              Simpan notifikasi
+            </Button>
+            {!state.linked && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Selesaikan koneksi bot untuk mengaktifkan notifikasi.
+              </p>
+            )}
+          </form>
+        )}
         <form action={action} className="grid gap-3 sm:grid-cols-2">
           <input type="hidden" name="workspaceId" value={workspaceId} />
           <input type="hidden" name="intent" value="configure" />

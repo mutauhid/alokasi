@@ -10,6 +10,7 @@ import {
 } from "vitest";
 import { getDatabase } from "../../src/server/db/client";
 import { deleteWorkspaceData } from "../../src/modules/workspaces/delete-data";
+import { createTransaction } from "../../src/modules/transactions/service";
 import {
   configureTelegram,
   connectTelegram,
@@ -17,8 +18,10 @@ import {
   createTelegramDraft,
   confirmTelegramDraft,
   findTelegramConnection,
+  getTelegramSettings,
   getTelegramDraft,
   revokeTelegram,
+  updateTelegramBudgetAlerts,
 } from "../../src/modules/telegram-integration/service";
 
 vi.mock("server-only", () => ({}));
@@ -114,12 +117,128 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  vi.restoreAllMocks();
   if (workspaceId)
     await db.$transaction((tx) => deleteWorkspaceData(tx, workspaceId));
   if (ownerId) await db.user.delete({ where: { id: ownerId } });
 });
 
 describe("Telegram expense integration", () => {
+  it("enables budget alerts only after the private bot connection is linked", async () => {
+    await expect(
+      updateTelegramBudgetAlerts(
+        { workspaceId, actorId: ownerId, role: "owner" },
+        true,
+      ),
+    ).rejects.toThrow("Hubungkan Telegram");
+    const code = await configureTelegram(
+      { workspaceId, actorId: ownerId, role: "owner" },
+      mandiriId,
+      categoryId,
+      incomeCategoryId,
+    );
+    await connectTelegram(code, "1122334455", "1122334455");
+    await updateTelegramBudgetAlerts(
+      { workspaceId, actorId: ownerId, role: "owner" },
+      true,
+    );
+    expect(
+      await getTelegramSettings({
+        workspaceId,
+        actorId: ownerId,
+        role: "owner",
+      }),
+    ).toMatchObject({ configured: true, budgetAlertsEnabled: true });
+  });
+
+  it("sends each crossed budget threshold only once", async () => {
+    const code = await configureTelegram(
+      { workspaceId, actorId: ownerId, role: "owner" },
+      mandiriId,
+      categoryId,
+      incomeCategoryId,
+    );
+    await connectTelegram(code, "5566778899", "5566778899");
+    await updateTelegramBudgetAlerts(
+      { workspaceId, actorId: ownerId, role: "owner" },
+      true,
+    );
+    const cycle = await db.cycleSetting.create({
+      data: {
+        workspaceId,
+        startDay: 1,
+        effectiveDate: new Date("2026-01-01T00:00:00.000Z"),
+        version: 1,
+      },
+    });
+    const period = await db.budgetPeriod.create({
+      data: {
+        workspaceId,
+        startDate: new Date("2026-10-01T00:00:00.000Z"),
+        endDateExclusive: new Date("2026-11-01T00:00:00.000Z"),
+        cycleSettingVersion: cycle.version,
+      },
+    });
+    await db.budget.create({
+      data: {
+        workspaceId,
+        categoryId,
+        categoryType: "expense",
+        periodId: period.id,
+        limitAmount: 100_000n,
+      },
+    });
+    const originalToken = process.env.TELEGRAM_BOT_TOKEN;
+    process.env.TELEGRAM_BOT_TOKEN = "test-token";
+    const send = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        Response.json({ ok: true, result: { message_id: 1 } }),
+      );
+    try {
+      for (const [amount, key] of [
+        [80_000n, "alert-80"],
+        [1_000n, "still-80"],
+        [19_000n, "alert-100"],
+        [1_000n, "still-100"],
+      ] as const) {
+        await createTransaction(
+          {
+            workspaceId,
+            actorId: ownerId,
+            role: "owner",
+            today: new Date("2026-10-31T00:00:00.000Z"),
+          },
+          {
+            type: "expense",
+            title: key,
+            amount,
+            transactionDate: new Date("2026-10-18T00:00:00.000Z"),
+            accountId: mandiriId,
+            destinationAccountId: null,
+            categoryId,
+            note: null,
+            idempotencyKey: key,
+          },
+        );
+      }
+      expect(send).toHaveBeenCalledTimes(2);
+      expect(
+        await db.telegramBudgetAlert.findMany({
+          where: { workspaceId },
+          orderBy: { threshold: "asc" },
+          select: { threshold: true, status: true },
+        }),
+      ).toEqual([
+        { threshold: 80, status: "sent" },
+        { threshold: 100, status: "sent" },
+      ]);
+    } finally {
+      if (originalToken === undefined) delete process.env.TELEGRAM_BOT_TOKEN;
+      else process.env.TELEGRAM_BOT_TOKEN = originalToken;
+    }
+  });
+
   it("links one user, corrects a draft, and records only once after confirmation", async () => {
     const code = await configureTelegram(
       { workspaceId, actorId: ownerId, role: "owner" },

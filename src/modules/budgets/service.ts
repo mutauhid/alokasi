@@ -227,6 +227,7 @@ export async function deleteBudget(
       },
     });
     if (!budget) throw new FinanceDomainError("BUDGET_CONFLICT");
+    await tx.telegramBudgetAlert.deleteMany({ where: { budgetId: budget.id } });
     await tx.budget.delete({ where: { id: budget.id } });
     await tx.auditEvent.create({
       data: {

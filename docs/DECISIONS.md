@@ -1,6 +1,6 @@
 # Catatan keputusan
 
-Diperbarui: 22 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
+Diperbarui: 26 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
 
 ## Keputusan dan kebutuhan pengguna
 
@@ -51,6 +51,8 @@ Diperbarui: 22 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent 
 | D44 | 19 Okt 2026 | Pengguna meminta pemasukan melalui Telegram dan nominal seperti `5jt` | Pesan tanpa awalan tetap pengeluaran; awalan `pemasukan:` membuat pemasukan. Sediakan kategori default terpisah per jenis, dukung `jt`/`juta`, dan pertahankan konfirmasi sebelum transaksi dicatat |
 | D45 | 19 Okt 2026 | Pengguna meminta kategori pengeluaran Telegram terisi otomatis tanpa mapping manual satu per satu | Prioritaskan riwayat transaksi workspace dengan judul identik, lalu nama kategori dan kamus kata kunci bawaan. Gunakan hanya kategori aktif; hasil ambigu kembali ke default dan tetap memerlukan konfirmasi |
 | D46 | 22 Okt 2026 | Pengguna menyetujui mockup animasi lintas modul, lalu meminta seluruh komposisi mockup terbaru diterapkan pada Dashboard, modal tambah transaksi, tindakan Budget/Akun, grafik Laporan, kategori radio berikon, serta panduan automasi bergambar | Implementasikan pada branch `feat/ui-motion-category-picker`: gerak halus yang menghormati reduced motion, Dashboard dengan susunan mockup, modal transaksi, action sheet Budget/Akun, grafik Laporan dari data aktual, radio card kategori, dan seluruh ilustrasi Telegram/Back Tap iPhone |
+| D47 | 22 Okt 2026 | Pengguna meminta informasi internal produksi dihilangkan dan halaman Pengaturan yang panjang dipisahkan | Pisahkan Pengaturan menjadi navigasi lokal per modul dan jangan render status implementasi/internal pada UI produksi |
+| D48 | 26 Okt 2026 | Pengguna meminta rekomendasi fitur berikutnya diterapkan secara bertahap | Tahap pertama menambahkan notifikasi Telegram opt-in saat realisasi budget pengeluaran mencapai 80% dan 100%, sekali per kategori/periode, tanpa membuat kegagalan Telegram membatalkan transaksi |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -149,6 +151,8 @@ D42 menghasilkan T39: endpoint Shortcut menerima `multipart/form-data` berisi te
 D46 menghasilkan T40: penyegaran UI memakai animasi masuk singkat pada halaman dan kartu di seluruh modul, skeleton terstruktur saat navigasi menunggu data, serta animasi grafik/progress khusus Dashboard. Semua gerak tunduk pada `prefers-reduced-motion` dan tidak mengubah data maupun urutan fokus. Dashboard mengikuti komposisi tiga ringkasan, grafik arus kas dan budget berdampingan, lalu transaksi terbaru selebar halaman. Tambah transaksi memakai modal dan dapat dibuka dari Dashboard melalui query presentasional tanpa membuat transaksi sebelum submit. Pemilih kategori transaksi manual dan review iPhone memakai native radio yang divisualkan sebagai kartu ikon; satu kategori tetap wajib. Tindakan transaksi, Budget, dan Akun memakai tombol tiga titik serta bottom sheet; hapus Budget/transaksi dan arsip Akun memiliki konfirmasi tersendiri. Grafik Laporan membagi rentang filter menjadi maksimal empat kelompok dan menghitung pemasukan/pengeluaran dari transaksi terfilter. Panduan Telegram dan Back Tap iPhone tetap menyertakan ilustrasi langkah lengkap, khususnya Authorization, Form `text`/`image`, `reviewUrl`, dan pengaturan Back Tap.
 
 D47 menghasilkan T41: Pengaturan tidak lagi menumpuk seluruh modul dalam satu halaman panjang. Navigasi lokal memisahkan Akun, Automasi, Kategori, Ruang & data, dan Zona berbahaya melalui parameter URL `view`; hanya data bagian aktif yang dimuat server. Zona berbahaya hanya ditampilkan pada ruang pribadi, sedangkan hasil mutasi mengembalikan pengguna ke bagian asal. Ringkasan status implementasi dan keterangan internal global tidak ditampilkan pada UI produksi; otorisasi server tetap berlaku.
+
+D48 menghasilkan T42: peringatan budget hanya tersedia bagi Owner/Editor yang telah menghubungkan chat pribadi Telegram dan mengaktifkannya sendiri. Setelah transaksi expense tersimpan, service menghitung realisasi kategori pada `BudgetPeriod` transaksi dan mengantrekan hanya ambang tertinggi yang tercapai. Kunci unik koneksi/budget/ambang mencegah pengiriman berulang. Pesan dikirim setelah commit; kegagalan Bot API atau antrean tidak membatalkan transaksi. Dalam workspace bersama, notifikasi hanya menuju koneksi Telegram pembuat transaksi, bukan seluruh anggota. Alert operasional tidak menjadi data keuangan atau bagian ekspor lengkap ruang.
 
 ## Default kerja, bukan keputusan eksplisit pengguna
 

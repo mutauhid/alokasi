@@ -7,6 +7,7 @@ import {
   occurrenceOnOrAfter,
 } from "@/modules/recurring/domain";
 import { createTransactionInTransaction } from "@/modules/transactions/service";
+import { deliverPendingBudgetAlerts } from "@/modules/telegram-integration/budget-alerts";
 import { getDatabase } from "@/server/db/client";
 
 type RecurringContext = {
@@ -277,8 +278,9 @@ export async function postRecurringOccurrence(
   input: { id: string; version: number },
 ) {
   requireWriter(context);
+  let transaction;
   try {
-    return await getDatabase().$transaction(async (tx) => {
+    transaction = await getDatabase().$transaction(async (tx) => {
       const template = await tx.recurringTransactionTemplate.findFirst({
         where: editableTemplateWhere(context, input),
       });
@@ -336,4 +338,9 @@ export async function postRecurringOccurrence(
     }
     throw error;
   }
+  await deliverPendingBudgetAlerts({
+    workspaceId: context.workspaceId,
+    userId: context.actorId,
+  });
+  return transaction;
 }
