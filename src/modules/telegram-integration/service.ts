@@ -455,7 +455,7 @@ export async function createTelegramDraft(
     parsed.type === "income"
       ? connection.defaultIncomeCategoryId
       : connection.defaultCategoryId;
-  const [accounts, categories, history] = await Promise.all([
+  const [accounts, categories, history, personalRules] = await Promise.all([
     db.financialAccount.findMany({
       where: { workspaceId: connection.workspaceId, archivedAt: null },
       select: { id: true, name: true },
@@ -490,6 +490,16 @@ export async function createTelegramDraft(
           take: 100,
         })
       : Promise.resolve([]),
+    parsed.type === "expense"
+      ? db.personalCategoryRule.findMany({
+          where: {
+            workspaceId: connection.workspaceId,
+            userId: connection.userId,
+            category: { archivedAt: null },
+          },
+          select: { keywordKey: true, categoryId: true },
+        })
+      : Promise.resolve([]),
   ]);
   const account = parsed.accountHint
     ? selectByHint(accounts, parsed.accountHint)
@@ -514,6 +524,7 @@ export async function createTelegramDraft(
               title: parsed.title,
               categories,
               history,
+              personalRules,
               defaultCategoryId: defaultCategory.id,
             }).categoryId,
         ) ?? defaultCategory)

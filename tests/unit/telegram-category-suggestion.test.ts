@@ -10,6 +10,27 @@ const categories = [
 ];
 
 describe("Telegram expense category suggestion", () => {
+  it("prefers the longest personal rule over history and built-in keywords", () => {
+    expect(
+      suggestTelegramExpenseCategory({
+        title: "beli kopi susu sebelum kerja",
+        categories,
+        personalRules: [
+          { keywordKey: "kopi", categoryId: "food" },
+          { keywordKey: "kopi susu", categoryId: "shopping" },
+        ],
+        history: [
+          {
+            title: "beli kopi susu sebelum kerja",
+            categoryId: "bills",
+            transactionDate: new Date("2026-10-18T00:00:00.000Z"),
+          },
+        ],
+        defaultCategoryId: "transport",
+      }),
+    ).toEqual({ categoryId: "shopping", source: "personal-rule" });
+  });
+
   it("prefers confirmed history for the same normalized title", () => {
     expect(
       suggestTelegramExpenseCategory({

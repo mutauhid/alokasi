@@ -826,3 +826,18 @@ migrasi `20261026010000_telegram_weekly_summary`.
 Unit test domain/boundary cron telah ditambahkan. Test integrasi PostgreSQL untuk
 opt-in, no-side-effect, dan deduplikasi memerlukan migrasi
 `20261026020000_telegram_recurring_reminders` pada `TEST_DATABASE_URL` khusus.
+
+## Hasil tahap 39 — aturan kategori pribadi, 26 Oktober 2026
+
+| ID | Kriteria penerimaan |
+|---|---|
+| PCR-01 | Owner/Editor dapat membuat dan menghapus aturan miliknya sendiri; Viewer serta anggota lain tidak dapat membacanya |
+| PCR-02 | Kata kunci 2–60 karakter dinormalisasi sehingga variasi case, spasi, dan tanda baca tidak membuat duplikat |
+| PCR-03 | Hanya kategori expense aktif dari workspace yang sama dapat dipilih |
+| PCR-04 | Frasa cocok terpanjang menang dan diprioritaskan sebelum riwayat/kamus bawaan Telegram |
+| PCR-05 | Kategori arsip diabaikan; transaksi lama dan saldo tidak berubah ketika aturan dibuat atau dihapus |
+| PCR-06 | Aturan dibersihkan saat membership dicabut/keluar serta akun/workspace dihapus, dan tidak masuk ekspor finansial |
+
+Unit test normalisasi/prioritas telah ditambahkan. Test integrasi PostgreSQL untuk
+CRUD, duplikat, dan klasifikasi draf memerlukan migrasi
+`20261026030000_personal_category_rules` pada `TEST_DATABASE_URL` khusus.

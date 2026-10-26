@@ -3,6 +3,7 @@ import "server-only";
 import { getDatabase } from "@/server/db/client";
 import { deleteWorkspaceData } from "@/modules/workspaces/delete-data";
 import { deleteTelegramConnections } from "@/modules/telegram-integration/cleanup";
+import { deletePersonalCategoryRules } from "@/modules/category-rules/cleanup";
 import { UserDomainError } from "./errors";
 
 export async function getAccountDeletionSummary(actorId: string) {
@@ -153,6 +154,10 @@ export async function deleteApplicationAccount(input: {
       const membershipIds = sharedMemberships.map((item) => item.id);
       if (membershipIds.length > 0) {
         await deleteTelegramConnections(tx, {
+          userId: input.actorId,
+          workspace: { type: "shared" },
+        });
+        await deletePersonalCategoryRules(tx, {
           userId: input.actorId,
           workspace: { type: "shared" },
         });

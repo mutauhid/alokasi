@@ -363,6 +363,14 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Kirim rincian template tanpa membuat transaksi atau memajukan jadwal. Tindakan finansial tetap melalui menu Pengingat.
 - Bersihkan outbox sebelum koneksi/ruang dihapus dan tambahkan migrasi, test domain, boundary cron, integrasi deduplikasi, serta dokumentasi.
 
+## Hasil tahap 39 — aturan kategori pribadi, 26 Oktober 2026
+
+- Tambahkan tabel aturan per workspace/user dengan kata kunci ternormalisasi dan kategori expense.
+- Sediakan pengelolaan pada Pengaturan → Automasi bagi Owner/Editor; seluruh operasi dibatasi ulang di server.
+- Terapkan prioritas frasa terpanjang sebelum riwayat dan kamus bawaan saat membuat draf Telegram.
+- Abaikan kategori arsip, isolasikan aturan antaranggota, dan bersihkan preferensi saat membership/akun/workspace dihapus.
+- Tambahkan migrasi, unit test normalisasi/prioritas, test integrasi CRUD dan klasifikasi Telegram, serta dokumentasi.
+
 ## Backlog kandidat — bukan komitmen aktif
 
 F11 transaksi berulang diaktifkan melalui D33 dan F15 rekonsiliasi melalui D37. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, F14 utang/piutang, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.

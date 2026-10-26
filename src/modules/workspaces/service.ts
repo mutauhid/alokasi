@@ -7,6 +7,7 @@ import { provisionPersonalWorkspace } from "./provision-personal";
 import { WorkspaceDomainError } from "./errors";
 import { deleteWorkspaceData } from "./delete-data";
 import { deleteTelegramConnections } from "@/modules/telegram-integration/cleanup";
+import { deletePersonalCategoryRules } from "@/modules/category-rules/cleanup";
 
 export type WorkspaceRole = "owner" | "editor" | "viewer";
 export type WorkspaceAccess = {
@@ -565,6 +566,10 @@ export async function revokeMember(
       workspaceId: access.workspaceId,
       membership: { id: input.membershipId },
     });
+    await deletePersonalCategoryRules(tx, {
+      workspaceId: access.workspaceId,
+      membership: { id: input.membershipId },
+    });
     if (workspace.ownershipTransferToMembershipId === input.membershipId) {
       await tx.workspace.update({
         where: { id: access.workspaceId },
@@ -869,6 +874,10 @@ export async function leaveSharedWorkspace(
       throw new WorkspaceDomainError("MEMBERSHIP_CONFLICT");
     }
     await deleteTelegramConnections(tx, {
+      workspaceId: access.workspaceId,
+      userId: access.actorId,
+    });
+    await deletePersonalCategoryRules(tx, {
       workspaceId: access.workspaceId,
       userId: access.actorId,
     });

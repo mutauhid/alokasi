@@ -56,6 +56,7 @@ Diperbarui: 26 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent 
 | D49 | 26 Okt 2026 | Pengguna menyetujui fitur kedua setelah memastikan judul transaksi yang sama tetap diperbolehkan | Tambahkan peringatan duplikat kuat untuk transaksi identik yang baru dibuat, tanpa hard block; pengguna dapat mengubah, membatalkan, atau memilih Tetap simpan |
 | D50 | 26 Okt 2026 | Pengguna meminta fitur ketiga berupa ringkasan keuangan mingguan melalui Telegram | Sediakan opt-in per koneksi. Cron harian memeriksa hari Senin menurut zona waktu workspace, merangkum Senin–Minggu yang sudah selesai, dan mengklaim satu minggu sebelum mengirim agar invocation paralel tidak menggandakan pesan |
 | D51 | 26 Okt 2026 | Pengguna meminta fitur keempat berupa pengingat tagihan/transaksi berulang melalui Telegram | Tambahkan opt-in per koneksi dan outbox unik per koneksi/template/tanggal jatuh tempo. Notifikasi hanya mengingatkan; transaksi tetap harus dicatat atau dilewati secara eksplisit dari menu Pengingat |
+| D52 | 26 Okt 2026 | Pengguna meminta fitur kelima berupa aturan kategori pribadi | Owner/Editor dapat memetakan frasa pengeluaran ke kategori aktif untuk dirinya sendiri pada satu workspace. Frasa terpanjang diprioritaskan sebelum riwayat dan kamus bawaan Telegram; aturan anggota lain tidak dibaca |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -162,6 +163,8 @@ D49 menghasilkan T43: kandidat duplikat kuat wajib berada pada workspace yang sa
 D50 menghasilkan T44: ringkasan mingguan Telegram hanya tersedia untuk koneksi chat pribadi Owner/Editor yang telah opt-in. Vercel Cron memanggil endpoint GET ber-Bearer `CRON_SECRET` setiap hari; service hanya mengirim saat tanggal lokal workspace adalah Senin dan merangkum transaksi aktif dari Senin sampai Minggu sebelumnya. Claim unik per koneksi/minggu dilakukan sebelum Bot API dipanggil sehingga retry atau invocation paralel tidak mengirim pesan kedua. Ringkasan memuat pemasukan, pengeluaran, arus kas bersih, jumlah transaksi, dan kategori pengeluaran terbesar tanpa menyimpan snapshot baru atau mengubah data finansial.
 
 D51 menghasilkan T45: cron harian yang dilindungi `CRON_SECRET` memilih template aktif dengan `next_due_date` pada atau sebelum tanggal lokal workspace. Owner opt-in menerima semua template ruang, sedangkan Editor hanya template buatannya sesuai kewenangan posting yang sudah ada. Outbox unik `(connection_id, template_id, due_date)` diklaim sebelum Bot API dipanggil agar satu kejadian tidak dikirim dua kali. Pesan menegaskan saldo belum berubah; pencatatan atau skip tetap dilakukan melalui alur F11 yang memvalidasi ulang izin, versi, akun, kategori, dan jatuh tempo.
+
+D52 menghasilkan T46: aturan kategori dinormalisasi Unicode/case/whitespace/punctuation dan unik per `(workspace,user,keyword_key)`. Hanya kategori expense aktif pada workspace yang sama dapat dipilih. Saat bot membuat draf pengeluaran, aturan milik user koneksi dicocokkan sebagai frasa utuh; aturan terpanjang menang, kemudian barulah riwayat judul, nama kategori, kamus bawaan, dan default. Aturan tidak membuat transaksi dan kategori arsip diabaikan. Data ini diperlakukan sebagai preferensi personal, dibersihkan saat user keluar/dicabut atau workspace/akun dihapus, dan tidak dimasukkan ke ekspor finansial workspace.
 
 ## Default kerja, bukan keputusan eksplisit pengguna
 
