@@ -272,7 +272,7 @@ describe("Telegram expense integration", () => {
           accountId: mandiriId,
           categoryId: incomeCategoryId,
           idempotencyKey: "weekly-income",
-          requestHash: "weekly-income",
+          requestHash: "a".repeat(64),
         },
       }),
       db.transaction.create({
@@ -287,7 +287,7 @@ describe("Telegram expense integration", () => {
           accountId: mandiriId,
           categoryId: transportCategoryId,
           idempotencyKey: "weekly-expense",
-          requestHash: "weekly-expense",
+          requestHash: "b".repeat(64),
         },
       }),
     ]);
