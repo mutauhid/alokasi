@@ -217,6 +217,9 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 - Minggu mengikuti tanggal lokal workspace: Senin inklusif sampai Senin berikutnya eksklusif. Pesan baru dikirim pada hari Senin setelah satu minggu selesai.
 - Ringkasan hanya menghitung transaksi aktif. Pemasukan dan pengeluaran menentukan arus kas; transfer tidak mengubah kedua total tersebut tetapi tetap masuk jumlah transaksi.
 - Satu koneksi hanya boleh diklaim sekali untuk awal minggu yang sama agar retry atau cron paralel tidak menggandakan pesan. Ringkasan tidak membuat transaksi, audit finansial, atau snapshot laporan baru.
+- Pengingat transaksi berulang bersifat opt-in per koneksi dan dikirim sekali untuk kombinasi koneksi, template, dan tanggal jatuh tempo. Template overdue yang belum ditindak tidak diulang setiap hari.
+- Owner menerima template aktif ruang; Editor hanya template yang dibuatnya. Viewer, membership dicabut, user nonaktif, koneksi tanpa chat, dan template arsip tidak menerima pesan.
+- Tanggal jatuh tempo dibandingkan dengan tanggal lokal workspace. Notifikasi tidak memajukan template dan tidak mengubah saldo; pengguna tetap memilih Catat sekarang atau Lewati periode pada alur F11.
 
 ### F15 — rekonsiliasi saldo
 

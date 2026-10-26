@@ -68,6 +68,7 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Draf pengeluaran Telegram mengisi kategori dari riwayat judul yang sama atau kata kunci umum. Ringkasan selalu memperlihatkan kategori hasil deteksi agar pengguna dapat mengoreksinya sebelum Simpan.
 - Kartu Telegram menyediakan pilihan opt-in “Peringatan budget 80% dan 100%”. Kontrol hanya aktif setelah bot terhubung dan menjelaskan bahwa setiap ambang dikirim sekali per kategori/periode ke chat pengguna tersebut.
 - Kartu Telegram juga menyediakan opt-in “Ringkasan keuangan mingguan”. Penjelasan menyebut jadwal Senin, rentang Senin–Minggu sebelumnya, dan bahwa zona waktu mengikuti ruang aktif.
+- Opt-in “Pengingat transaksi berulang” menjelaskan bahwa pesan dikirim sekali ketika jatuh tempo dan saldo belum berubah. Pesan bot memuat judul, nominal, tanggal, akun, kategori, serta arahan membuka menu Pengingat untuk Catat sekarang atau Lewati periode.
 - Jika server menemukan transaksi kuat yang identik dalam 10 menit terakhir, form manual dan review iPhone menampilkan panel amber berisi judul, nominal, akun, tanggal/waktu kandidat, penjelasan bahwa judul sama tetap diperbolehkan, serta tombol **Tetap simpan**. Telegram menampilkan pilihan Tetap simpan, Koreksi, dan Batal di chat.
 - Draf dari Shortcut langsung membuka bagian “Periksa pengeluaran”, menampilkan preview privat di atas form pada mobile, dan mengisi akun/kategori default. Tombol utama tetap “Simpan pengeluaran”; kedatangan draf bukan status transaksi tersimpan.
 

@@ -90,8 +90,46 @@ export async function getTelegramSettings(access: Access) {
     incomeCategoryName: incomeCategory?.name ?? undefined,
     linkExpiresAt: connection.linkExpiresAt,
     budgetAlertsEnabled: connection.budgetAlertsEnabled,
+    recurringRemindersEnabled: connection.recurringRemindersEnabled,
     weeklySummaryEnabled: connection.weeklySummaryEnabled,
   };
+}
+
+export async function updateTelegramRecurringReminders(
+  access: Access,
+  enabled: boolean,
+) {
+  requireWriter(access.role);
+  const db = getDatabase();
+  await db.$transaction(async (tx) => {
+    const connection = await tx.telegramConnection.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: access.workspaceId,
+          userId: access.actorId,
+        },
+      },
+      select: { id: true, telegramChatId: true },
+    });
+    if (!connection?.telegramChatId)
+      throw new TelegramInputError(
+        "Hubungkan Telegram sebelum mengaktifkan pengingat berulang.",
+      );
+    await tx.telegramConnection.update({
+      where: { id: connection.id },
+      data: { recurringRemindersEnabled: enabled },
+    });
+    await tx.auditEvent.create({
+      data: {
+        workspaceId: access.workspaceId,
+        actorId: access.actorId,
+        entityType: "telegram",
+        entityId: connection.id,
+        action: "recurring_reminders_updated",
+        changedFields: ["recurring_reminders_enabled"],
+      },
+    });
+  });
 }
 
 export async function updateTelegramWeeklySummary(
@@ -295,6 +333,9 @@ export async function revokeTelegram(access: Access) {
     });
     if (!connection) return;
     await tx.telegramBudgetAlert.deleteMany({
+      where: { connectionId: connection.id },
+    });
+    await tx.telegramRecurringReminder.deleteMany({
       where: { connectionId: connection.id },
     });
     await tx.telegramDraft.deleteMany({

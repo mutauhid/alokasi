@@ -23,8 +23,10 @@ import {
   getTelegramDraft,
   revokeTelegram,
   updateTelegramBudgetAlerts,
+  updateTelegramRecurringReminders,
   updateTelegramWeeklySummary,
 } from "../../src/modules/telegram-integration/service";
+import { runTelegramRecurringReminders } from "../../src/modules/telegram-integration/recurring-reminders";
 import { runTelegramWeeklySummaries } from "../../src/modules/telegram-integration/weekly-summary";
 
 vi.mock("server-only", () => ({}));
@@ -127,6 +129,81 @@ afterEach(async () => {
 });
 
 describe("Telegram expense integration", () => {
+  it("sends each opted-in recurring due occurrence only once", async () => {
+    await expect(
+      updateTelegramRecurringReminders(
+        { workspaceId, actorId: ownerId, role: "owner" },
+        true,
+      ),
+    ).rejects.toThrow("Hubungkan Telegram");
+    const code = await configureTelegram(
+      { workspaceId, actorId: ownerId, role: "owner" },
+      mandiriId,
+      categoryId,
+      incomeCategoryId,
+    );
+    await connectTelegram(code, "2020202020", "2020202020");
+    await updateTelegramRecurringReminders(
+      { workspaceId, actorId: ownerId, role: "owner" },
+      true,
+    );
+    const template = await db.recurringTransactionTemplate.create({
+      data: {
+        workspaceId,
+        createdBy: ownerId,
+        name: "Internet rumah",
+        type: "expense",
+        amount: 450_000n,
+        accountId: mandiriId,
+        categoryId,
+        recurrenceDay: 26,
+        nextDueDate: new Date("2026-10-26T00:00:00.000Z"),
+      },
+    });
+    const originalToken = process.env.TELEGRAM_BOT_TOKEN;
+    process.env.TELEGRAM_BOT_TOKEN = "test-token";
+    const send = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(() =>
+        Promise.resolve(Response.json({ ok: true, result: { message_id: 1 } })),
+      );
+    try {
+      expect(
+        await runTelegramRecurringReminders(
+          new Date("2026-10-26T01:00:00.000Z"),
+        ),
+      ).toMatchObject({ sent: 1, failed: 0 });
+      expect(
+        await runTelegramRecurringReminders(
+          new Date("2026-10-26T02:00:00.000Z"),
+        ),
+      ).toMatchObject({ sent: 0, skipped: 1 });
+      expect(send).toHaveBeenCalledTimes(1);
+      expect(await db.transaction.count({ where: { workspaceId } })).toBe(0);
+      expect(
+        await db.telegramRecurringReminder.findUniqueOrThrow({
+          where: {
+            connectionId_templateId_dueDate: {
+              connectionId: (
+                await db.telegramConnection.findUniqueOrThrow({
+                  where: {
+                    workspaceId_userId: { workspaceId, userId: ownerId },
+                  },
+                })
+              ).id,
+              templateId: template.id,
+              dueDate: template.nextDueDate,
+            },
+          },
+          select: { status: true },
+        }),
+      ).toEqual({ status: "sent" });
+    } finally {
+      if (originalToken === undefined) delete process.env.TELEGRAM_BOT_TOKEN;
+      else process.env.TELEGRAM_BOT_TOKEN = originalToken;
+    }
+  });
+
   it("sends one opted-in summary for a completed workspace week", async () => {
     await expect(
       updateTelegramWeeklySummary(

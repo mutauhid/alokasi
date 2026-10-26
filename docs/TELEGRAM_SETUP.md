@@ -36,6 +36,11 @@ setelah Simpan. Voice note belum didukung.
    konfigurasi `vercel.json`, lalu aktifkan **Ringkasan keuangan mingguan**.
    Vercel memanggil endpoint setiap hari; aplikasi hanya mengirim pada Senin
    menurut zona waktu ruang untuk minggu Senin–Minggu yang telah selesai.
+8. Untuk pengingat tagihan/transaksi berulang, terapkan migrasi
+   `20261026020000_telegram_recurring_reminders`, deploy cron kedua dari
+   `vercel.json`, lalu aktifkan **Pengingat transaksi berulang**. Pesan dikirim
+   sekali saat jatuh tempo; transaksi belum masuk saldo sampai pengguna memilih
+   Catat sekarang dari menu Pengingat.
 
 Domain kustom tidak diperlukan; URL HTTPS Vercel yang aktif dapat dipakai.
 Setiap akun Telegram hanya dapat terhubung ke satu workspace pada fase ini.
@@ -84,3 +89,7 @@ Untuk ringkasan mingguan, cron Vercel hanya berjalan pada deployment production.
 Preview dapat diuji manual dengan request GET ke
 `/api/cron/telegram-weekly-summary` memakai header
 `Authorization: Bearer <CRON_SECRET>` pada hari Senin sesuai zona waktu ruang.
+Endpoint pengingat berulang dapat diuji dengan pola header yang sama pada
+`/api/cron/telegram-recurring-reminders` setelah membuat template dengan tanggal
+jatuh tempo hari ini. Pastikan pesan terkirim sekali dan jumlah transaksi tidak
+berubah sebelum Catat sekarang dipilih.

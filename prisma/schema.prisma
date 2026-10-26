@@ -120,6 +120,7 @@ model Workspace {
   balanceReconciliations          BalanceReconciliation[]
   telegramConnections             TelegramConnection[]
   telegramBudgetAlerts            TelegramBudgetAlert[]
+  telegramRecurringReminders      TelegramRecurringReminder[]
 
   @@map("workspaces")
   @@schema("app")
@@ -192,28 +193,30 @@ model Invitation {
 }
 
 model TelegramConnection {
-  id                       String                @id @default(uuid()) @db.Uuid
-  workspaceId              String                @map("workspace_id") @db.Uuid
-  userId                   String                @map("user_id") @db.Uuid
-  telegramUserId           String?               @unique @map("telegram_user_id") @db.VarChar(32)
-  telegramChatId           String?               @map("telegram_chat_id") @db.VarChar(32)
-  linkCodeHash             String?               @unique @map("link_code_hash") @db.VarChar(64)
-  linkExpiresAt            DateTime?             @map("link_expires_at") @db.Timestamptz(3)
-  defaultAccountId         String                @map("default_account_id") @db.Uuid
-  defaultCategoryId        String                @map("default_category_id") @db.Uuid
-  defaultIncomeCategoryId  String?               @map("default_income_category_id") @db.Uuid
-  linkedAt                 DateTime?             @map("linked_at") @db.Timestamptz(3)
-  createdAt                DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
-  workspace                Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  user                     User                  @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  membership               Membership            @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
-  drafts                   TelegramDraft[]
-  budgetAlerts             TelegramBudgetAlert[]
-  budgetAlertsEnabled      Boolean               @default(false) @map("budget_alerts_enabled")
-  weeklySummaryEnabled     Boolean               @default(false) @map("weekly_summary_enabled")
-  weeklySummaryClaimedWeek DateTime?             @map("weekly_summary_claimed_week") @db.Date
-  weeklySummarySentAt      DateTime?             @map("weekly_summary_sent_at") @db.Timestamptz(3)
+  id                        String                      @id @default(uuid()) @db.Uuid
+  workspaceId               String                      @map("workspace_id") @db.Uuid
+  userId                    String                      @map("user_id") @db.Uuid
+  telegramUserId            String?                     @unique @map("telegram_user_id") @db.VarChar(32)
+  telegramChatId            String?                     @map("telegram_chat_id") @db.VarChar(32)
+  linkCodeHash              String?                     @unique @map("link_code_hash") @db.VarChar(64)
+  linkExpiresAt             DateTime?                   @map("link_expires_at") @db.Timestamptz(3)
+  defaultAccountId          String                      @map("default_account_id") @db.Uuid
+  defaultCategoryId         String                      @map("default_category_id") @db.Uuid
+  defaultIncomeCategoryId   String?                     @map("default_income_category_id") @db.Uuid
+  linkedAt                  DateTime?                   @map("linked_at") @db.Timestamptz(3)
+  createdAt                 DateTime                    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                 DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace                 Workspace                   @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user                      User                        @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  membership                Membership                  @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  drafts                    TelegramDraft[]
+  budgetAlerts              TelegramBudgetAlert[]
+  budgetAlertsEnabled       Boolean                     @default(false) @map("budget_alerts_enabled")
+  recurringReminders        TelegramRecurringReminder[]
+  recurringRemindersEnabled Boolean                     @default(false) @map("recurring_reminders_enabled")
+  weeklySummaryEnabled      Boolean                     @default(false) @map("weekly_summary_enabled")
+  weeklySummaryClaimedWeek  DateTime?                   @map("weekly_summary_claimed_week") @db.Date
+  weeklySummarySentAt       DateTime?                   @map("weekly_summary_sent_at") @db.Timestamptz(3)
 
   @@unique([workspaceId, userId])
   @@unique([workspaceId, id])
@@ -267,6 +270,27 @@ model TelegramBudgetAlert {
   @@index([connectionId, status, createdAt])
   @@index([workspaceId, budgetId])
   @@map("telegram_budget_alerts")
+  @@schema("app")
+}
+
+model TelegramRecurringReminder {
+  id           String                       @id @default(uuid()) @db.Uuid
+  workspaceId  String                       @map("workspace_id") @db.Uuid
+  connectionId String                       @map("connection_id") @db.Uuid
+  templateId   String                       @map("template_id") @db.Uuid
+  dueDate      DateTime                     @map("due_date") @db.Date
+  status       TelegramBudgetAlertStatus    @default(pending)
+  attemptedAt  DateTime?                    @map("attempted_at") @db.Timestamptz(3)
+  sentAt       DateTime?                    @map("sent_at") @db.Timestamptz(3)
+  createdAt    DateTime                     @default(now()) @map("created_at") @db.Timestamptz(3)
+  workspace    Workspace                    @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  connection   TelegramConnection           @relation(fields: [workspaceId, connectionId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  template     RecurringTransactionTemplate @relation(fields: [workspaceId, templateId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([connectionId, templateId, dueDate])
+  @@index([connectionId, status, createdAt])
+  @@index([workspaceId, templateId])
+  @@map("telegram_recurring_reminders")
   @@schema("app")
 }
 
@@ -390,26 +414,27 @@ model Transaction {
 // A recurring template is only a reminder. It changes financial totals only
 // after an authorized member explicitly posts a due occurrence.
 model RecurringTransactionTemplate {
-  id            String           @id @default(uuid()) @db.Uuid
-  workspaceId   String           @map("workspace_id") @db.Uuid
-  createdBy     String           @map("created_by") @db.Uuid
-  name          String           @db.VarChar(100)
-  type          TransactionType
-  amount        BigInt
-  accountId     String           @map("account_id") @db.Uuid
-  categoryId    String           @map("category_id") @db.Uuid
-  note          String?          @db.VarChar(1000)
-  recurrenceDay Int              @map("recurrence_day") @db.SmallInt
-  nextDueDate   DateTime         @map("next_due_date") @db.Date
-  archivedAt    DateTime?        @map("archived_at") @db.Timestamptz(3)
-  version       Int              @default(1)
-  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
-  workspace     Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  creator       Membership       @relation("RecurringTemplateCreator", fields: [workspaceId, createdBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
-  account       FinancialAccount @relation(fields: [workspaceId, accountId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
-  category      Category         @relation(fields: [workspaceId, categoryId, type], references: [workspaceId, id, type], onDelete: Restrict, onUpdate: Restrict)
-  transactions  Transaction[]
+  id                String                      @id @default(uuid()) @db.Uuid
+  workspaceId       String                      @map("workspace_id") @db.Uuid
+  createdBy         String                      @map("created_by") @db.Uuid
+  name              String                      @db.VarChar(100)
+  type              TransactionType
+  amount            BigInt
+  accountId         String                      @map("account_id") @db.Uuid
+  categoryId        String                      @map("category_id") @db.Uuid
+  note              String?                     @db.VarChar(1000)
+  recurrenceDay     Int                         @map("recurrence_day") @db.SmallInt
+  nextDueDate       DateTime                    @map("next_due_date") @db.Date
+  archivedAt        DateTime?                   @map("archived_at") @db.Timestamptz(3)
+  version           Int                         @default(1)
+  createdAt         DateTime                    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace         Workspace                   @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  creator           Membership                  @relation("RecurringTemplateCreator", fields: [workspaceId, createdBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  account           FinancialAccount            @relation(fields: [workspaceId, accountId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  category          Category                    @relation(fields: [workspaceId, categoryId, type], references: [workspaceId, id, type], onDelete: Restrict, onUpdate: Restrict)
+  transactions      Transaction[]
+  telegramReminders TelegramRecurringReminder[]
 
   @@unique([workspaceId, id])
   @@index([workspaceId, archivedAt, nextDueDate])
