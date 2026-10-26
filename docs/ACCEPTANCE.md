@@ -780,3 +780,19 @@ Build Turbopack lokal tidak dapat dijadikan bukti pada mesin ini karena worker P
 `20261026000000_telegram_budget_alerts` dan test integrasi PostgreSQL untuk
 opt-in/deduplikasi belum dijalankan lokal. Terapkan migrasi pada database
 preview, lalu lakukan smoke dengan bot nyata sebelum merge ke production.
+
+## Hasil tahap 36 — peringatan transaksi duplikat, 26 Oktober 2026
+
+| Pemeriksaan | Bukti/status |
+|---|---|
+| DUP-01 | Judul sama saja tidak memicu warning; kandidat harus cocok pada jenis, judul case-insensitive, nominal, tanggal, akun, akun tujuan, dan kategori dalam 10 menit |
+| DUP-02 | Form manual dan review iPhone menampilkan kandidat tanpa membuat transaksi kedua sampai pengguna memilih Tetap simpan |
+| DUP-03 | Telegram mempertahankan draf pending dan menawarkan Tetap simpan, Koreksi, atau Batal; callback konfirmasi berada di bawah batas 64 byte |
+| DUP-04 | Fingerprint konfirmasi berubah ketika field finansial berubah dan pemeriksaan selalu dibatasi workspace serta transaksi aktif |
+| DUP-05 | Retry idempoten tetap mengembalikan transaksi yang sama; transaksi berulang tetap dilindungi kunci unik template/tanggal tanpa prompt ganda |
+| Verifikasi lokal | Targeted Prettier, lint, TypeScript, build produksi Webpack, `git diff --check`, serta 24 file/135 unit test lulus |
+
+Test integrasi PostgreSQL untuk warning/override Telegram telah ditambahkan,
+tetapi belum dijalankan lokal karena `.env.test.local` tidak tersedia. Tidak
+ada migrasi database pada tahap ini; suite tersebut akan dijalankan CI saat
+branch di-push.

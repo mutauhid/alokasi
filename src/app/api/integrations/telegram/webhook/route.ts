@@ -1,5 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { FinanceDomainError } from "@/modules/finance/errors";
+import { PotentialDuplicateTransactionError } from "@/modules/transactions/duplicates";
+import { duplicateSaveCallbackData } from "@/modules/telegram-integration/callback-data";
 import {
   answerTelegramCallback,
   sendTelegramMessage,
@@ -206,7 +208,10 @@ async function handleCallback(callback: Callback) {
     );
     return;
   }
-  const match = /^(save|edit|cancel):([0-9a-f-]{36})$/iu.exec(callback.data);
+  const match =
+    /^(save|force|edit|cancel):([0-9a-f-]{36})(?::([0-9a-f]{16}))?$/iu.exec(
+      callback.data,
+    );
   if (!match) return;
   const action = match[1];
   const draft = await getTelegramDraft(connection.id, match[2]);
@@ -240,7 +245,11 @@ async function handleCallback(callback: Callback) {
     return;
   }
   try {
-    const result = await confirmTelegramDraft(connection, draft.id);
+    const result = await confirmTelegramDraft(
+      connection,
+      draft.id,
+      action === "force" ? match[3] : undefined,
+    );
     const kind = draft.type === "income" ? "Pemasukan" : "Pengeluaran";
     await sendTelegramMessage(
       chatId,
@@ -251,6 +260,33 @@ async function handleCallback(callback: Callback) {
           : "Draf tidak dapat disimpan. Kirim pesan baru.",
     );
   } catch (error) {
+    if (error instanceof PotentialDuplicateTransactionError) {
+      await sendTelegramMessage(
+        chatId,
+        [
+          "⚠️ Transaksi serupa baru saja dicatat.",
+          `${error.candidate.title} · Rp${new Intl.NumberFormat("id-ID").format(error.candidate.amount)} · ${error.candidate.accountName} · dicatat pukul ${new Intl.DateTimeFormat("id-ID", { timeZone: connection.workspace.timezone, hour: "2-digit", minute: "2-digit" }).format(error.candidate.createdAt)}`,
+          "",
+          "Judul yang sama tetap diperbolehkan. Pilih Tetap simpan jika ini memang transaksi berbeda.",
+        ].join("\n"),
+        {
+          inline_keyboard: [
+            [
+              {
+                text: "✅ Tetap simpan",
+                callback_data: duplicateSaveCallbackData(
+                  draft.id,
+                  error.confirmation,
+                ),
+              },
+              { text: "✏️ Koreksi", callback_data: `edit:${draft.id}` },
+            ],
+            [{ text: "❌ Batal", callback_data: `cancel:${draft.id}` }],
+          ],
+        },
+      );
+      return;
+    }
     if (!(error instanceof FinanceDomainError)) throw error;
     await sendTelegramMessage(
       chatId,

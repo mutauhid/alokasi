@@ -339,6 +339,14 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Kirim pesan setelah commit dan tahan kegagalan integrasi agar transaksi keuangan tidak ikut gagal. Bersihkan outbox sebelum koneksi, budget, anggota, akun, atau ruang dihapus.
 - Tambahkan migrasi, unit test kalkulasi/pesan, test integrasi opt-in dan deduplikasi, serta dokumentasi setup/smoke preview.
 
+## Hasil tahap 36 — peringatan transaksi duplikat, 26 Oktober 2026
+
+- Deteksi kandidat kuat di service transaksi berdasarkan seluruh field finansial dan jendela waktu pembuatan 10 menit; abaikan transaksi terhapus serta retry idempoten yang sama.
+- Ikat persetujuan pada kandidat dan isi transaksi menggunakan fingerprint pendek; perubahan input memerlukan pemeriksaan ulang.
+- Form tambah transaksi dan review iPhone mempertahankan input, menampilkan kandidat, dan mengganti aksi utama menjadi **Tetap simpan**. Telegram menyediakan callback Tetap simpan/Koreksi/Batal yang tetap muat dalam batas Bot API.
+- Pertahankan jalur transaksi berulang yang idempoten tanpa prompt tambahan. Tidak ada tabel, migrasi, dependency, atau AI/provider eksternal baru.
+- Tambahkan unit test fingerprint/serialisasi dan test PostgreSQL untuk warning, override, serta pembuktian bahwa judul sama dengan nominal berbeda tetap dapat disimpan.
+
 ## Backlog kandidat — bukan komitmen aktif
 
 F11 transaksi berulang diaktifkan melalui D33 dan F15 rekonsiliasi melalui D37. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, F14 utang/piutang, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.

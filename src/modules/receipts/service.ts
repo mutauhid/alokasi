@@ -360,6 +360,7 @@ export async function cancelReceiptDraft(
 export async function submitReceiptDraft(
   context: ReceiptContext,
   input: SubmitReceiptDraftInput,
+  duplicateConfirmation?: string,
 ) {
   requireEditor(context);
   const db = getDatabase();
@@ -421,6 +422,7 @@ export async function submitReceiptDraft(
         categoryId: input.categoryId,
         note: input.note,
         idempotencyKey: `receipt-draft:${draft.id}`,
+        duplicateConfirmation,
       });
       const updated = await tx.receiptDraft.updateMany({
         where: {

@@ -18,6 +18,7 @@ export function CreateTransactionDialog({
   defaultDate,
   suggestions,
   defaultOpen = false,
+  timeZone,
 }: {
   workspaceId: string;
   accounts: Option[];
@@ -26,6 +27,7 @@ export function CreateTransactionDialog({
   defaultDate: string;
   suggestions: TransactionSuggestion[];
   defaultOpen?: boolean;
+  timeZone: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -61,6 +63,7 @@ export function CreateTransactionDialog({
               idempotencyKey={idempotencyKey}
               defaultDate={defaultDate}
               suggestions={suggestions}
+              timeZone={timeZone}
             />
           )}
           <DialogPrimitive.Close

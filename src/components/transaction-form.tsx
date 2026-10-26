@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
+import { TriangleAlert } from "lucide-react";
 import {
   createTransactionAction,
   updateTransactionAction,
@@ -10,6 +11,7 @@ import { RupiahInput } from "@/components/ui/rupiah-input";
 import { TransactionTitleField } from "@/components/transaction-title-field";
 import { CategoryRadioGroup } from "@/components/category-radio-group";
 import type { TransactionSuggestion } from "@/modules/transactions/suggestions";
+import { initialTransactionCreateState } from "@/modules/transactions/form-state";
 
 type Option = { id: string; name: string };
 type CategoryOption = Option & { type: "income" | "expense" };
@@ -27,6 +29,7 @@ export function TransactionForm({
   suggestions = [],
   initial,
   compact = false,
+  timeZone = "UTC",
 }: {
   workspaceId: string;
   accounts: Option[];
@@ -47,6 +50,7 @@ export function TransactionForm({
     note: string;
   };
   compact?: boolean;
+  timeZone?: string;
 }) {
   const [type, setType] = useState<TransactionType>(initial?.type ?? "expense");
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -54,7 +58,18 @@ export function TransactionForm({
   const [accountId, setAccountId] = useState(
     initial?.accountId ?? accounts[0]?.id ?? "",
   );
-  const action = initial ? updateTransactionAction : createTransactionAction;
+  const [transactionDate, setTransactionDate] = useState(
+    initial?.transactionDate ?? defaultDate ?? "",
+  );
+  const [destinationAccountId, setDestinationAccountId] = useState(
+    initial?.destinationAccountId ?? "",
+  );
+  const [note, setNote] = useState(initial?.note ?? "");
+  const [createState, createAction, createPending] = useActionState(
+    createTransactionAction,
+    initialTransactionCreateState,
+  );
+  const action = initial ? updateTransactionAction : createAction;
   const availableCategories = categories.filter(
     (category) => category.type === type,
   );
@@ -132,7 +147,8 @@ export function TransactionForm({
           type="date"
           required
           max={defaultDate}
-          defaultValue={initial?.transactionDate ?? defaultDate}
+          value={transactionDate}
+          onChange={(event) => setTransactionDate(event.target.value)}
           className={inputClass}
         />
       </label>
@@ -158,7 +174,8 @@ export function TransactionForm({
           <select
             name="destinationAccountId"
             required
-            defaultValue={initial?.destinationAccountId}
+            value={destinationAccountId}
+            onChange={(event) => setDestinationAccountId(event.target.value)}
             className={inputClass}
           >
             <option value="">Pilih akun tujuan</option>
@@ -183,27 +200,96 @@ export function TransactionForm({
         </div>
       )}
       <label
-        className={`text-sm font-medium ${compact ? "" : "md:col-span-2 xl:col-span-3"}`}
+        className={`text-sm font-medium ${compact ? "" : `md:col-span-2 ${createState.duplicate ? "xl:col-span-4" : "xl:col-span-3"}`}`}
       >
         Catatan opsional
         <input
           name="note"
           maxLength={1000}
-          defaultValue={initial?.note}
+          value={note}
+          onChange={(event) => setNote(event.target.value)}
           placeholder="Contoh: makan siang"
           className={inputClass}
         />
       </label>
-      <div className="flex items-end">
+      {!initial && createState.error && (
+        <p
+          role="alert"
+          className={`rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive ${compact ? "" : "md:col-span-2 xl:col-span-4"}`}
+        >
+          {createState.error}
+        </p>
+      )}
+      {!initial && createState.duplicate && (
+        <div
+          role="alert"
+          className={`rounded-xl border border-amber-500/50 bg-amber-500/10 p-4 ${compact ? "" : "md:col-span-2 xl:col-span-4"}`}
+        >
+          <div className="flex gap-3">
+            <TriangleAlert
+              className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400"
+              aria-hidden="true"
+            />
+            <div>
+              <p className="font-semibold">
+                Transaksi serupa baru saja dicatat
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {createState.duplicate.title} · Rp
+                {new Intl.NumberFormat("id-ID").format(
+                  BigInt(createState.duplicate.amount),
+                )}{" "}
+                · {createState.duplicate.accountName} ·{" "}
+                {new Intl.DateTimeFormat("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  timeZone: "UTC",
+                }).format(
+                  new Date(
+                    `${createState.duplicate.transactionDate}T00:00:00.000Z`,
+                  ),
+                )}{" "}
+                · dicatat pukul{" "}
+                {new Intl.DateTimeFormat("id-ID", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  timeZone,
+                }).format(new Date(createState.duplicate.createdAt))}
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Judul yang sama tetap diperbolehkan. Ubah data jika ini tidak
+                sengaja, atau pilih Tetap simpan jika memang transaksi berbeda.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      <div
+        className={`flex items-end ${!initial && createState.duplicate && !compact ? "md:col-span-2 justify-end xl:col-span-4" : ""}`}
+      >
         <Button
           type="submit"
+          name={
+            !initial && createState.duplicate
+              ? "duplicateConfirmation"
+              : undefined
+          }
+          value={createState.duplicate?.confirmation}
           disabled={
+            createPending ||
             accounts.length === 0 ||
             (type === "transfer" && accounts.length < 2)
           }
-          className="min-h-11 w-full"
+          className={`min-h-11 ${!initial && createState.duplicate ? "w-full sm:w-auto sm:min-w-44" : "w-full"}`}
         >
-          {initial ? "Simpan perubahan" : "Simpan transaksi"}
+          {initial
+            ? "Simpan perubahan"
+            : createPending
+              ? "Memeriksa…"
+              : createState.duplicate
+                ? "Tetap simpan"
+                : "Simpan transaksi"}
         </Button>
       </div>
     </form>

@@ -177,6 +177,7 @@ export async function TransactionsSection({
             defaultDate={localToday(access.timezone)}
             suggestions={suggestions}
             defaultOpen={openCreateTransaction}
+            timeZone={access.timezone}
           />
         </div>
       )}
@@ -206,6 +207,7 @@ export async function TransactionsSection({
               .filter((category) => category.type === "expense")
               .map(({ id, name }) => ({ id, name }))}
             suggestions={suggestions}
+            timeZone={access.timezone}
             initialState={
               activeReceiptDraft
                 ? receiptDraftView(activeReceiptDraft)
@@ -353,6 +355,7 @@ export async function TransactionsSection({
                             accounts={accounts}
                             categories={categories}
                             defaultDate={localToday(access.timezone)}
+                            timeZone={access.timezone}
                             initial={{
                               id: transaction.id,
                               version: transaction.version,

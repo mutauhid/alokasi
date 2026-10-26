@@ -38,6 +38,11 @@ import {
   updateTransaction,
 } from "@/modules/transactions/service";
 import {
+  PotentialDuplicateTransactionError,
+  duplicateWarning,
+} from "@/modules/transactions/duplicates";
+import type { TransactionCreateState } from "@/modules/transactions/form-state";
+import {
   copyBudgetsFromPrevious,
   createBudget,
   deleteBudget,
@@ -417,20 +422,45 @@ function serviceTransactionInput(input: {
   };
 }
 
-export async function createTransactionAction(form: FormData) {
+export async function createTransactionAction(
+  _previous: TransactionCreateState,
+  form: FormData,
+): Promise<TransactionCreateState> {
   const input = createTransactionInput.safeParse({
     ...transactionFields(form),
     idempotencyKey: text(form, "idempotencyKey"),
   });
-  if (!input.success) fail("/transactions", form, "transaction-invalid");
+  if (!input.success)
+    return {
+      error: "Periksa judul, jenis, nominal, tanggal, akun, dan kategori.",
+    };
   const context = await mutationContext(form, ["owner", "editor"]);
   try {
     await createTransaction(context, {
       ...serviceTransactionInput(input.data),
       idempotencyKey: input.data.idempotencyKey,
+      duplicateConfirmation: text(form, "duplicateConfirmation") || undefined,
     });
   } catch (error) {
-    fail("/transactions", form, transactionError(error));
+    if (error instanceof PotentialDuplicateTransactionError) {
+      return { duplicate: duplicateWarning(error) };
+    }
+    const messages: Record<string, string> = {
+      "transaction-future":
+        "Tanggal transaksi tidak boleh berada di masa depan.",
+      "transaction-shape":
+        "Kombinasi akun dan kategori tidak sesuai jenis transaksi.",
+      "transaction-account": "Akun tidak tersedia atau sudah diarsipkan.",
+      "transaction-before-account":
+        "Tanggal transaksi mendahului tanggal mulai akun.",
+      "transaction-category": "Kategori tidak sesuai atau sudah diarsipkan.",
+      "transaction-idempotency":
+        "Permintaan yang sama memiliki isi transaksi berbeda.",
+    };
+    return {
+      error:
+        messages[transactionError(error)] ?? "Transaksi belum dapat disimpan.",
+    };
   }
   finish("/transactions", "transaction-created", context.workspaceId);
 }
@@ -656,8 +686,32 @@ export async function receiptDraftAction(
     };
   }
   try {
-    await submitReceiptDraft(context, parsed.data);
+    await submitReceiptDraft(
+      context,
+      parsed.data,
+      text(form, "duplicateConfirmation") || undefined,
+    );
   } catch (error) {
+    if (error instanceof PotentialDuplicateTransactionError) {
+      return {
+        ...previous,
+        error: undefined,
+        duplicate: duplicateWarning(error),
+        draft: previous.draft
+          ? {
+              ...previous.draft,
+              amount: parsed.data.amount.toString(),
+              transactionDate: parsed.data.transactionDate
+                .toISOString()
+                .slice(0, 10),
+              title: parsed.data.title,
+              note: parsed.data.note ?? "",
+              accountId: parsed.data.accountId,
+              categoryId: parsed.data.categoryId,
+            }
+          : previous.draft,
+      };
+    }
     return { ...previous, error: receiptError(error) };
   }
   finish("/transactions", "receipt-submitted", context.workspaceId);

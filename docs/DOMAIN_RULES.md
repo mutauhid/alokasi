@@ -194,6 +194,14 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 
 ## 7. Kontrak lintas fitur
 
+### Peringatan transaksi duplikat
+
+- Judul yang sama selalu boleh dipakai kembali. Peringatan hanya muncul bila transaksi aktif pada workspace yang sama dibuat maksimal 10 menit sebelumnya dan jenis, judul case-insensitive, nominal, tanggal transaksi, akun, akun tujuan, serta kategori semuanya cocok.
+- Kandidat tidak otomatis dibatalkan atau digabung. Pengguna dapat mengubah data, membatalkan alur, atau memilih **Tetap simpan** untuk mencatat transaksi kedua.
+- Konfirmasi terikat pada ID kandidat dan field finansial yang diperiksa. Perubahan field atau kandidat yang berbeda memerlukan pemeriksaan/konfirmasi baru.
+- Idempotency key tetap menjadi proteksi retry teknis dan tidak boleh berubah menjadi peringatan duplikat. Transaksi soft-deleted tidak menjadi kandidat.
+- Pemeriksaan berlaku pada input manual, submit draf OCR/Shortcut, dan konfirmasi Telegram. Posting template berulang tetap mengandalkan kunci unik template/tanggal agar jadwal eksplisit tidak tertahan oleh transaksi manual yang mirip.
+
 ### F24 — Telegram
 
 - Satu akun Telegram terkait satu membership aktif pada satu workspace. Hanya Owner/Editor dapat menghubungkan dan menggunakan bot. Chat grup diabaikan.

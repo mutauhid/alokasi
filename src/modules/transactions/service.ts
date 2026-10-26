@@ -12,6 +12,7 @@ import {
   buildTransactionPageMeta,
   type TransactionPagination,
 } from "@/modules/transactions/pagination";
+import { assertNoUnconfirmedDuplicate } from "@/modules/transactions/duplicates";
 
 type TransactionType = "income" | "expense" | "transfer";
 export type TransactionContext = {
@@ -107,9 +108,14 @@ export async function createTransactionInTransaction(
     idempotencyKey: string;
     recurringTemplateId?: string;
     recurringDueDate?: Date;
+    duplicateConfirmation?: string;
+    skipPotentialDuplicateCheck?: boolean;
   },
 ) {
   await validateReferences(tx, context, input);
+  if (!input.skipPotentialDuplicateCheck) {
+    await assertNoUnconfirmedDuplicate(tx, context, input);
+  }
   const transaction = await tx.transaction.create({
     data: {
       workspaceId: context.workspaceId,
@@ -224,7 +230,10 @@ export function listRecentTransactionsForSuggestions(workspaceId: string) {
 
 export async function createTransaction(
   context: TransactionContext,
-  input: TransactionInput & { idempotencyKey: string },
+  input: TransactionInput & {
+    idempotencyKey: string;
+    duplicateConfirmation?: string;
+  },
 ) {
   if (context.role && !["owner", "editor"].includes(context.role)) {
     throw new FinanceDomainError("TRANSACTION_ACCESS_DENIED");
