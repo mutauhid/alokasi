@@ -121,7 +121,7 @@ export function AppShell({
       >
         Lewati ke konten
       </a>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col overflow-y-auto border-r bg-card px-5 py-7 lg:flex">
+      <aside className="workspace-sidebar-scrollbar fixed inset-y-0 left-0 z-30 hidden w-56 flex-col overflow-y-auto border-r bg-card px-5 py-7 lg:flex">
         <Link
           href={sectionHref("dashboard", workspace.id)}
           aria-label="Alokasi — Dashboard"

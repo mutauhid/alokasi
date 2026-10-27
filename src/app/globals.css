@@ -218,6 +218,40 @@
   transform: translateY(-50%);
 }
 
+.workspace-sidebar-scrollbar {
+  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 42%, transparent)
+    transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.workspace-sidebar-scrollbar::-webkit-scrollbar {
+  width: 0.4rem;
+}
+
+.workspace-sidebar-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.workspace-sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background-color: color-mix(
+    in srgb,
+    var(--muted-foreground) 42%,
+    transparent
+  );
+  background-clip: padding-box;
+  border: 0.125rem solid transparent;
+  border-radius: 999px;
+}
+
+.workspace-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--muted-foreground) 64%,
+    transparent
+  );
+}
+
 .dashboard-chart-bar {
   transform-origin: bottom;
   animation: dashboard-bar-grow 560ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -226,6 +260,137 @@
 .dashboard-progress-fill {
   transform-origin: left;
   animation: dashboard-progress-grow 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.dashboard-v2-heading {
+  padding-bottom: 0.25rem;
+}
+
+.dashboard-v2-heading > div:first-child {
+  max-width: 34rem;
+}
+
+.dashboard-v2 .text-muted-foreground {
+  color: color-mix(in srgb, var(--muted-foreground) 86%, var(--foreground));
+}
+
+.dashboard-v2-card {
+  min-width: 0;
+  box-shadow: 0 14px 36px color-mix(in srgb, var(--foreground) 5%, transparent);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.dashboard-v2-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 24%, var(--border));
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+
+.dashboard-v2-kpi {
+  animation: workspace-card-in 360ms ease-out both;
+}
+
+.dashboard-v2-kpi:nth-child(2) {
+  animation-delay: 45ms;
+}
+
+.dashboard-v2-kpi:nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.dashboard-v2-kpi:nth-child(4) {
+  animation-delay: 135ms;
+}
+
+.dashboard-v2-kpi-featured {
+  background:
+    radial-gradient(
+      circle at 88% 12%,
+      color-mix(in srgb, var(--primary) 20%, transparent),
+      transparent 38%
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--primary) 12%, var(--card)),
+      var(--card) 68%
+    );
+}
+
+.dashboard-v2-kpi-featured::after {
+  position: absolute;
+  right: -8%;
+  bottom: -1.8rem;
+  left: 28%;
+  height: 4.5rem;
+  content: "";
+  border-top: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+  border-radius: 50%;
+  transform: rotate(-8deg);
+}
+
+.dashboard-v2-kpi-amount {
+  max-width: 100%;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-v2-alert {
+  background: var(--card);
+}
+
+.dashboard-v2-alert-overdue {
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--card) 91%, var(--destructive)),
+    var(--card) 72%
+  );
+}
+
+.dashboard-v2-alert-today {
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--card) 92%, #f59e0b),
+    var(--card) 72%
+  );
+}
+
+.dashboard-v2-alert-upcoming {
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--card) 93%, var(--primary)),
+    var(--card) 72%
+  );
+}
+
+.dashboard-chart-bar-negative {
+  transform-origin: top;
+}
+
+.dashboard-v2-budget-ring {
+  background: conic-gradient(
+    var(--dashboard-budget-color, var(--primary)) 0
+      var(--dashboard-budget-progress),
+    color-mix(in srgb, var(--muted) 86%, transparent)
+      var(--dashboard-budget-progress) 360deg
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--border) 75%, transparent),
+    0 6px 18px
+      color-mix(
+        in srgb,
+        var(--dashboard-budget-color, var(--primary)) 12%,
+        transparent
+      );
+}
+
+.dark .dashboard-v2-card {
+  box-shadow: 0 18px 46px rgb(0 0 0 / 18%);
+}
+
+.dark .dashboard-v2-card:hover {
+  box-shadow: 0 20px 52px rgb(0 0 0 / 25%);
 }
 
 .motion-guide-step {
@@ -247,6 +412,7 @@
   .workspace-page-motion,
   .workspace-page-motion .motion-page-heading,
   .workspace-page-motion [data-slot="card"],
+  .dashboard-v2-kpi,
   .dashboard-chart-bar,
   .dashboard-progress-fill,
   .motion-guide-step {
