@@ -17,6 +17,10 @@ describe("Dashboard V2 presentation contract", () => {
     expect(overview).toContain("xl:grid-cols-4");
     expect(overview).toContain('title="Arus kas bersih"');
     expect(overview).toContain("dashboard-v2-kpi-amount");
+    expect(overview).toContain(
+      'className="min-h-8 pr-11 text-[11px] font-medium leading-4',
+    );
+    expect(overview).not.toContain("sm:min-h-0");
     expect(overview).not.toContain(
       "dashboard-v2-kpi-amount mt-2 block truncate",
     );

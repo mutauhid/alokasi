@@ -922,5 +922,6 @@ Unit test domain mencakup validasi asal/akun, status, sisa, dan arah penyesuaian
 | DASHV2-13 | Scrollbar sidebar desktop tipis dan sesuai tema tanpa menghilangkan scroll; label periode tidak overflow pada 360/390 px dan nominal ledger memakai warna netral |
 | DASHV2-14 | Kartu Budget/Pengingat dan Transaksi sejajar dari atas tetapi masing-masing mengikuti tinggi konten; tidak ada ruang kosong internal yang dibuat hanya untuk menyamakan tinggi |
 | DASHV2-15 | Nominal pada empat KPI tidak memakai ellipsis; ikon tidak mengurangi lebar nominal dan angka ekstrem dapat membungkus tanpa kehilangan digit |
+| DASHV2-16 | Area judul empat KPI memiliki tinggi dua baris pada seluruh breakpoint sehingga baseline nominal selalu sejajar |
 
 Verifikasi lokal lulus untuk lint, typecheck, build produksi, 172 unit test, serta 14 smoke Playwright Microsoft Edge pada viewport desktop/mobile dan tema light/dark. Suite integrasi PostgreSQL tidak berjalan karena `TEST_DATABASE_URL` khusus test tidak tersedia; seluruh 53 test dilewati sebelum setup dan tidak menunjukkan regresi Dashboard. Screenshot Dashboard terautentikasi belum dihasilkan karena browser otomasi tidak memiliki sesi login/database test, sehingga perbandingan visual dengan mockup perlu dilanjutkan pada sesi pengguna atau preview deployment.

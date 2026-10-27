@@ -46,7 +46,7 @@ function KpiCard({
     >
       <div className="relative z-10 min-w-0">
         <div className="min-w-0">
-          <p className="min-h-8 pr-11 text-[11px] font-medium leading-4 text-muted-foreground sm:min-h-0 sm:pr-12 sm:text-sm">
+          <p className="min-h-8 pr-11 text-[11px] font-medium leading-4 text-muted-foreground sm:pr-12 sm:text-sm">
             {title}
           </p>
           <SensitiveAmount
