@@ -869,3 +869,18 @@ serta smoke notifikasi perangkat nyata wajib diterapkan pada environment target.
 | PRIVACY-04 | Dashboard, Transaksi, Budget, Akun, Pengingat, Laporan, tooltip grafik, serta teks pembaca layar mengikuti mode yang sama |
 | PRIVACY-05 | Input/edit nominal, kalkulasi, persentase, grafik, ekspor, dan nilai database tidak berubah |
 | PRIVACY-06 | Privasi payload Web Push tetap independen dan memakai tombol mata tersendiri dengan keterangan layar terkunci |
+
+## Hasil tahap 42 — Detail riwayat mobile, 27 Oktober 2026
+
+| ID | Kriteria penerimaan |
+|---|---|
+| MOBILE-01 | Kartu Dashboard memakai judul “Transaksi terbaru periode ini” tanpa subteks aktivitas yang berulang |
+| MOBILE-02 | Item Transaksi dan Pengingat memakai kolom nominal kanan yang stabil pada mobile; judul/metadata panjang tidak menggeser nominal atau menimbulkan overflow horizontal |
+| MOBILE-03 | Mengetuk seluruh baris membuka bottom sheet berisi detail lengkap dengan trigger keyboard, focus ring, judul, dan label aksesibel |
+| MOBILE-04 | Sheet transaksi menyediakan edit dan hapus hanya bagi Owner atau Editor pembuat; Viewer memperoleh detail baca-saja dan hapus tetap memakai konfirmasi |
+| MOBILE-05 | Sheet pengingat menyediakan catat/lewati hanya ketika jatuh tempo serta edit/nonaktifkan menurut role dan kepemilikan yang sama seperti service |
+| MOBILE-06 | Mode privasi nominal tetap berlaku pada daftar dan detail; input edit tidak dimasking |
+| MOBILE-07 | Sheet transaksi pertama kali hanya merender detail dan ikon aksi 44 px; form edit baru tampil setelah pensil ditekan serta menyediakan tombol kembali |
+| MOBILE-08 | Ikon trash memiliki label aksesibel dan membuka konfirmasi hapus; menutup lalu membuka ulang sheet selalu kembali ke detail |
+| MOBILE-09 | Ikon pensil/trash Transaksi dan Pengingat berada pada header sebelum tombol tutup sehingga bagian bawah kartu detail tidak memuat aksi pengelolaan |
+| MOBILE-10 | Trash Pengingat membuka konfirmasi nonaktifkan dan menjelaskan transaksi lama tidak dihapus; Catat/Lewati tetap hanya tersedia ketika jatuh tempo |

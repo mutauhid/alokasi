@@ -305,53 +305,56 @@ export async function TransactionsSection({
                 return (
                   <li
                     key={transaction.id}
-                    className="py-5 first:pt-0 last:pb-0"
+                    className="py-2 first:pt-0 last:pb-0"
                   >
-                    <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto]">
-                      <div className="contents">
-                        <TransactionCategoryIcon
-                          categoryName={transaction.category?.name ?? null}
-                          type={transaction.type}
-                        />
-                        <div className="min-w-0">
-                          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-                            <p className="min-w-0 break-words font-medium leading-snug">
+                    <TransactionActions
+                      title={transaction.title}
+                      heading="Detail transaksi"
+                      trigger={
+                        <button
+                          type="button"
+                          className="group grid w-full cursor-pointer grid-cols-[2.5rem_minmax(0,1fr)_auto] items-start gap-3 rounded-xl px-2 py-3 text-left transition-colors hover:bg-accent/55 active:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          aria-label={`Lihat detail transaksi ${transaction.title}`}
+                        >
+                          <TransactionCategoryIcon
+                            categoryName={transaction.category?.name ?? null}
+                            type={transaction.type}
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate font-medium leading-snug">
                               {transaction.title}
                             </p>
-                            <Badge variant="outline">{detail.label}</Badge>
-                          </div>
-                          <p className="mt-1 break-words text-xs text-muted-foreground">
-                            {transaction.account.name}
-                            {transaction.destinationAccount
-                              ? ` → ${transaction.destinationAccount.name}`
-                              : ""}
-                            {transaction.category
-                              ? ` · ${transaction.category.name}`
-                              : ""}
-                            {` · ${displayDate(transaction.transactionDate)}`}
-                            {access.workspaceType === "shared"
-                              ? ` · dicatat ${transaction.creator.user.displayName ?? transaction.creator.user.email ?? "anggota"}`
-                              : ""}
-                          </p>
-                          {transaction.note && (
-                            <p className="mt-1 break-words text-xs text-muted-foreground">
-                              {transaction.note}
+                            <p className="mt-1 truncate text-xs text-muted-foreground">
+                              {transaction.account.name}
+                              {transaction.destinationAccount
+                                ? ` → ${transaction.destinationAccount.name}`
+                                : ""}
+                              {transaction.category
+                                ? ` · ${transaction.category.name}`
+                                : ""}
+                              {` · ${displayDate(transaction.transactionDate)}`}
+                              {access.workspaceType === "shared"
+                                ? ` · dicatat ${transaction.creator.user.displayName ?? transaction.creator.user.email ?? "anggota"}`
+                                : ""}
                             </p>
-                          )}
-                        </div>
-                      </div>
-                      <p
-                        className={`col-start-2 font-semibold sm:col-start-3 sm:row-start-1 sm:whitespace-nowrap sm:text-right ${transaction.type === "expense" ? "text-destructive" : transaction.type === "income" ? "text-primary" : ""}`}
-                      >
-                        {detail.sign}
-                        <SensitiveAmount>
-                          {rupiah(transaction.amount)}
-                        </SensitiveAmount>
-                      </p>
-                    </div>
-                    {canMutate && (
-                      <div className="mt-3 flex justify-end">
-                        <TransactionActions title={transaction.title}>
+                            {transaction.note && (
+                              <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                                {transaction.note}
+                              </p>
+                            )}
+                          </div>
+                          <p
+                            className={`whitespace-nowrap pt-0.5 text-right text-sm font-semibold ${transaction.type === "expense" ? "text-destructive" : transaction.type === "income" ? "text-primary" : ""}`}
+                          >
+                            {detail.sign}
+                            <SensitiveAmount>
+                              {rupiah(transaction.amount)}
+                            </SensitiveAmount>
+                          </p>
+                        </button>
+                      }
+                      editContent={
+                        canMutate ? (
                           <TransactionForm
                             workspaceId={access.workspaceId}
                             compact
@@ -375,14 +378,88 @@ export async function TransactionsSection({
                               note: transaction.note ?? "",
                             }}
                           />
+                        ) : undefined
+                      }
+                      deleteAction={
+                        canMutate ? (
                           <DeleteTransactionButton
                             workspaceId={access.workspaceId}
                             id={transaction.id}
                             version={transaction.version}
+                            iconOnly
                           />
-                        </TransactionActions>
+                        ) : undefined
+                      }
+                    >
+                      <div className="grid gap-3 rounded-xl border bg-muted/25 p-4 text-sm sm:grid-cols-2">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Jenis</p>
+                          <Badge variant="outline" className="mt-1.5">
+                            {detail.label}
+                          </Badge>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            Nominal
+                          </p>
+                          <p
+                            className={`mt-1.5 font-semibold ${transaction.type === "expense" ? "text-destructive" : transaction.type === "income" ? "text-primary" : ""}`}
+                          >
+                            {detail.sign}
+                            <SensitiveAmount>
+                              {rupiah(transaction.amount)}
+                            </SensitiveAmount>
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            Tanggal
+                          </p>
+                          <p className="mt-1.5 font-medium">
+                            {displayDate(transaction.transactionDate)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Akun</p>
+                          <p className="mt-1.5 font-medium">
+                            {transaction.account.name}
+                            {transaction.destinationAccount
+                              ? ` → ${transaction.destinationAccount.name}`
+                              : ""}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            Kategori
+                          </p>
+                          <p className="mt-1.5 font-medium">
+                            {transaction.category?.name ?? "Tanpa kategori"}
+                          </p>
+                        </div>
+                        {access.workspaceType === "shared" && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">
+                              Dicatat oleh
+                            </p>
+                            <p className="mt-1.5 break-words font-medium">
+                              {transaction.creator.user.displayName ??
+                                transaction.creator.user.email ??
+                                "Anggota"}
+                            </p>
+                          </div>
+                        )}
+                        {transaction.note && (
+                          <div className="sm:col-span-2">
+                            <p className="text-xs text-muted-foreground">
+                              Catatan
+                            </p>
+                            <p className="mt-1.5 whitespace-pre-wrap break-words">
+                              {transaction.note}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </TransactionActions>
                   </li>
                 );
               })}

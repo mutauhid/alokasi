@@ -378,12 +378,9 @@ export async function Dashboard({
 
       <Card className="gap-0 shadow-none">
         <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <div>
-            <CardTitle className="text-base">Transaksi terbaru</CardTitle>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Aktivitas terbaru pada periode yang dipilih
-            </p>
-          </div>
+          <CardTitle className="text-base">
+            Transaksi terbaru periode ini
+          </CardTitle>
           <Link
             className="rounded-lg border px-3 py-2 text-xs font-medium hover:bg-accent"
             href={reportHref(workspaceId, data.period)}

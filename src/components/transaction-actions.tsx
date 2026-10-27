@@ -1,7 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, MoreHorizontal, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -17,24 +18,42 @@ export function TransactionActions({
   children,
   heading = "Kelola transaksi",
   triggerLabel,
+  trigger,
+  editContent,
+  editHeading = "Ubah transaksi",
+  editLabel = "Ubah transaksi",
+  deleteAction,
 }: {
   title: string;
   children: ReactNode;
   heading?: string;
   triggerLabel?: string;
+  trigger?: ReactNode;
+  editContent?: ReactNode;
+  editHeading?: string;
+  editLabel?: string;
+  deleteAction?: ReactNode;
 }) {
+  const [view, setView] = useState<"detail" | "edit">("detail");
+
   return (
-    <Sheet>
+    <Sheet
+      onOpenChange={(open) => {
+        if (!open) setView("detail");
+      }}
+    >
       <SheetTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="size-11 rounded-xl"
-          aria-label={triggerLabel ?? `Kelola transaksi ${title}`}
-        >
-          <MoreHorizontal className="size-5" aria-hidden="true" />
-        </Button>
+        {trigger ?? (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="size-11 rounded-xl"
+            aria-label={triggerLabel ?? `Kelola transaksi ${title}`}
+          >
+            <MoreHorizontal className="size-5" aria-hidden="true" />
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent
         side="bottom"
@@ -45,10 +64,49 @@ export function TransactionActions({
           aria-hidden="true"
         />
         <SheetHeader className="px-0 pb-2 pr-12">
-          <SheetTitle>{heading}</SheetTitle>
-          <SheetDescription className="break-words">{title}</SheetDescription>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <SheetTitle>{view === "edit" ? editHeading : heading}</SheetTitle>
+              <SheetDescription className="mt-1.5 break-words">
+                {title}
+              </SheetDescription>
+            </div>
+            {view === "detail" && (editContent || deleteAction) && (
+              <div className="flex shrink-0 gap-2">
+                {editContent && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="size-11 rounded-xl"
+                    aria-label={editLabel}
+                    title={editLabel}
+                    onClick={() => setView("edit")}
+                  >
+                    <Pencil className="size-4.5" aria-hidden="true" />
+                  </Button>
+                )}
+                {deleteAction}
+              </div>
+            )}
+          </div>
         </SheetHeader>
-        <div className="space-y-4 pb-2">{children}</div>
+        {view === "detail" ? (
+          <div className="space-y-4 pb-2">{children}</div>
+        ) : (
+          <div className="space-y-4 pb-2">
+            <Button
+              type="button"
+              variant="ghost"
+              className="-ml-2"
+              onClick={() => setView("detail")}
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              Kembali ke detail
+            </Button>
+            {editContent}
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
