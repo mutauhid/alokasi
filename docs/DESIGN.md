@@ -51,7 +51,8 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 ## Riwayat transaksi
 
 - Pencarian riwayat menerima judul transaksi atau nama kategori, tersimpan pada URL, dan bekerja bersama paging tanpa mengubah sumber saran transaksi.
-- Pada mobile, ikon, blok judul/badge/metadata, nominal, dan tindakan memiliki slot yang konsisten. Nominal selalu berada pada baris tersendiri di bawah isi; judul panjang membungkus tanpa mendorong nominal ke posisi acak atau menimbulkan scroll horizontal.
+- Pada mobile, setiap item memakai grid ikon–konten–nominal. Judul dan metadata dipotong secara aman, nominal selalu berada di kanan atas, dan seluruh baris dapat diketuk untuk membuka detail tanpa scroll horizontal.
+- Detail transaksi tampil pada bottom sheet responsif tanpa form panjang. Semua role dapat membaca detail; Owner/Editor yang berhak melihat ikon pensil dan trash pada header di samping judul. Pensil berpindah ke tampilan edit dengan kontrol kembali, sedangkan trash tetap membuka dialog konfirmasi; bagian bawah kartu detail dibiarkan bersih.
 
 ## Perluasan F18 — scan
 
@@ -93,7 +94,7 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Halaman Transaksi memprioritaskan aksi **Scan struk** dan **Tambah transaksi**, lalu riwayat. Pengingat berada pada subhalaman/tab tersendiri di dalam Transaksi; halaman riwayat hanya menampilkan pengingat kontekstual melalui Dashboard. Teks pengingat selalu menjelaskan bahwa template belum mengubah saldo atau budget.
 - Form memakai nama, jenis, nominal, hari bulanan, akun, kategori, dan catatan. Pada layar lebar field membentuk grid; pada mobile semuanya ditumpuk tanpa scroll horizontal.
 - Setiap template menampilkan nominal, akun, kategori, hari asli, tanggal berikutnya, serta status “Dalam n hari”, “Hari ini”, atau “Terlambat n hari”. Status tidak bergantung pada warna saja.
-- Tindakan **Catat sekarang** dan **Lewati periode** hanya muncul ketika jatuh tempo. Edit/nonaktifkan berada pada disclosure sekunder agar tindakan keuangan utama tetap jelas.
+- Item pengingat memakai pola tap-detail dan posisi nominal yang sama dengan riwayat transaksi. Ikon edit/nonaktifkan berada pada header; trash membuka konfirmasi nonaktifkan, bukan hard delete. **Catat sekarang** dan **Lewati periode** hanya tampil setelah detail ketika jatuh tempo.
 - Dashboard menampilkan ringkasan maksimal lima pengingat dalam tujuh hari dan tautan menuju Transaksi. Teks menegaskan bahwa saldo belum berubah.
 
 ## Perluasan F22 — saran transaksi

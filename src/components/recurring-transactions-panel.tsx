@@ -1,6 +1,5 @@
 import { CalendarClock, Check, FastForward, Repeat2 } from "lucide-react";
 import {
-  archiveRecurringTemplateAction,
   postRecurringOccurrenceAction,
   skipRecurringOccurrenceAction,
 } from "@/app/(workspace)/actions";
@@ -12,6 +11,8 @@ import { calendarDayDifference } from "@/modules/recurring/domain";
 import type { listRecurringTemplates } from "@/modules/recurring/service";
 import type { WorkspaceAccess } from "@/modules/workspaces/service";
 import { SensitiveAmount } from "@/components/amount-privacy";
+import { TransactionActions } from "@/components/transaction-actions";
+import { ArchiveRecurringTemplateButton } from "@/components/archive-recurring-template-button";
 
 type Template = Awaited<ReturnType<typeof listRecurringTemplates>>[number];
 type Option = { id: string; name: string };
@@ -119,73 +120,54 @@ export function RecurringTransactionsPanel({
                 (access.role === "editor" &&
                   template.createdBy === access.actorId);
               return (
-                <li key={template.id} className="py-5 first:pt-0 last:pb-0">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="flex min-w-0 gap-3">
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
-                        <CalendarClock className="size-5" aria-hidden="true" />
-                      </span>
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium">{template.name}</p>
-                          <Badge variant={isDue ? "destructive" : "outline"}>
+                <li key={template.id} className="py-2 first:pt-0 last:pb-0">
+                  <TransactionActions
+                    title={template.name}
+                    heading="Detail pengingat"
+                    trigger={
+                      <button
+                        type="button"
+                        className="group grid w-full cursor-pointer grid-cols-[2.5rem_minmax(0,1fr)_auto] items-start gap-3 rounded-xl px-2 py-3 text-left transition-colors hover:bg-accent/55 active:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        aria-label={`Lihat detail pengingat ${template.name}`}
+                      >
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
+                          <CalendarClock
+                            className="size-5"
+                            aria-hidden="true"
+                          />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate font-medium">
+                            {template.name}
+                          </p>
+                          <p
+                            className={`mt-1 truncate text-xs font-medium ${isDue ? "text-destructive" : "text-muted-foreground"}`}
+                          >
                             {dueLabel(today, template.nextDueDate)}
-                          </Badge>
-                          <Badge variant="outline">
-                            {template.type === "income"
-                              ? "Pemasukan"
-                              : "Pengeluaran"}
-                          </Badge>
+                          </p>
+                          <p className="mt-1.5 truncate text-xs text-muted-foreground">
+                            {template.account.name} · {template.category.name} ·
+                            setiap tanggal {template.recurrenceDay} · berikutnya{" "}
+                            {displayDate(template.nextDueDate)}
+                            {access.workspaceType === "shared"
+                              ? ` · dibuat ${template.creator.user.displayName ?? template.creator.user.email ?? "anggota"}`
+                              : ""}
+                          </p>
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {template.account.name} · {template.category.name} ·
-                          setiap tanggal {template.recurrenceDay} · berikutnya{" "}
-                          {displayDate(template.nextDueDate)}
-                          {access.workspaceType === "shared"
-                            ? ` · dibuat ${template.creator.user.displayName ?? template.creator.user.email ?? "anggota"}`
-                            : ""}
+                        <p
+                          className={`whitespace-nowrap pt-0.5 text-right text-sm font-semibold ${template.type === "expense" ? "text-destructive" : "text-primary"}`}
+                        >
+                          {template.type === "expense" ? "−" : "+"}
+                          <SensitiveAmount>
+                            {rupiah(template.amount)}
+                          </SensitiveAmount>
                         </p>
-                      </div>
-                    </div>
-                    <p
-                      className={`font-semibold ${template.type === "expense" ? "text-destructive" : "text-primary"}`}
-                    >
-                      {template.type === "expense" ? "−" : "+"}
-                      <SensitiveAmount>
-                        {rupiah(template.amount)}
-                      </SensitiveAmount>
-                    </p>
-                  </div>
-
-                  {canMutate && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {isDue && (
-                        <>
-                          <form action={postRecurringOccurrenceAction}>
-                            <MutationIdentity template={template} />
-                            <Button type="submit" size="sm">
-                              <Check className="size-4" />
-                              Catat sekarang
-                            </Button>
-                          </form>
-                          <form action={skipRecurringOccurrenceAction}>
-                            <MutationIdentity template={template} />
-                            <Button type="submit" size="sm" variant="outline">
-                              <FastForward className="size-4" />
-                              Lewati periode
-                            </Button>
-                          </form>
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  {canMutate && (
-                    <details className="mt-4 rounded-lg border p-3 text-sm">
-                      <summary className="cursor-pointer font-medium">
-                        Ubah atau nonaktifkan
-                      </summary>
-                      <div className="mt-4 space-y-3">
+                      </button>
+                    }
+                    editHeading="Ubah pengingat"
+                    editLabel="Ubah pengingat"
+                    editContent={
+                      canMutate ? (
                         <RecurringTemplateForm
                           compact
                           workspaceId={access.workspaceId}
@@ -203,15 +185,118 @@ export function RecurringTransactionsPanel({
                             recurrenceDay: template.recurrenceDay,
                           }}
                         />
-                        <form action={archiveRecurringTemplateAction}>
+                      ) : undefined
+                    }
+                    deleteAction={
+                      canMutate ? (
+                        <ArchiveRecurringTemplateButton
+                          workspaceId={access.workspaceId}
+                          id={template.id}
+                          version={template.version}
+                          name={template.name}
+                        />
+                      ) : undefined
+                    }
+                  >
+                    <div className="grid gap-3 rounded-xl border bg-muted/25 p-4 text-sm sm:grid-cols-2">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Status</p>
+                        <Badge
+                          variant={isDue ? "destructive" : "outline"}
+                          className="mt-1.5"
+                        >
+                          {dueLabel(today, template.nextDueDate)}
+                        </Badge>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Jenis</p>
+                        <p className="mt-1.5 font-medium">
+                          {template.type === "income"
+                            ? "Pemasukan"
+                            : "Pengeluaran"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Nominal</p>
+                        <p
+                          className={`mt-1.5 font-semibold ${template.type === "expense" ? "text-destructive" : "text-primary"}`}
+                        >
+                          {template.type === "expense" ? "−" : "+"}
+                          <SensitiveAmount>
+                            {rupiah(template.amount)}
+                          </SensitiveAmount>
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">
+                          Jadwal berikutnya
+                        </p>
+                        <p className="mt-1.5 font-medium">
+                          {displayDate(template.nextDueDate)} · tanggal{" "}
+                          {template.recurrenceDay} setiap bulan
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Akun</p>
+                        <p className="mt-1.5 font-medium">
+                          {template.account.name}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">
+                          Kategori
+                        </p>
+                        <p className="mt-1.5 font-medium">
+                          {template.category.name}
+                        </p>
+                      </div>
+                      {access.workspaceType === "shared" && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            Dibuat oleh
+                          </p>
+                          <p className="mt-1.5 break-words font-medium">
+                            {template.creator.user.displayName ??
+                              template.creator.user.email ??
+                              "Anggota"}
+                          </p>
+                        </div>
+                      )}
+                      {template.note && (
+                        <div className="sm:col-span-2">
+                          <p className="text-xs text-muted-foreground">
+                            Catatan
+                          </p>
+                          <p className="mt-1.5 whitespace-pre-wrap break-words">
+                            {template.note}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {canMutate && isDue && (
+                      <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:flex-wrap">
+                        <form action={postRecurringOccurrenceAction}>
                           <MutationIdentity template={template} />
-                          <Button type="submit" variant="destructive" size="sm">
-                            Nonaktifkan template
+                          <Button type="submit" className="w-full sm:w-auto">
+                            <Check className="size-4" />
+                            Catat sekarang
+                          </Button>
+                        </form>
+                        <form action={skipRecurringOccurrenceAction}>
+                          <MutationIdentity template={template} />
+                          <Button
+                            type="submit"
+                            variant="outline"
+                            className="w-full sm:w-auto"
+                          >
+                            <FastForward className="size-4" />
+                            Lewati periode
                           </Button>
                         </form>
                       </div>
-                    </details>
-                  )}
+                    )}
+                  </TransactionActions>
                 </li>
               );
             })}

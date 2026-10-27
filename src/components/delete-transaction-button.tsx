@@ -9,10 +9,12 @@ export function DeleteTransactionButton({
   workspaceId,
   id,
   version,
+  iconOnly = false,
 }: {
   workspaceId: string;
   id: string;
   version: number;
+  iconOnly?: boolean;
 }) {
   return (
     <DialogPrimitive.Root>
@@ -20,10 +22,17 @@ export function DeleteTransactionButton({
         <Button
           type="button"
           variant="outline"
-          className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          size={iconOnly ? "icon" : "default"}
+          className={
+            iconOnly
+              ? "size-11 rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              : "w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          }
+          aria-label={iconOnly ? "Hapus transaksi" : undefined}
+          title={iconOnly ? "Hapus transaksi" : undefined}
         >
           <Trash2 aria-hidden="true" />
-          Hapus transaksi
+          {!iconOnly && "Hapus transaksi"}
         </Button>
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
