@@ -44,7 +44,8 @@ export function buildCashFlowScale(values: bigint[]): CashFlowScale | null {
   );
 
   if (lowest < 0n) {
-    const largestAbsolute = absolute(lowest) > highest ? absolute(lowest) : highest;
+    const largestAbsolute =
+      absolute(lowest) > highest ? absolute(lowest) : highest;
     const step = niceStep(ceilingDivision(largestAbsolute, 2n));
     const limit = step * 2n;
     return {
@@ -69,10 +70,11 @@ export function scalePosition(
 ) {
   const span = scale.maximum - scale.minimum;
   if (span <= 0n) return 0;
-  const clamped = value < scale.minimum
-    ? scale.minimum
-    : value > scale.maximum
-      ? scale.maximum
-      : value;
+  const clamped =
+    value < scale.minimum
+      ? scale.minimum
+      : value > scale.maximum
+        ? scale.maximum
+        : value;
   return Number(((clamped - scale.minimum) * 10_000n) / span) / 100;
 }
