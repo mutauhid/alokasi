@@ -10,7 +10,11 @@ async function source(path: string) {
 
 describe("mobile history details", () => {
   it("keeps the Dashboard transaction heading concise", async () => {
-    const dashboard = await source("dashboard.tsx");
+    const [activity, cashflow] = await Promise.all([
+      source("dashboard-v2/activity.tsx"),
+      source("dashboard-v2/cashflow-debt.tsx"),
+    ]);
+    const dashboard = `${activity}\n${cashflow}`;
 
     expect(dashboard).toContain("Transaksi terbaru periode ini");
     expect(dashboard).toContain("Ringkasan utang & piutang");

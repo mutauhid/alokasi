@@ -34,12 +34,17 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 
 ## Dashboard
 
-- Tiga kartu utama: total saldo saat ini, pemasukan periode, pengeluaran periode. Kartu saldo menjadi penekanan visual.
-- Panel arus kas: pemasukan versus pengeluaran dan arus kas bersih, dengan tanggal/rentang serta label periode belum lengkap.
-- Panel budget: progress per kategori, persentase, dan teks status; warna tidak menjadi satu-satunya indikator.
-- Transaksi terbaru dan akun keuangan menjadi bagian berikutnya. PRD mensyaratkan lima transaksi terbaru; mockup yang menampilkan empat bukan perubahan requirement.
-- Rincian kategori terbesar dan drill-down tetap mengikuti PRD meskipun belum seluruhnya dibuat pada prototype.
-- Saldo bukan “uang aman dibelanjakan”. Sisa budget bukan saldo.
+- Dashboard V2 mengikuti hierarki fintech premium pada referensi: header dan kontrol periode, empat KPI, banner pengingat, panel arus kas/ringkasan utang, panel budget/pengingat/transaksi, lalu aktivitas ledger.
+- Empat KPI adalah total saldo saat ini, pemasukan periode, pengeluaran periode, dan arus kas bersih. Kartu saldo menjadi penekanan visual dan tidak boleh disamakan dengan “uang aman dibelanjakan”.
+- Desktop memakai empat kolom KPI dan grid dua kolom pada panel utama. Tablet beradaptasi tanpa memotong nominal; mobile menumpuk satu kolom tanpa overflow horizontal.
+- Panel arus kas memakai data enam periode existing, legend, label periode, sumbu Y rupiah dinamis, dan ringkasan tekstual. Tick skala mengikuti mode privasi; baseline nol tetap terlihat ketika data negatif tersedia. Kondisi histori kosong atau seluruh nilai nol menampilkan empty state, bukan batang palsu.
+- Panel budget memakai donut proporsional dan progress linear per kategori, menampilkan persentase sebenarnya termasuk di atas 100%, nominal aktual/limit, serta status tekstual agar warna bukan satu-satunya indikator. Sisa budget bukan saldo.
+- Transaksi terbaru tetap maksimal lima item sesuai PRD dan menaut ke laporan dengan periode yang sama. Pengingat menegaskan saldo belum berubah sebelum konfirmasi.
+- Ringkasan serta aktivitas utang/piutang tetap hanya memakai ledger pribadi dan tidak digabung ke transaksi, arus kas, atau budget.
+- Banner dan daftar pengingat membedakan terlambat, jatuh tempo hari ini, dan akan datang melalui label teks serta warna; nominal hanya ditampilkan karena tersedia dari template existing. Ledger memakai badge Utang/Piutang dan Pencatatan/Pembayaran yang berasal dari data existing.
+- Seluruh kartu memakai token light/dark existing, border halus, radius konsisten, focus state, mode privasi nominal, reduced motion, dan skeleton yang mengikuti komposisi akhir.
+- Scrollbar sidebar desktop tetap native dan dapat digulir keyboard/mouse, tetapi memakai thumb tipis berbasis token tema. Kartu Transaksi mengikuti tinggi kontennya; grid tidak memanjangkan kartu hanya untuk menyamai gabungan Budget dan Pengingat.
+- Pada mobile 360–390 px, label periode chart dipecah menjadi tanggal awal/akhir agar tidak overflow. Nominal ledger utang/piutang memakai warna foreground netral karena arah dampak saldo sudah dijelaskan oleh badge tipe dan status.
 
 ## Perluasan F05 — kategori
 
@@ -162,7 +167,7 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Kategori pada form transaksi manual dan review bukti iPhone ditampilkan sebagai kumpulan kartu radio dengan ikon kategori, teks, fokus keyboard, serta indikator terpilih. Semantik native radio dan validasi wajib tetap dipertahankan. Pada ponsel kartu tetap memakai dua kolom; ikon dan radio berada di bagian atas sehingga nama kategori mendapat lebar kartu penuh dan tidak terpotong di tengah kata.
 - Input limit Budget memakai format Rupiah interaktif yang sama dengan transaksi. Tampilan `Rp 500.000` tetap mengirim digit integer `500000` ke Server Action.
 - Tindakan sekunder transaksi menggunakan tombol tiga titik berlabel aksesibel. Tombol membuka bottom sheet responsif berisi form ubah dan tindakan hapus; hapus masih memerlukan dialog konfirmasi terpisah.
-- Dashboard memakai komposisi tiga kartu ringkasan, grafik arus kas dan ringkasan budget berdampingan pada desktop, kemudian transaksi terbaru selebar konten. Mobile menumpuk semua panel tanpa kehilangan legend atau nilai.
+- Dashboard memakai komposisi V2 empat KPI; chart/utang dan budget/transaksi berdampingan pada desktop, sementara mobile menumpuk semua panel tanpa kehilangan legend atau nilai.
 - Tambah transaksi dibuka sebagai modal dari halaman Transaksi maupun tombol “Catat transaksi” Dashboard. Scan bukti tetap alur terpisah; menutup modal tidak membuat transaksi.
 - Kartu Budget dan Akun memakai tombol tiga titik yang membuka bottom sheet untuk edit serta hapus/arsip. Tindakan destruktif atau pengarsipan tetap meminta konfirmasi kedua.
 - Laporan menampilkan grafik batang pemasukan/pengeluaran dari transaksi yang sudah mengikuti seluruh filter. Pengeluaran per kategori menggunakan progress relatif terhadap kategori terbesar; grafik tidak memakai data demo.

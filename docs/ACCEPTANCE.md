@@ -902,3 +902,24 @@ serta smoke notifikasi perangkat nyata wajib diterapkan pada environment target.
 | DEBT-11 | Dashboard ruang pribadi menampilkan posisi sisa utang/piutang, jumlah terlambat, jatuh tempo terdekat, dan empat aktivitas ledger terbaru tanpa mencampurnya ke transaksi, arus kas, atau budget |
 
 Unit test domain mencakup validasi asal/akun, status, sisa, dan arah penyesuaian saldo. Migrasi `20261027000000_debts_receivables`, integration test PostgreSQL, serta smoke Web Push perangkat nyata tetap wajib dijalankan pada environment target.
+
+## Hasil tahap 46 — Dashboard V2, 27 Oktober 2026
+
+| ID | Kriteria penerimaan |
+|---|---|
+| DASHV2-01 | Dashboard memakai empat KPI: saldo terkini, pemasukan periode, pengeluaran periode, dan arus kas bersih; seluruh nominal tetap berasal dari service existing serta mengikuti mode privasi |
+| DASHV2-02 | Desktop memakai empat kolom KPI dan grid dua kolom; tablet/mobile beradaptasi menjadi dua/satu kolom tanpa horizontal overflow atau nominal terpotong |
+| DASHV2-03 | Banner pengingat, filter periode, CTA transaksi, tautan laporan/budget/utang/pengingat, light/dark mode, dan keyboard focus tetap berfungsi |
+| DASHV2-04 | Chart memakai data tren existing, memiliki legend/ringkasan aksesibel, dan menampilkan empty state aman ketika histori kosong atau seluruh nilai nol |
+| DASHV2-05 | Budget menampilkan persentase aktual termasuk nilai di atas 100%; ring visual dijepit maksimal penuh tanpa mengubah angka atau status domain |
+| DASHV2-06 | Utang/piutang tetap terpisah dari transaksi, arus kas, dan budget serta hanya dirender ketika service menyediakannya untuk workspace |
+| DASHV2-07 | Transaksi terbaru tetap maksimal lima item dan aktivitas utang/piutang memakai data aktual; tidak ada nilai finansial hardcoded dari mockup |
+| DASHV2-08 | Loading skeleton mengikuti komposisi V2, animasi menghormati reduced motion, dan styling tambahan terisolasi pada kelas Dashboard |
+| DASHV2-09 | Perubahan tidak menyentuh Prisma schema/migration, endpoint API, autentikasi, otorisasi, routing, atau dependency |
+| DASHV2-10 | Lint, typecheck, unit test, dan build produksi lulus; smoke visual desktop/mobile light/dark dicatat sesuai ketersediaan sesi serta database |
+| DASHV2-11 | Chart memiliki lima label sumbu Y dinamis yang ikut privacy mode, baseline nol untuk data negatif, skala aman bagi `bigint`, label periode jelas, dan empty state saat seluruh nilai nol |
+| DASHV2-12 | Budget multi-kategori menampilkan donut/progress, aktual/limit, persentase aktual, dan status; reminder serta ledger memakai label status yang hanya diturunkan dari data existing |
+| DASHV2-13 | Scrollbar sidebar desktop tipis dan sesuai tema tanpa menghilangkan scroll; label periode tidak overflow pada 360/390 px dan nominal ledger memakai warna netral |
+| DASHV2-14 | Kartu Budget/Pengingat dan Transaksi sejajar dari atas tetapi masing-masing mengikuti tinggi konten; tidak ada ruang kosong internal yang dibuat hanya untuk menyamakan tinggi |
+
+Verifikasi lokal lulus untuk lint, typecheck, build produksi, 172 unit test, serta 14 smoke Playwright Microsoft Edge pada viewport desktop/mobile dan tema light/dark. Suite integrasi PostgreSQL tidak berjalan karena `TEST_DATABASE_URL` khusus test tidak tersedia; seluruh 53 test dilewati sebelum setup dan tidak menunjukkan regresi Dashboard. Screenshot Dashboard terautentikasi belum dihasilkan karena browser otomasi tidak memiliki sesi login/database test, sehingga perbandingan visual dengan mockup perlu dilanjutkan pada sesi pengguna atau preview deployment.

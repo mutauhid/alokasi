@@ -104,7 +104,9 @@ export async function WorkspacePage({
     >
       <ActionSuccessToast code={success} />
       <div className="workspace-page-motion">
-        <div className="motion-page-heading mb-7 flex flex-wrap items-start justify-between gap-5">
+        <div
+          className={`motion-page-heading mb-7 flex flex-wrap items-start justify-between gap-5 ${section === "dashboard" ? "dashboard-v2-heading" : ""}`}
+        >
           <div>
             {section === "dashboard" && (
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -115,12 +117,12 @@ export async function WorkspacePage({
             )}
             <h1 className="text-[27px] font-semibold leading-tight tracking-[-.8px]">
               {section === "dashboard"
-                ? "Selamat datang kembali"
+                ? "Selamat datang kembali 👋"
                 : current.label}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               {section === "dashboard"
-                ? "Gambaran keuanganmu, dalam satu tempat."
+                ? "Kelola keuanganmu, capai tujuan finansial lebih mudah dalam satu tempat."
                 : current.description}
             </p>
           </div>

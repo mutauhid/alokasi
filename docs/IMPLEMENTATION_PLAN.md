@@ -49,6 +49,7 @@ Diperbarui 27 Oktober 2026. Setup UI dan fondasi database telah dibangun; status
 | Tahap 43 percakapan: aksi ringkas detail transaksi | Dikerjakan pada branch yang sama: sheet membuka detail saja, ikon pensil berpindah ke view edit, ikon trash membuka konfirmasi, dan close selalu mereset ke detail |
 | Tahap 44 percakapan: aksi detail pada header | Dikerjakan pada branch yang sama: action group dipindahkan ke header, Pengingat memakai pola edit/nonaktifkan yang sama, dan nonaktifkan template mendapat dialog konfirmasi eksplisit |
 | Tahap 45 percakapan: utang dan piutang pribadi | Dikerjakan pada `feat/debts-receivables`: ledger utang/piutang terpisah, catatan baru/historis, cicilan dan pelunasan, status/jatuh tempo, dampak saldo tanpa menggandakan arus kas/budget, ekspor lengkap, serta Web Push D-3/hari-H |
+| Tahap 46 percakapan: Dashboard V2 | Dikerjakan pada `feat/dashboard-v2`: empat KPI, banner pengingat, chart/utang, budget/pengingat/transaksi, ledger aktivitas, loading skeleton, dan styling responsif khusus Dashboard tanpa mengubah business logic |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Storage bukti permanen/provider OCR eksternal | Belum diimplementasikan; preview Shortcut sementara memakai database draf dengan retensi 24 jam, sedangkan consent, biaya, callback, data residency, dan lifecycle lampiran permanen masih terbuka |
@@ -376,6 +377,15 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Terapkan prioritas frasa terpanjang sebelum riwayat dan kamus bawaan saat membuat draf Telegram.
 - Abaikan kategori arsip, isolasikan aturan antaranggota, dan bersihkan preferensi saat membership/akun/workspace dihapus.
 - Tambahkan migrasi, unit test normalisasi/prioritas, test integrasi CRUD dan klasifikasi Telegram, serta dokumentasi.
+
+## Tahap 46 — Dashboard V2, 27 Oktober 2026
+
+- Tahap A: susun empat KPI responsif, header dashboard, penjelasan periode historis, dan banner pengingat tanpa mengubah service atau data source.
+- Tahap B: tata ulang chart arus kas, ringkasan utang/piutang, serta budget memakai data dan perhitungan existing; tangani seluruh nilai nol dan budget di atas 100% secara aman.
+- Tahap C: susun transaksi terbaru, pengingat, serta aktivitas ledger dalam grid desktop dan satu kolom mobile; pertahankan drill-down, mode privasi, focus state, light/dark, dan seluruh batas role existing.
+- Tahap D: tambahkan loading skeleton khusus Dashboard, styling yang terisolasi, regression test presentasi, dokumentasi, lint, typecheck, unit test, build, dan smoke visual bila environment login/database tersedia.
+- Final refinement: tambahkan sumbu Y `bigint`, baseline nilai negatif, donut/progress budget yang lebih terbaca, status reminder dan ledger, kontras metadata khusus Dashboard, serta KPI mobile 2×2 tanpa mengubah data flow.
+- Tidak ada schema, migration, endpoint, autentikasi, routing, dependency, atau business logic baru. Mockup menjadi referensi komposisi dan hierarki; data aktual tetap sumber kebenaran.
 
 ## Backlog kandidat — bukan komitmen aktif
 
