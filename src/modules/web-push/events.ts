@@ -5,6 +5,7 @@ import { calculateAccountBalances } from "@/modules/finance/domain";
 import { budgetAlertThreshold } from "@/modules/telegram-integration/budget-alert-domain";
 import { getDatabase } from "@/server/db/client";
 import { queueWebPush, safelyDeliverWebPush } from "./service";
+import { debtBalanceAdjustments } from "@/modules/debts/domain";
 
 type TransactionEvent = {
   id: string;
@@ -138,43 +139,72 @@ export async function queueSharedActivityWebPush(
 
 export async function refreshLowBalanceWebPush(workspaceId: string) {
   const db = getDatabase();
-  const [accounts, transactions, reconciliations, preferences] =
-    await Promise.all([
-      db.financialAccount.findMany({
-        where: { workspaceId, archivedAt: null },
-      }),
-      db.transaction.findMany({
-        where: { workspaceId, deletedAt: null },
-        select: {
-          type: true,
-          amount: true,
-          accountId: true,
-          destinationAccountId: true,
-        },
-      }),
-      db.balanceReconciliation.findMany({
-        where: { workspaceId, adjustmentAmount: { not: 0n } },
-        select: { accountId: true, adjustmentAmount: true },
-      }),
-      db.webPushPreference.findMany({
-        where: {
-          workspaceId,
-          lowBalanceEnabled: true,
-          lowBalanceThreshold: { not: null },
-          membership: { status: "active" },
-        },
-        select: { userId: true, lowBalanceThreshold: true },
-      }),
-    ]);
-  if (preferences.length === 0 || accounts.length === 0) return;
-  const balances = calculateAccountBalances(
+  const [
     accounts,
     transactions,
-    reconciliations.map((item) => ({
+    reconciliations,
+    debtRecords,
+    debtPayments,
+    preferences,
+  ] = await Promise.all([
+    db.financialAccount.findMany({
+      where: { workspaceId, archivedAt: null },
+    }),
+    db.transaction.findMany({
+      where: { workspaceId, deletedAt: null },
+      select: {
+        type: true,
+        amount: true,
+        accountId: true,
+        destinationAccountId: true,
+      },
+    }),
+    db.balanceReconciliation.findMany({
+      where: { workspaceId, adjustmentAmount: { not: 0n } },
+      select: { accountId: true, adjustmentAmount: true },
+    }),
+    db.debtRecord.findMany({
+      where: { workspaceId, origin: "current", accountId: { not: null } },
+      select: {
+        kind: true,
+        origin: true,
+        principalAmount: true,
+        accountId: true,
+      },
+    }),
+    db.debtPayment.findMany({
+      where: { workspaceId },
+      select: {
+        amount: true,
+        accountId: true,
+        debtRecord: { select: { kind: true } },
+      },
+    }),
+    db.webPushPreference.findMany({
+      where: {
+        workspaceId,
+        lowBalanceEnabled: true,
+        lowBalanceThreshold: { not: null },
+        membership: { status: "active" },
+      },
+      select: { userId: true, lowBalanceThreshold: true },
+    }),
+  ]);
+  if (preferences.length === 0 || accounts.length === 0) return;
+  const balances = calculateAccountBalances(accounts, transactions, [
+    ...reconciliations.map((item) => ({
       accountId: item.accountId,
       amount: item.adjustmentAmount,
     })),
-  );
+    ...debtBalanceAdjustments(
+      debtRecords,
+      debtPayments.map((payment) => ({
+        kind: payment.debtRecord.kind,
+        amount: payment.amount,
+        accountId: payment.accountId,
+      })),
+    ),
+  ]);
   await db.$transaction(async (tx) => {
     for (const preference of preferences) {
       const threshold = preference.lowBalanceThreshold;

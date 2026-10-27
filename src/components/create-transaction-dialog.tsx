@@ -46,7 +46,7 @@ export function CreateTransactionDialog({
             <DialogPrimitive.Title className="text-xl font-semibold">
               Tambah transaksi
             </DialogPrimitive.Title>
-            <DialogPrimitive.Description className="mt-1.5 text-sm text-muted-foreground">
+            <DialogPrimitive.Description className="m-4 text-sm text-muted-foreground">
               Catat pemasukan, pengeluaran, atau transfer tanpa meninggalkan
               halaman riwayat.
             </DialogPrimitive.Description>

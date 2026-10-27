@@ -39,6 +39,7 @@ type PreferenceInput = {
   lowBalanceThreshold: bigint | null;
   staleDraftsEnabled: boolean;
   sharedActivityEnabled: boolean;
+  debtDueRemindersEnabled: boolean;
   quietHoursStart: number | null;
   quietHoursEnd: number | null;
   hideSensitiveContent: boolean;
@@ -52,6 +53,7 @@ const defaultPreference: PreferenceInput = {
   lowBalanceThreshold: null as bigint | null,
   staleDraftsEnabled: true,
   sharedActivityEnabled: true,
+  debtDueRemindersEnabled: true,
   quietHoursStart: 22 * 60,
   quietHoursEnd: 7 * 60,
   hideSensitiveContent: true,

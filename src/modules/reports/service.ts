@@ -232,6 +232,8 @@ export async function exportWorkspaceJson(
         budgets,
         recurringTemplates,
         reconciliations,
+        debtRecords,
+        debtPayments,
         transactions,
       ] = await Promise.all([
         tx.cycleSetting.findMany({
@@ -284,6 +286,18 @@ export async function exportWorkspaceJson(
             { id: "asc" },
           ],
         }),
+        tx.debtRecord.findMany({
+          where: { workspaceId },
+          orderBy: [{ startDate: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+        }),
+        tx.debtPayment.findMany({
+          where: { workspaceId },
+          orderBy: [
+            { paymentDate: "asc" },
+            { createdAt: "asc" },
+            { id: "asc" },
+          ],
+        }),
         tx.transaction.findMany({
           where: { workspaceId },
           select: {
@@ -331,6 +345,8 @@ export async function exportWorkspaceJson(
         budgets,
         recurringTemplates,
         reconciliations,
+        debtRecords,
+        debtPayments,
         transactions,
       };
     },
@@ -340,7 +356,7 @@ export async function exportWorkspaceJson(
 
   const document = {
     format: "alokasi-workspace-export",
-    schemaVersion: 4,
+    schemaVersion: 5,
     exportedAt: exportedAt.toISOString(),
     workspace: {
       ...snapshot.workspace,
@@ -424,6 +440,32 @@ export async function exportWorkspaceJson(
         displayName: item.creator.user.displayName,
         email: item.creator.user.email,
       },
+      createdAt: item.createdAt.toISOString(),
+    })),
+    debtRecords: snapshot.debtRecords.map((item) => ({
+      id: item.id,
+      createdBy: item.createdBy,
+      kind: item.kind,
+      origin: item.origin,
+      counterparty: item.counterparty,
+      title: item.title,
+      principalAmount: item.principalAmount.toString(),
+      startDate: dateOnly(item.startDate),
+      dueDate: item.dueDate ? dateOnly(item.dueDate) : null,
+      accountId: item.accountId,
+      note: item.note,
+      version: item.version,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
+    })),
+    debtPayments: snapshot.debtPayments.map((item) => ({
+      id: item.id,
+      debtRecordId: item.debtRecordId,
+      createdBy: item.createdBy,
+      accountId: item.accountId,
+      amount: item.amount.toString(),
+      paymentDate: dateOnly(item.paymentDate),
+      note: item.note,
       createdAt: item.createdAt.toISOString(),
     })),
     transactions: snapshot.transactions.map((transaction) => ({

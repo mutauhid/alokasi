@@ -5,6 +5,7 @@ import { TransactionsSection } from "@/components/transactions-section";
 import { BudgetsSection } from "@/components/budgets-section";
 import { ReportsSection } from "@/components/reports-section";
 import { MembersSection } from "@/components/members-section";
+import { DebtsSection } from "@/components/debts-section";
 import type { ReportQuery } from "@/modules/reports/service";
 import type { Section } from "@/lib/navigation";
 import type { WorkspaceAccess } from "@/modules/workspaces/service";
@@ -44,6 +45,7 @@ export function SectionContent({
       return (
         <Dashboard
           workspaceId={access.workspaceId}
+          workspaceType={access.workspaceType}
           today={today}
           periodId={selectedPeriodId}
         />
@@ -72,6 +74,8 @@ export function SectionContent({
           success={success}
         />
       );
+    case "debts":
+      return <DebtsSection access={access} today={today} error={error} />;
     case "accounts":
       return (
         <AccountsSection

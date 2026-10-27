@@ -29,7 +29,8 @@ Jika dependency sudah terpasang pada workspace ini, cukup jalankan `npm run dev`
 - Manifest, ikon standar/maskable/Apple, service worker, dan halaman offline untuk pemasangan aplikasi sebagai PWA.
 - Rekonsiliasi manual per akun dengan histori, status perlu diperiksa kembali, dan penyesuaian eksplisit yang tidak dihitung sebagai arus kas atau realisasi budget.
 - Bot Telegram teks untuk draf pengeluaran dengan koreksi/konfirmasi dari chat pribadi; memerlukan setup webhook, migrasi, dan token bot sebelum aktif. Lihat [setup Telegram](docs/TELEGRAM_SETUP.md).
-- Web Push opt-in untuk budget, ringkasan mingguan, transaksi berulang, saldo menipis, draf tertunda, dan aktivitas ruang bersama. Lihat [setup Web Push](docs/WEB_PUSH_SETUP.md).
+- Utang dan piutang pribadi dengan catatan baru/historis, cicilan, pelunasan, jatuh tempo, dan saldo akun tanpa menggandakan laporan arus kas.
+- Web Push opt-in untuk budget, ringkasan mingguan, transaksi berulang, jatuh tempo utang/piutang, saldo menipis, draf tertunda, dan aktivitas ruang bersama. Lihat [setup Web Push](docs/WEB_PUSH_SETUP.md).
 - Tombol mata global untuk menyamarkan nominal baca-saja pada perangkat tanpa mengubah data keuangan atau hasil ekspor.
 
 Ruang pribadi/bersama, login, akun, kategori, transaksi inti, budget, dashboard, laporan, peran anggota, undangan berbasis tautan, transfer kepemilikan, ekspor transaksi/ruang, siklus gajian, draf OCR, rekonsiliasi saldo, serta penghapusan ruang/akun sudah terhubung ke PostgreSQL melalui service server. OCR dari upload manual berjalan lokal di browser. Jalur iPhone mengirim screenshot privat maksimal 4 MB untuk preview draf selama paling lama 24 jam; gambar dihapus saat submit/batal dan tidak menjadi lampiran transaksi, sedangkan teks OCR mentah tidak disimpan. Pengiriman email undangan otomatis, provider OCR eksternal, penyimpanan bukti permanen, backup/pemulihan, dan konfigurasi deployment produksi belum tersedia.

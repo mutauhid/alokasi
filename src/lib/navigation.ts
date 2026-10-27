@@ -18,6 +18,12 @@ export const navigation = [
     icon: "budgets",
   },
   {
+    slug: "debts",
+    label: "Utang & Piutang",
+    description: "Pantau kewajiban, tagihan personal, dan jatuh temponya.",
+    icon: "debts",
+  },
+  {
     slug: "accounts",
     label: "Akun",
     description: "Semua sumber dana, dalam satu pandangan.",

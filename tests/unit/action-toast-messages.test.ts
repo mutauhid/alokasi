@@ -23,6 +23,11 @@ describe("action success toast messages", () => {
     expect(getActionToastMessage("category-created")).toBeDefined();
     expect(getActionToastMessage("member-role-changed")).toBeDefined();
     expect(getActionToastMessage("profile-updated")).toBeDefined();
+    expect(getActionToastMessage("debt-created")).toBeDefined();
+    expect(getActionToastMessage("debt-payment-created")).toBeDefined();
+    expect(getActionToastMessage("debt-settled")?.title).toBe(
+      "Utang atau piutang sudah lunas",
+    );
   });
 
   it("does not present unknown or missing query values as success", () => {

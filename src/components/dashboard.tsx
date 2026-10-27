@@ -4,6 +4,8 @@ import {
   ArrowUpRight,
   CalendarClock,
   ChartPie,
+  CircleCheckBig,
+  HandCoins,
   ReceiptText,
   Wallet,
 } from "lucide-react";
@@ -66,16 +68,34 @@ function displayDate(date: Date) {
   }).format(date);
 }
 
+function debtDueLabel(today: Date, dueDate: Date) {
+  const difference = calendarDayDifference(today, dueDate);
+  const date = displayDate(dueDate);
+  if (difference < 0) {
+    return `Terlambat ${Math.abs(difference)} hari · ${date}`;
+  }
+  if (difference === 0) return `Jatuh tempo hari ini · ${date}`;
+  if (difference === 1) return `Jatuh tempo besok · ${date}`;
+  return `Dalam ${difference} hari · ${date}`;
+}
+
 export async function Dashboard({
   workspaceId,
+  workspaceType,
   today,
   periodId,
 }: {
   workspaceId: string;
+  workspaceType: "personal" | "shared";
   today: Date;
   periodId: string;
 }) {
-  const data = await getDashboardOverview(workspaceId, today, periodId);
+  const data = await getDashboardOverview(
+    workspaceId,
+    today,
+    periodId,
+    workspaceType,
+  );
   const trendMaximum = data.trend.reduce((maximum, item) => {
     const itemMaximum = item.income > item.expense ? item.income : item.expense;
     return itemMaximum > maximum ? itemMaximum : maximum;
@@ -156,7 +176,7 @@ export async function Dashboard({
                 <CalendarClock className="size-4 text-primary" />
                 Pengingat transaksi berulang
               </CardTitle>
-              <p className="mt-1.5 text-xs text-muted-foreground">
+              <p className="m-3 text-xs text-muted-foreground">
                 Jatuh tempo dalam tujuh hari. Saldo belum berubah.
               </p>
             </div>
@@ -205,12 +225,162 @@ export async function Dashboard({
         </Card>
       )}
 
+      {data.debts && (
+        <div className="grid gap-5 xl:grid-cols-[1fr_1.35fr]">
+          <Card className="gap-0 shadow-none">
+            <CardHeader className="flex flex-row items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <HandCoins className="size-4 text-primary" />
+                  Ringkasan utang & piutang
+                </CardTitle>
+                <p className="m-4 text-xs text-muted-foreground">
+                  Posisi saat ini, terpisah dari arus kas dan budget.
+                </p>
+              </div>
+              <Link
+                className="shrink-0 text-xs font-medium text-primary hover:underline"
+                href={sectionHref("debts", workspaceId)}
+              >
+                Lihat semua →
+              </Link>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl border bg-secondary/20 p-3">
+                  <p className="text-xs text-muted-foreground">Sisa utang</p>
+                  <SensitiveAmount className="mt-1 block font-semibold text-destructive">
+                    {rupiah(data.debts.totalDebt)}
+                  </SensitiveAmount>
+                </div>
+                <div className="rounded-xl border bg-secondary/20 p-3">
+                  <p className="text-xs text-muted-foreground">Sisa piutang</p>
+                  <SensitiveAmount className="mt-1 block font-semibold text-primary">
+                    {rupiah(data.debts.totalReceivable)}
+                  </SensitiveAmount>
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-3 rounded-xl border p-3 text-sm">
+                <span className="text-muted-foreground">Terlambat</span>
+                <span className="font-semibold">
+                  {data.debts.overdueCount} catatan
+                </span>
+              </div>
+              {data.debts.nearestDue ? (
+                <div className="rounded-xl border border-primary/25 bg-primary/5 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">
+                        Jatuh tempo terdekat
+                      </p>
+                      <p className="mt-1 truncate text-sm font-medium">
+                        {data.debts.nearestDue.title}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {data.debts.nearestDue.counterparty} ·{" "}
+                        {debtDueLabel(today, data.debts.nearestDue.dueDate)}
+                      </p>
+                    </div>
+                    <SensitiveAmount className="shrink-0 text-sm font-semibold">
+                      {rupiah(data.debts.nearestDue.outstandingAmount)}
+                    </SensitiveAmount>
+                  </div>
+                </div>
+              ) : (
+                <p className="rounded-xl border border-dashed p-3 text-center text-xs text-muted-foreground">
+                  Tidak ada catatan aktif dengan jatuh tempo.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="gap-0 shadow-none">
+            <CardHeader className="flex flex-row items-start justify-between gap-3">
+              <div>
+                <CardTitle className="text-base">
+                  Aktivitas utang & piutang terbaru
+                </CardTitle>
+                <p className="m-4 text-xs text-muted-foreground">
+                  Pencatatan pokok dan pembayaran terbaru.
+                </p>
+              </div>
+              <Link
+                className="shrink-0 text-xs font-medium text-primary hover:underline"
+                href={sectionHref("debts", workspaceId)}
+              >
+                Buka ledger →
+              </Link>
+            </CardHeader>
+            <CardContent>
+              {data.debts.latestActivities.length === 0 ? (
+                <div className="py-9 text-center">
+                  <HandCoins
+                    className="mx-auto mb-3 size-7 text-primary"
+                    aria-hidden="true"
+                  />
+                  <p className="text-sm font-medium">
+                    Belum ada utang atau piutang
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Tambahkan catatan dari menu Utang & Piutang.
+                  </p>
+                </div>
+              ) : (
+                <ul className="divide-y">
+                  {data.debts.latestActivities.map((activity) => {
+                    const ActivityIcon =
+                      activity.activity === "payment"
+                        ? CircleCheckBig
+                        : activity.kind === "debt"
+                          ? ArrowDownLeft
+                          : ArrowUpRight;
+                    const activityLabel =
+                      activity.activity === "payment"
+                        ? activity.kind === "debt"
+                          ? "Pembayaran utang"
+                          : "Pembayaran piutang diterima"
+                        : activity.kind === "debt"
+                          ? "Utang dicatat"
+                          : "Piutang dicatat";
+                    return (
+                      <li
+                        key={activity.id}
+                        className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-3 py-3 first:pt-0 last:pb-0"
+                      >
+                        <span className="flex size-10 items-center justify-center rounded-xl bg-secondary text-primary">
+                          <ActivityIcon
+                            className="size-[17px]"
+                            aria-hidden="true"
+                          />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">
+                            {activity.title}
+                          </p>
+                          <p className="mt-1 truncate text-xs text-muted-foreground">
+                            {activityLabel} · {activity.counterparty} ·{" "}
+                            {displayDate(activity.activityDate)}
+                          </p>
+                        </div>
+                        <SensitiveAmount className="shrink-0 text-right text-sm font-semibold">
+                          {rupiah(activity.amount)}
+                        </SensitiveAmount>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <div className="grid gap-5 xl:grid-cols-[1.45fr_1fr]">
         <Card className="gap-0 shadow-none">
           <CardHeader className="flex flex-row items-start justify-between gap-3">
             <div>
               <CardTitle className="text-base">Arus kas</CardTitle>
-              <p className="mt-1.5 text-xs text-muted-foreground">
+              <p className="m-4 text-xs text-muted-foreground">
                 Pemasukan dan pengeluaran pada enam periode terakhir
               </p>
             </div>
@@ -308,7 +478,7 @@ export async function Dashboard({
           <CardHeader className="flex flex-row items-center justify-between gap-3">
             <div>
               <CardTitle className="text-base">Budget periode ini</CardTitle>
-              <p className="mt-1.5 text-xs text-muted-foreground">
+              <p className="m-4 text-xs text-muted-foreground">
                 Pantau realisasi kategori utama
               </p>
             </div>
@@ -377,7 +547,7 @@ export async function Dashboard({
       </div>
 
       <Card className="gap-0 shadow-none">
-        <CardHeader className="flex flex-row items-center justify-between gap-3">
+        <CardHeader className="flex flex-row items-center justify-between gap-3 mb-4">
           <CardTitle className="text-base">
             Transaksi terbaru periode ini
           </CardTitle>

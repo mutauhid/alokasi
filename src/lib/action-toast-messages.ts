@@ -21,6 +21,19 @@ const actionToastMessages = {
     title: "Rekonsiliasi tersimpan",
     description: "Saldo akun sudah diperbarui jika penyesuaian dipilih.",
   },
+  "debt-created": {
+    title: "Catatan berhasil ditambahkan",
+    description:
+      "Utang atau piutang sudah tersimpan dan saldo akun telah disesuaikan bila diperlukan.",
+  },
+  "debt-payment-created": {
+    title: "Pembayaran berhasil dicatat",
+    description: "Sisa kewajiban dan saldo akun sudah diperbarui.",
+  },
+  "debt-settled": {
+    title: "Utang atau piutang sudah lunas",
+    description: "Sisa pembayaran menjadi nol dan saldo akun sudah diperbarui.",
+  },
   "transaction-created": {
     title: "Transaksi berhasil dicatat",
     description: "Saldo, budget, dan ringkasan keuangan sudah diperbarui.",

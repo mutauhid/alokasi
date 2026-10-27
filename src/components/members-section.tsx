@@ -124,7 +124,7 @@ export async function MembersSection({
                 />
                 <Button
                   type="submit"
-                  className="min-h-11 w-full rounded-lg sm:w-auto"
+                  className="min-h-12 w-full rounded-lg sm:w-auto"
                 >
                   <Plus /> Buat ruang
                 </Button>
@@ -545,6 +545,7 @@ export async function MembersSection({
                 <li>{deletionSummary.categories} kategori</li>
                 <li>{deletionSummary.transactions} transaksi</li>
                 <li>{deletionSummary.reconciliations} rekonsiliasi saldo</li>
+                <li>{deletionSummary.debts} catatan utang/piutang</li>
                 <li>
                   {deletionSummary.recurringTemplates} template transaksi
                   berulang

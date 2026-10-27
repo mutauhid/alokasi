@@ -10,6 +10,7 @@ import {
 import { FinanceDomainError } from "@/modules/finance/errors";
 import { getDatabase } from "@/server/db/client";
 import { safelyRefreshAndDeliverWebPush } from "@/modules/web-push/events";
+import { debtAdjustmentsAtDate } from "@/modules/debts/service";
 
 type ReconciliationContext = {
   workspaceId: string;
@@ -47,7 +48,7 @@ async function balanceAtDate(
   account: { id: string; openingBalance: bigint },
   reconciliationDate: Date,
 ) {
-  const [transactions, adjustments] = await Promise.all([
+  const [transactions, adjustments, debtAdjustments] = await Promise.all([
     tx.transaction.findMany({
       where: {
         workspaceId,
@@ -71,16 +72,16 @@ async function balanceAtDate(
       },
       select: { accountId: true, adjustmentAmount: true },
     }),
+    debtAdjustmentsAtDate(tx, workspaceId, reconciliationDate),
   ]);
   return (
-    calculateAccountBalances(
-      [account],
-      transactions as BalanceTransaction[],
-      adjustments.map((item) => ({
+    calculateAccountBalances([account], transactions as BalanceTransaction[], [
+      ...adjustments.map((item) => ({
         accountId: item.accountId,
         amount: item.adjustmentAmount,
       })),
-    ).get(account.id) ?? account.openingBalance
+      ...debtAdjustments,
+    ]).get(account.id) ?? account.openingBalance
   );
 }
 
@@ -230,20 +231,39 @@ export async function getAccountReconciliationOverview(
         : latest,
     null,
   );
-  const transactionChanges = latestDate
-    ? await db.transaction.findMany({
-        where: {
-          workspaceId,
-          transactionDate: { lte: latestDate },
-          OR: [{ accountId }, { destinationAccountId: accountId }],
-        },
-        select: {
-          transactionDate: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      })
-    : [];
+  const [transactionChanges, debtRecordChanges, debtPaymentChanges] = latestDate
+    ? await Promise.all([
+        db.transaction.findMany({
+          where: {
+            workspaceId,
+            transactionDate: { lte: latestDate },
+            OR: [{ accountId }, { destinationAccountId: accountId }],
+          },
+          select: {
+            transactionDate: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        }),
+        db.debtRecord.findMany({
+          where: {
+            workspaceId,
+            accountId,
+            origin: "current",
+            startDate: { lte: latestDate },
+          },
+          select: { startDate: true, createdAt: true },
+        }),
+        db.debtPayment.findMany({
+          where: {
+            workspaceId,
+            accountId,
+            paymentDate: { lte: latestDate },
+          },
+          select: { paymentDate: true, createdAt: true },
+        }),
+      ])
+    : [[], [], []];
 
   const recordedBalance =
     reconciliationDate >= account.openingDate
@@ -263,6 +283,16 @@ export async function getAccountReconciliationOverview(
             transaction.transactionDate <= item.reconciliationDate &&
             (transaction.createdAt > item.createdAt ||
               transaction.updatedAt > item.createdAt),
+        ) ||
+        debtRecordChanges.some(
+          (record) =>
+            record.startDate <= item.reconciliationDate &&
+            record.createdAt > item.createdAt,
+        ) ||
+        debtPaymentChanges.some(
+          (payment) =>
+            payment.paymentDate <= item.reconciliationDate &&
+            payment.createdAt > item.createdAt,
         ) ||
         history.some(
           (other) =>

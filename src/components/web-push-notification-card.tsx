@@ -18,6 +18,7 @@ type InitialPreference = {
   lowBalanceThreshold: string;
   staleDraftsEnabled: boolean;
   sharedActivityEnabled: boolean;
+  debtDueRemindersEnabled: boolean;
   quietHoursStart: string;
   quietHoursEnd: string;
   hideSensitiveContent: boolean;
@@ -66,6 +67,11 @@ const notificationOptions = [
     "staleDraftsEnabled",
     "Draf belum dikonfirmasi",
     "Setelah draf iPhone atau Telegram tertunda 24 jam.",
+  ],
+  [
+    "debtDueRemindersEnabled",
+    "Jatuh tempo utang & piutang",
+    "Tiga hari sebelum dan tepat pada tanggal jatuh tempo.",
   ],
 ] as const;
 

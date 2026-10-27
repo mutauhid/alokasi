@@ -884,3 +884,21 @@ serta smoke notifikasi perangkat nyata wajib diterapkan pada environment target.
 | MOBILE-08 | Ikon trash memiliki label aksesibel dan membuka konfirmasi hapus; menutup lalu membuka ulang sheet selalu kembali ke detail |
 | MOBILE-09 | Ikon pensil/trash Transaksi dan Pengingat berada pada header sebelum tombol tutup sehingga bagian bawah kartu detail tidak memuat aksi pengelolaan |
 | MOBILE-10 | Trash Pengingat membuka konfirmasi nonaktifkan dan menjelaskan transaksi lama tidak dihapus; Catat/Lewati tetap hanya tersedia ketika jatuh tempo |
+
+## Hasil tahap 45 — Utang dan piutang pribadi, 27 Oktober 2026
+
+| ID | Kriteria penerimaan |
+|---|---|
+| DEBT-01 | Fitur hanya dapat dimutasi dari ruang pribadi oleh role yang diizinkan; seluruh query dan foreign key tetap dibatasi workspace |
+| DEBT-02 | Catatan baru utang menambah saldo akun dan piutang mengurangi saldo; catatan historis tidak mengubah saldo awal |
+| DEBT-03 | Pembayaran utang mengurangi saldo dan pembayaran piutang menambah saldo; pembayaran parsial diperbolehkan tetapi total tidak dapat melebihi pokok |
+| DEBT-04 | Pokok/pembayaran tidak muncul sebagai pemasukan, pengeluaran, realisasi budget, tren arus kas, ringkasan mingguan, atau CSV transaksi |
+| DEBT-05 | Status belum dibayar, sebagian, lunas, dan terlambat diturunkan dari pokok, pembayaran, jatuh tempo, serta tanggal lokal workspace |
+| DEBT-06 | Pembuatan catatan/pembayaran idempoten, menolak tanggal masa depan/akun arsip/tanggal sebelum akun atau catatan, dan menulis audit metadata |
+| DEBT-07 | Saldo akun, rekonsiliasi, peringatan saldo rendah, penghapusan workspace, dan ekspor lengkap schema versi 5 menyertakan ledger utang/piutang |
+| DEBT-08 | Web Push opt-in dikirim maksimal sekali pada D-3 dan sekali pada hari jatuh tempo untuk catatan bersisa positif, serta menghormati jam tenang dan privasi payload |
+| DEBT-09 | UI responsif menyediakan ringkasan, filter jenis, detail, riwayat pembayaran, input Rupiah, mode catatan baru/lama, dan mode privasi nominal |
+| DEBT-10 | Tombol Bayar/Terima penuh menghitung sisa terbaru di server dalam transaksi terkunci, membuat tepat satu pembayaran idempoten, memperbarui saldo sesuai jenis, dan menghasilkan status Lunas |
+| DEBT-11 | Dashboard ruang pribadi menampilkan posisi sisa utang/piutang, jumlah terlambat, jatuh tempo terdekat, dan empat aktivitas ledger terbaru tanpa mencampurnya ke transaksi, arus kas, atau budget |
+
+Unit test domain mencakup validasi asal/akun, status, sisa, dan arah penyesuaian saldo. Migrasi `20261027000000_debts_receivables`, integration test PostgreSQL, serta smoke Web Push perangkat nyata tetap wajib dijalankan pada environment target.

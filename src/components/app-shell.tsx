@@ -11,6 +11,7 @@ import {
   LockKeyhole,
   Menu,
   Settings2,
+  HandCoins,
   Users,
   Wallet,
 } from "lucide-react";
@@ -40,6 +41,7 @@ const icons = {
   dashboard: LayoutDashboard,
   transactions: ArrowLeftRight,
   budgets: ChartPie,
+  debts: HandCoins,
   accounts: Wallet,
   reports: ChartNoAxesCombined,
   members: Users,
@@ -138,7 +140,7 @@ export function AppShell({
               aria-hidden="true"
             />
             <p className="text-xs font-medium">Ruangmu, privasimu.</p>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+            <p className="m-4 text-xs leading-relaxed text-muted-foreground">
               Keuangan pribadi dan bersama memiliki ruang masing-masing.
             </p>
           </div>

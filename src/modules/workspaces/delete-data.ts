@@ -24,6 +24,8 @@ export async function deleteWorkspaceData(
   await deleteWorkspaceWebPushData(tx, { workspaceId });
   await tx.auditEvent.deleteMany({ where: { workspaceId } });
   await tx.receiptDraft.deleteMany({ where: { workspaceId } });
+  await tx.debtPayment.deleteMany({ where: { workspaceId } });
+  await tx.debtRecord.deleteMany({ where: { workspaceId } });
   await tx.balanceReconciliation.deleteMany({ where: { workspaceId } });
   await tx.transaction.deleteMany({ where: { workspaceId } });
   await tx.recurringTransactionTemplate.deleteMany({ where: { workspaceId } });

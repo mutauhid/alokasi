@@ -61,6 +61,20 @@ enum ReconciliationResolution {
   @@schema("app")
 }
 
+enum DebtKind {
+  debt
+  receivable
+
+  @@schema("app")
+}
+
+enum DebtOrigin {
+  current
+  historical
+
+  @@schema("app")
+}
+
 enum TelegramDraftStatus {
   pending
   confirmed
@@ -85,6 +99,7 @@ enum WebPushNotificationType {
   low_balance
   stale_draft
   shared_activity
+  debt_due
 
   @@schema("app")
 }
@@ -146,6 +161,8 @@ model Workspace {
   webPushPreferences              WebPushPreference[]
   webPushDeliveries               WebPushDelivery[]
   webPushLowBalanceStates         WebPushLowBalanceState[]
+  debtRecords                     DebtRecord[]
+  debtPayments                    DebtPayment[]
 
   @@map("workspaces")
   @@schema("app")
@@ -194,6 +211,8 @@ model Membership {
   webPushPreference         WebPushPreference?
   webPushDeliveries         WebPushDelivery[]
   webPushLowBalanceStates   WebPushLowBalanceState[]
+  createdDebtRecords        DebtRecord[]                   @relation("DebtRecordCreator")
+  createdDebtPayments       DebtPayment[]                  @relation("DebtPaymentCreator")
 
   @@unique([workspaceId, userId])
   @@unique([workspaceId, id])
@@ -234,6 +253,7 @@ model WebPushPreference {
   lowBalanceThreshold       BigInt?    @map("low_balance_threshold")
   staleDraftsEnabled        Boolean    @default(true) @map("stale_drafts_enabled")
   sharedActivityEnabled     Boolean    @default(true) @map("shared_activity_enabled")
+  debtDueRemindersEnabled   Boolean    @default(true) @map("debt_due_reminders_enabled")
   quietHoursStart           Int?       @map("quiet_hours_start") @db.SmallInt
   quietHoursEnd             Int?       @map("quiet_hours_end") @db.SmallInt
   hideSensitiveContent      Boolean    @default(true) @map("hide_sensitive_content")
@@ -453,10 +473,71 @@ model FinancialAccount {
   recurringTemplates      RecurringTransactionTemplate[]
   reconciliations         BalanceReconciliation[]
   webPushLowBalanceStates WebPushLowBalanceState[]
+  debtRecords             DebtRecord[]
+  debtPayments            DebtPayment[]
 
   @@unique([workspaceId, id])
   @@index([workspaceId, archivedAt])
   @@map("financial_accounts")
+  @@schema("app")
+}
+
+// Utang/piutang memakai ledger terpisah dari transaksi arus kas. Pokok dan
+// pembayaran memengaruhi saldo akun, tetapi tidak menjadi pemasukan,
+// pengeluaran, realisasi budget, atau laporan arus kas.
+model DebtRecord {
+  id              String            @id @default(uuid()) @db.Uuid
+  workspaceId     String            @map("workspace_id") @db.Uuid
+  createdBy       String            @map("created_by") @db.Uuid
+  kind            DebtKind
+  origin          DebtOrigin
+  counterparty    String            @db.VarChar(100)
+  title           String            @db.VarChar(100)
+  principalAmount BigInt            @map("principal_amount")
+  startDate       DateTime          @map("start_date") @db.Date
+  dueDate         DateTime?         @map("due_date") @db.Date
+  accountId       String?           @map("account_id") @db.Uuid
+  note            String?           @db.VarChar(1000)
+  idempotencyKey  String            @map("idempotency_key") @db.VarChar(128)
+  requestHash     String            @map("request_hash") @db.VarChar(64)
+  version         Int               @default(1)
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  workspace       Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  creator         Membership        @relation("DebtRecordCreator", fields: [workspaceId, createdBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  account         FinancialAccount? @relation(fields: [workspaceId, accountId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  payments        DebtPayment[]
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, createdBy, idempotencyKey])
+  @@index([workspaceId, kind, dueDate])
+  @@index([workspaceId, accountId, startDate])
+  @@map("debt_records")
+  @@schema("app")
+}
+
+model DebtPayment {
+  id             String           @id @default(uuid()) @db.Uuid
+  workspaceId    String           @map("workspace_id") @db.Uuid
+  debtRecordId   String           @map("debt_record_id") @db.Uuid
+  createdBy      String           @map("created_by") @db.Uuid
+  accountId      String           @map("account_id") @db.Uuid
+  amount         BigInt
+  paymentDate    DateTime         @map("payment_date") @db.Date
+  note           String?          @db.VarChar(500)
+  idempotencyKey String           @map("idempotency_key") @db.VarChar(128)
+  requestHash    String           @map("request_hash") @db.VarChar(64)
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  workspace      Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  debtRecord     DebtRecord       @relation(fields: [workspaceId, debtRecordId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  creator        Membership       @relation("DebtPaymentCreator", fields: [workspaceId, createdBy], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  account        FinancialAccount @relation(fields: [workspaceId, accountId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, createdBy, idempotencyKey])
+  @@index([workspaceId, debtRecordId, paymentDate, createdAt])
+  @@index([workspaceId, accountId, paymentDate])
+  @@map("debt_payments")
   @@schema("app")
 }
 

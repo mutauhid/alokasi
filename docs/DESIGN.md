@@ -144,6 +144,16 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Riwayat menampilkan saldo catatan, saldo aktual, selisih, penyesuaian, pembuat, dan status “Cocok”, “Disesuaikan”, atau “Perlu diperiksa kembali”.
 - Nilai negatif tetap didukung. Informasi selisih tidak bergantung pada warna, dan layout menumpuk pada mobile tanpa scroll horizontal.
 
+## Utang & piutang pribadi
+
+- Navigasi memiliki modul **Utang & Piutang**. Ruang bersama menampilkan penjelasan untuk kembali ke ruang pribadi, bukan data kosong yang menyerupai kegagalan.
+- Bagian atas memakai tiga ringkasan: sisa utang, sisa piutang, dan jumlah terlambat. Nominal mengikuti tombol privasi global.
+- Daftar dapat difilter Semua/Utang/Piutang. Setiap baris menampilkan pihak, status, jatuh tempo, dan sisa nominal tetap di kanan; seluruh baris membuka detail.
+- Form tambah membedakan Utang/Piutang dan Baru terjadi/Catatan lama. Penjelasan saldo wajib terlihat sebelum simpan; akun hanya diminta untuk kejadian baru.
+- Detail menampilkan pokok, terbayar, sisa, status, tanggal, sumber pencatatan, riwayat pembayaran, dan form cicilan jika belum lunas. Nominal pembayaran memakai input Rupiah; tombol **Bayar penuh** untuk utang atau **Terima penuh** untuk piutang menggunakan seluruh sisa tanpa meminta pengguna mengetik nominal.
+- Dashboard ruang pribadi menampilkan dua kartu terpisah: ringkasan posisi saat ini (sisa utang, sisa piutang, terlambat, dan jatuh tempo terdekat) serta empat aktivitas ledger terbaru. Keduanya menaut ke modul Utang & Piutang dan tidak digabung ke daftar Transaksi terbaru.
+- Status tidak hanya dibedakan warna. Gunakan label Belum dibayar, Dibayar sebagian, Lunas, atau Terlambat dan pertahankan target sentuh minimal 44 px.
+
 ## Gerak antarmuka dan kontrol transaksi
 
 - Setiap modul memakai animasi masuk singkat pada judul dan panel ketika navigasi selesai. Gerak harus tenang, tidak menggeser layout, dan tidak menunda interaksi.

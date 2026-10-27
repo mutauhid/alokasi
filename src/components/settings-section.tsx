@@ -386,6 +386,7 @@ export async function SettingsSection({
                 webPush.lowBalanceThreshold?.toString() ?? "",
               staleDraftsEnabled: webPush.staleDraftsEnabled,
               sharedActivityEnabled: webPush.sharedActivityEnabled,
+              debtDueRemindersEnabled: webPush.debtDueRemindersEnabled,
               quietHoursStart: formatClockMinutes(webPush.quietHoursStart),
               quietHoursEnd: formatClockMinutes(webPush.quietHoursEnd),
               hideSensitiveContent: webPush.hideSensitiveContent,
@@ -625,6 +626,7 @@ export async function SettingsSection({
                 {[
                   ["Transaksi pribadi", deletion.personal.transactions],
                   ["Rekonsiliasi saldo", deletion.personal.reconciliations],
+                  ["Catatan utang/piutang", deletion.personal.debts],
                   [
                     "Template transaksi berulang",
                     deletion.personal.recurringTemplates,

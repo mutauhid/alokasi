@@ -1,6 +1,6 @@
 # Rencana implementasi dan status
 
-Diperbarui 22 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplikasi finansial penuh belum selesai. Status di bawah membedakan fondasi dari implementasi P0.
+Diperbarui 27 Oktober 2026. Setup UI dan fondasi database telah dibangun; status di bawah membedakan fondasi dari implementasi fitur.
 
 ## Status nyata
 
@@ -43,11 +43,12 @@ Diperbarui 22 Oktober 2026. Setup UI dan fondasi database telah dibangun; aplika
 | Tahap 32 percakapan: kategori otomatis Telegram | Dikerjakan pada `feat/telegram-auto-category`: riwayat judul identik diprioritaskan, dilanjutkan nama kategori dan kata kunci bawaan, dengan fallback aman ke kategori pengeluaran default |
 | Tahap 33 percakapan: penerapan mockup terbaru | Dikerjakan pada `feat/ui-motion-category-picker`: animasi halus lintas modul, skeleton dan komposisi Dashboard baru, modal tambah transaksi, radio card kategori manual/iPhone, action sheet transaksi/Budget/Akun, grafik Laporan aktual, dan panduan automasi bergambar lengkap |
 | Tahap 34 percakapan: navigasi Pengaturan | Dikerjakan pada `feat/ui-motion-category-picker`: Pengaturan dipisah menjadi Akun, Automasi, Kategori, Ruang & data, serta Zona berbahaya; URL dan redirect mempertahankan bagian aktif, data dimuat hanya untuk bagian yang dibuka, dan informasi status internal dihapus dari UI produksi |
-| Tahap 40 percakapan: Web Push notifikasi | Dikerjakan pada `feat/web-push-notifications`: subscription per perangkat, preferensi per ruang, enam pemicu notifikasi, jam tenang, penyamaran konten, deduplikasi outbox, cleanup lifecycle, cron harian, dan deep link lokal tanpa cache atau transaksi offline |
+| Tahap 40 percakapan: Web Push notifikasi | Dikerjakan pada `feat/web-push-notifications`: subscription per perangkat, preferensi per ruang, enam pemicu awal; F14 menambah pengingat jatuh tempo sebagai pemicu ketujuh dengan jam tenang, penyamaran konten, deduplikasi outbox, cleanup lifecycle, cron harian, dan deep link lokal |
 | Tahap 41 percakapan: mode privasi nominal | Dikerjakan pada branch yang sama: tombol mata global di header, preferensi lokal tersinkron antartab, SSR privacy-first, masking seluruh nominal baca-saja, dan kontrol mata Web Push yang terpisah untuk layar terkunci |
 | Tahap 42 percakapan: detail riwayat mobile | Dikerjakan pada `feat/mobile-history-details`: header transaksi Dashboard dipadatkan, nominal Transaksi/Pengingat dikunci di kanan, dan seluruh item membuka bottom sheet detail dengan aksi berbasis role |
 | Tahap 43 percakapan: aksi ringkas detail transaksi | Dikerjakan pada branch yang sama: sheet membuka detail saja, ikon pensil berpindah ke view edit, ikon trash membuka konfirmasi, dan close selalu mereset ke detail |
 | Tahap 44 percakapan: aksi detail pada header | Dikerjakan pada branch yang sama: action group dipindahkan ke header, Pengingat memakai pola edit/nonaktifkan yang sama, dan nonaktifkan template mendapat dialog konfirmasi eksplisit |
+| Tahap 45 percakapan: utang dan piutang pribadi | Dikerjakan pada `feat/debts-receivables`: ledger utang/piutang terpisah, catatan baru/historis, cicilan dan pelunasan, status/jatuh tempo, dampak saldo tanpa menggandakan arus kas/budget, ekspor lengkap, serta Web Push D-3/hari-H |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Storage bukti permanen/provider OCR eksternal | Belum diimplementasikan; preview Shortcut sementara memakai database draf dengan retensi 24 jam, sedangkan consent, biaya, callback, data residency, dan lifecycle lampiran permanen masih terbuka |
@@ -378,7 +379,7 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 
 ## Backlog kandidat — bukan komitmen aktif
 
-F11 transaksi berulang diaktifkan melalui D33 dan F15 rekonsiliasi melalui D37. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, F14 utang/piutang, F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.
+F11 transaksi berulang diaktifkan melalui D33, F15 rekonsiliasi melalui D37, dan F14 utang/piutang melalui D58. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, dan F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.
 
 ## Format handoff setiap irisan pekerjaan
 
