@@ -44,14 +44,14 @@ function KpiCard({
         featured && "dashboard-v2-kpi-featured border-primary/35",
       )}
     >
-      <div className="relative z-10 flex items-start justify-between gap-3">
+      <div className="relative z-10 min-w-0">
         <div className="min-w-0">
-          <p className="min-h-8 text-[11px] font-medium leading-4 text-muted-foreground sm:min-h-0 sm:text-sm">
+          <p className="min-h-8 pr-11 text-[11px] font-medium leading-4 text-muted-foreground sm:min-h-0 sm:pr-12 sm:text-sm">
             {title}
           </p>
           <SensitiveAmount
             className={cn(
-              "mt-2 block truncate text-lg font-semibold tracking-[-0.035em] sm:mt-3 sm:text-2xl xl:text-[1.7rem]",
+              "dashboard-v2-kpi-amount mt-2 block text-lg font-semibold tracking-[-0.035em] sm:mt-3 sm:text-2xl xl:text-[1.7rem]",
               tone === "primary" && "text-primary",
               tone === "danger" && "text-destructive",
             )}
@@ -64,7 +64,7 @@ function KpiCard({
         </div>
         <span
           className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-xl border bg-secondary/65 text-foreground transition-colors group-hover:border-primary/35 group-hover:text-primary sm:size-10",
+            "absolute right-0 top-0 flex size-9 items-center justify-center rounded-xl border bg-secondary/65 text-foreground transition-colors group-hover:border-primary/35 group-hover:text-primary sm:size-10",
             featured && "border-primary/30 bg-primary/15 text-primary",
           )}
         >

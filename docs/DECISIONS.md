@@ -66,6 +66,7 @@ Diperbarui: 27 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent 
 | D59 | 27 Okt 2026 | Pengguna menyetujui rencana Dashboard V2 dan meminta fidelity tinggi terhadap `design-references/dashboard-v2.png` tanpa mengubah business logic | Kerjakan pada branch `feat/dashboard-v2`: empat KPI, banner pengingat, grid chart/utang, grid budget/transaksi, pengingat, dan ledger aktivitas dengan data service existing; batasi styling pada Dashboard, pertahankan mode privasi, light/dark, responsive, empty/loading state, serta seluruh drill-down yang berfungsi |
 | D60 | 27 Okt 2026 | Setelah review Dashboard V2, pengguna meminta final refinement pada chart, budget, reminder, hierarchy, aktivitas utang/piutang, dan responsive tanpa redesign atau perubahan logic | Tambahkan skala Y dinamis berbasis `bigint` yang mendukung nol/negatif/nominal besar, perbesar visual budget multi-kategori, bedakan status jatuh tempo dari data existing, gunakan badge informatif pada ledger, tingkatkan kontras sekunder khusus Dashboard, dan pakai KPI 2×2 pada mobile |
 | D61 | 27 Okt 2026 | Pengguna menyetujui visual Dashboard V2 dan meminta final polish/QA sebelum merge | Pertahankan desain; haluskan scrollbar sidebar desktop, biarkan kartu Transaksi setinggi kontennya agar tidak menciptakan ruang kosong internal, pecah label periode chart menjadi dua baris pada mobile, dan gunakan warna netral untuk nominal ledger agar tidak menyiratkan pemasukan |
+| D62 | 27 Okt 2026 | Pengguna melaporkan nominal pada kartu ringkasan saldo Dashboard terpotong | Hapus ellipsis dari seluruh nominal KPI, keluarkan ikon dari aliran lebar konten melalui posisi absolut, dan izinkan nominal ekstrem membungkus secara aman tanpa mengubah nilai atau ukuran kartu |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -190,6 +191,8 @@ D59 menghasilkan T52: Dashboard menjadi kumpulan Server Component presentasional
 D60 menghasilkan T53: skala chart dihitung murni dari data tren menggunakan aritmetika `bigint`; data positif memakai lima tick “nice”, sedangkan keberadaan nilai negatif menghasilkan rentang simetris dengan baseline nol. Tick nominal mengikuti privacy mode, bar negatif tumbuh dari baseline ke bawah, dan seluruh nol tetap menjadi empty state eksplisit. Budget mempertahankan angka persentase sebenarnya serta memakai nilai yang dijepit hanya untuk ring/progress visual. Status reminder diturunkan dari selisih tanggal existing, sementara badge ledger hanya merepresentasikan `kind` dan `activity` yang sudah tersedia.
 
 D61 menghasilkan T54: scrollbar tipis hanya dipasang pada `aside` desktop dengan track transparan, thumb berbasis token tema, hover yang terlihat, dan `scrollbar-gutter: stable`; mekanisme `overflow-y-auto` tidak berubah. Grid Budget/Pengingat/Transaksi tetap dua kolom tetapi memakai `items-start`, sehingga kartu Transaksi tidak dipaksa setinggi kolom kiri. Nominal ledger bersifat netral; jenis dan status tetap dibedakan melalui label eksplisit.
+
+D62 menghasilkan T55: ikon KPI tetap berada di kanan atas secara visual tetapi tidak lagi mengurangi lebar nominal. Nominal memakai lebar kartu penuh tanpa `truncate`; `overflow-wrap: anywhere` hanya menjadi fallback untuk angka yang lebih panjang daripada kartu, sehingga seluruh digit tetap terlihat pada desktop maupun mobile.
 
 ## Default kerja, bukan keputusan eksplisit pengguna
 

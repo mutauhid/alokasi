@@ -330,6 +330,12 @@
   transform: rotate(-8deg);
 }
 
+.dashboard-v2-kpi-amount {
+  max-width: 100%;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
 .dashboard-v2-alert {
   background: var(--card);
 }

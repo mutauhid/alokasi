@@ -16,6 +16,10 @@ describe("Dashboard V2 presentation contract", () => {
     expect(overview).toContain("grid-cols-2");
     expect(overview).toContain("xl:grid-cols-4");
     expect(overview).toContain('title="Arus kas bersih"');
+    expect(overview).toContain("dashboard-v2-kpi-amount");
+    expect(overview).not.toContain(
+      "dashboard-v2-kpi-amount mt-2 block truncate",
+    );
   });
 
   it("keeps period filtering and transaction navigation functional", async () => {
