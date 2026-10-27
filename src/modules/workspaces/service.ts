@@ -239,6 +239,7 @@ export async function getWorkspaceDeletionSummary(access: WorkspaceAccess) {
             receiptDrafts: true,
             recurringTransactionTemplates: true,
             balanceReconciliations: true,
+            debtRecords: true,
           },
         },
       },
@@ -255,6 +256,7 @@ export async function getWorkspaceDeletionSummary(access: WorkspaceAccess) {
     receiptDrafts: workspace._count.receiptDrafts,
     recurringTemplates: workspace._count.recurringTransactionTemplates,
     reconciliations: workspace._count.balanceReconciliations,
+    debts: workspace._count.debtRecords,
     transactions: transactionCount,
     budgets: budgetCount,
   };

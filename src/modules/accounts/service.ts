@@ -3,6 +3,7 @@ import "server-only";
 import { getDatabase } from "@/server/db/client";
 import { calculateAccountBalances } from "@/modules/finance/domain";
 import { FinanceDomainError } from "@/modules/finance/errors";
+import { debtBalanceAdjustments } from "@/modules/debts/domain";
 
 type OwnerContext = { workspaceId: string; actorId: string };
 
@@ -16,44 +17,77 @@ export function listActiveAccountOptions(workspaceId: string) {
 
 export async function listAccounts(workspaceId: string) {
   const db = getDatabase();
-  const [accounts, transactions, reconciliations] = await Promise.all([
-    db.financialAccount.findMany({
-      where: { workspaceId },
-      orderBy: [{ archivedAt: "asc" }, { createdAt: "asc" }],
-    }),
-    db.transaction.findMany({
-      where: { workspaceId },
-      select: {
-        type: true,
-        amount: true,
-        accountId: true,
-        destinationAccountId: true,
-        transactionDate: true,
-        createdAt: true,
-        updatedAt: true,
-        deletedAt: true,
-      },
-    }),
-    db.balanceReconciliation.findMany({
-      where: { workspaceId },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      select: {
-        id: true,
-        accountId: true,
-        reconciliationDate: true,
-        resolution: true,
-        adjustmentAmount: true,
-        createdAt: true,
-      },
-    }),
-  ]);
+  const [accounts, transactions, reconciliations, debtRecords, debtPayments] =
+    await Promise.all([
+      db.financialAccount.findMany({
+        where: { workspaceId },
+        orderBy: [{ archivedAt: "asc" }, { createdAt: "asc" }],
+      }),
+      db.transaction.findMany({
+        where: { workspaceId },
+        select: {
+          type: true,
+          amount: true,
+          accountId: true,
+          destinationAccountId: true,
+          transactionDate: true,
+          createdAt: true,
+          updatedAt: true,
+          deletedAt: true,
+        },
+      }),
+      db.balanceReconciliation.findMany({
+        where: { workspaceId },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        select: {
+          id: true,
+          accountId: true,
+          reconciliationDate: true,
+          resolution: true,
+          adjustmentAmount: true,
+          createdAt: true,
+        },
+      }),
+      db.debtRecord.findMany({
+        where: { workspaceId, origin: "current", accountId: { not: null } },
+        select: {
+          kind: true,
+          origin: true,
+          principalAmount: true,
+          accountId: true,
+          startDate: true,
+          createdAt: true,
+        },
+      }),
+      db.debtPayment.findMany({
+        where: { workspaceId },
+        select: {
+          amount: true,
+          accountId: true,
+          paymentDate: true,
+          createdAt: true,
+          debtRecord: { select: { kind: true } },
+        },
+      }),
+    ]);
+  const debtAdjustments = debtBalanceAdjustments(
+    debtRecords,
+    debtPayments.map((payment) => ({
+      kind: payment.debtRecord.kind,
+      amount: payment.amount,
+      accountId: payment.accountId,
+    })),
+  );
   const balances = calculateAccountBalances(
     accounts,
     transactions.filter((transaction) => !transaction.deletedAt),
-    reconciliations.map((item) => ({
-      accountId: item.accountId,
-      amount: item.adjustmentAmount,
-    })),
+    [
+      ...reconciliations.map((item) => ({
+        accountId: item.accountId,
+        amount: item.adjustmentAmount,
+      })),
+      ...debtAdjustments,
+    ],
   );
   const latestByAccount = new Map<
     string,
@@ -71,6 +105,18 @@ export async function listAccounts(workspaceId: string) {
             transaction.transactionDate <= reconciliation.reconciliationDate &&
             (transaction.createdAt > reconciliation.createdAt ||
               transaction.updatedAt > reconciliation.createdAt),
+        ) ||
+        debtRecords.some(
+          (record) =>
+            record.accountId === reconciliation.accountId &&
+            record.startDate <= reconciliation.reconciliationDate &&
+            record.createdAt > reconciliation.createdAt,
+        ) ||
+        debtPayments.some(
+          (payment) =>
+            payment.accountId === reconciliation.accountId &&
+            payment.paymentDate <= reconciliation.reconciliationDate &&
+            payment.createdAt > reconciliation.createdAt,
         ) ||
         reconciliations.some(
           (other) =>

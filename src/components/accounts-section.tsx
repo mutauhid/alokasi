@@ -25,7 +25,7 @@ import { ArchiveAccountButton } from "@/components/archive-account-button";
 import { SensitiveAmount } from "@/components/amount-privacy";
 
 const inputClass =
-  "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
+  "m-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
 
 const typeDetails = {
   bank: { label: "Bank", icon: Landmark },

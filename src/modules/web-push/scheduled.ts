@@ -5,6 +5,7 @@ import { localCalendarDate } from "@/modules/telegram-integration/recurring-remi
 import { getDatabase } from "@/server/db/client";
 import { queueWebPush, deliverPendingWebPush } from "./service";
 import { refreshLowBalanceWebPush } from "./events";
+import { debtReminderPhase } from "@/modules/debts/domain";
 
 function rupiah(value: bigint) {
   return `Rp${new Intl.NumberFormat("id-ID").format(value)}`;
@@ -23,6 +24,7 @@ export async function runScheduledWebPush(now = new Date()) {
       recurringRemindersEnabled: true,
       staleDraftsEnabled: true,
       lowBalanceEnabled: true,
+      debtDueRemindersEnabled: true,
       membership: { select: { role: true } },
       workspace: { select: { name: true, timezone: true } },
     },
@@ -143,6 +145,50 @@ export async function runScheduledWebPush(now = new Date()) {
             title: "Draf Telegram belum dikonfirmasi",
             body: "Buka Telegram untuk menyimpan, mengoreksi, atau membatalkan draf.",
             url: `/settings?workspaceId=${encodeURIComponent(preference.workspaceId)}&view=automation`,
+            now,
+          });
+        }
+      }
+
+      if (preference.debtDueRemindersEnabled) {
+        const today = localCalendarDate(now, preference.workspace.timezone);
+        const inThreeDays = new Date(today.valueOf() + 3 * 86_400_000);
+        const records = await tx.debtRecord.findMany({
+          where: {
+            workspaceId: preference.workspaceId,
+            dueDate: { gte: today, lte: inThreeDays },
+          },
+          select: {
+            id: true,
+            kind: true,
+            counterparty: true,
+            title: true,
+            principalAmount: true,
+            dueDate: true,
+            payments: { select: { amount: true } },
+          },
+        });
+        for (const record of records) {
+          if (!record.dueDate) continue;
+          const paid = record.payments.reduce(
+            (sum, payment) => sum + payment.amount,
+            0n,
+          );
+          const outstanding = record.principalAmount - paid;
+          const phase = debtReminderPhase(record.dueDate, today, outstanding);
+          if (!phase) continue;
+          queued += await queueWebPush(tx, {
+            workspaceId: preference.workspaceId,
+            userId: preference.userId,
+            type: "debt_due",
+            dedupeKey: `debt:${record.id}:${phase}`,
+            tag: `debt-${record.id}`,
+            title:
+              phase === "due"
+                ? `${record.kind === "debt" ? "Utang" : "Piutang"} jatuh tempo hari ini`
+                : `${record.kind === "debt" ? "Utang" : "Piutang"} jatuh tempo dalam 3 hari`,
+            body: `${record.title} · ${record.counterparty} · sisa ${rupiah(outstanding)}.`,
+            url: `/debts?workspaceId=${encodeURIComponent(preference.workspaceId)}`,
             now,
           });
         }

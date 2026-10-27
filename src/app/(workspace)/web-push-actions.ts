@@ -55,6 +55,7 @@ export async function webPushPreferenceAction(
           : null,
       staleDraftsEnabled: checked(form, "staleDraftsEnabled"),
       sharedActivityEnabled: checked(form, "sharedActivityEnabled"),
+      debtDueRemindersEnabled: checked(form, "debtDueRemindersEnabled"),
       quietHoursStart,
       quietHoursEnd,
       hideSensitiveContent: checked(form, "hideSensitiveContent"),

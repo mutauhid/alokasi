@@ -192,7 +192,18 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 - Input transaksi saat offline tidak diantrikan pada fase ini. Jangan menampilkan status “tersimpan”, memperbarui agregat, atau melakukan retry tersembunyi.
 - Dukungan transaksi offline kelak memerlukan keputusan baru untuk IndexedDB, isolasi user/workspace pada perangkat bersama, logout/cleanup, idempotensi, auth kedaluwarsa, konflik referensi arsip, dan status sinkronisasi.
 
-## 7. Kontrak lintas fitur
+## 7. F14 — utang dan piutang pribadi
+
+- Fitur hanya tersedia pada ruang pribadi. Utang berarti dana diterima pengguna dan piutang berarti dana diberikan pengguna.
+- Catatan **baru terjadi** mengubah saldo akun pada tanggal mulai: pokok utang menambah saldo dan pokok piutang mengurangi saldo. Catatan **lama/historis** tidak mengubah saldo saat dibuat.
+- Pembayaran utang mengurangi saldo akun pembayaran; pembayaran piutang menambah saldo akun penerima. Pembayaran tidak boleh mendahului tanggal mulai, berada di masa depan, atau melebihi sisa pokok. Pelunasan penuh menghitung sisa terbaru di server setelah catatan dikunci, bukan mempercayai nominal dari browser.
+- Pokok dan pembayaran berada pada ledger terpisah dari transaksi. Keduanya tidak menjadi pemasukan/pengeluaran, realisasi budget, tren arus kas, ringkasan mingguan, atau CSV transaksi, tetapi tetap masuk saldo akun, rekonsiliasi, peringatan saldo rendah, dan ekspor lengkap ruang.
+- Status diturunkan dari data: belum dibayar, dibayar sebagian, lunas, atau terlambat. `Terlambat` hanya berlaku bila jatuh tempo sudah lewat dan masih ada sisa.
+- Ringkasan dashboard F14 selalu menunjukkan posisi utang/piutang saat ini dan aktivitas ledger terbaru, tidak mengikuti periode budget yang sedang dipilih dan tidak menjadi transaksi reguler.
+- Pembuatan catatan dan pembayaran memakai idempotency key, workspace scoping, membership aktif, akun aktif, integer rupiah positif, serta audit metadata tanpa menyimpan payload bebas pada audit.
+- Web Push jatuh tempo bersifat opt-in, dikirim sekali pada D-3 dan sekali pada hari jatuh tempo, menghormati jam tenang/privasi, dan tidak mengubah saldo maupun status pembayaran.
+
+## 8. Kontrak lintas fitur
 
 ### F25 — Web Push
 
@@ -200,6 +211,7 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 - Notifikasi tidak menjadi sumber data finansial. Gagal mengantrekan atau mengirim tidak boleh membatalkan transaksi, rekonsiliasi, draf, maupun perubahan budget yang sudah valid.
 - Budget memakai ambang 80% dan 100% maksimal sekali per subscription, budget, dan ambang. Satu transaksi yang langsung mencapai 100% mengantrekan ambang tertinggi.
 - Ringkasan mingguan hanya dibentuk pada Senin lokal untuk minggu Senin–Minggu yang selesai. Pengingat transaksi berulang tidak membuat transaksi dan mengikuti izin Owner/Editor F11.
+- Pengingat F14 hanya mengantre untuk catatan dengan sisa positif, pada D-3 dan hari jatuh tempo menurut zona waktu workspace; deduplikasi berlaku per catatan dan fase pengingat.
 - Saldo menipis menggunakan saldo catatan seluruh akun aktif dan satu batas pilihan pengguna untuk ruang tersebut. Notifikasi muncul pada transisi dari tidak-di-bawah menjadi di-bawah; saldo pulih mereset state agar penurunan berikutnya dapat diberi tahu.
 - Draf receipt `needs_review` dan draf Telegram `pending` diingatkan sekali setelah 24 jam. Draf submitted, cancelled, atau Telegram yang kedaluwarsa tidak menjadi kandidat.
 - Aktivitas ruang bersama dikirim kepada anggota aktif lain yang opt-in ketika transaksi dibuat, diubah, atau dihapus. Ruang pribadi dan pelaku transaksi tidak menerima aktivitasnya sendiri.

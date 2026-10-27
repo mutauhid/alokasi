@@ -27,7 +27,8 @@ pengguna mengaktifkan ulang notifikasi.
 
 ## 2. Migrasi dan cron
 
-Terapkan migrasi `20261026040000_web_push_notifications` dengan alur pada
+Terapkan migrasi `20261026040000_web_push_notifications` dan, untuk pengingat
+utang/piutang, `20261027000000_debts_receivables` dengan alur pada
 `DATABASE_SETUP.md`. Pastikan `CRON_SECRET` tersedia. `vercel.json` memanggil
 `/api/cron/web-push-notifications` setiap hari; Vercel mengirim Bearer secret
 secara otomatis ketika `CRON_SECRET` dikonfigurasi pada project.
@@ -47,10 +48,13 @@ perangkat/browser.
 
 1. Aktifkan Web Push dan matikan opsi penyamaran hanya pada data uji.
 2. Buat budget kecil lalu simpan pengeluaran hingga melewati 80%.
-3. Pastikan satu notifikasi muncul dan klik membuka Budget pada workspace terkait.
-4. Ulangi request/reload; notifikasi threshold yang sama tidak boleh terkirim lagi.
-5. Uji jam tenang, logout perangkat, serta membership yang dicabut.
-6. Aktifkan kembali penyamaran sebelum memakai data nyata pada layar terkunci.
+3. Buat utang/piutang dengan jatuh tempo tiga hari dari tanggal lokal workspace,
+   jalankan cron, lalu pastikan pengingat hanya masuk sekali. Ulangi pada hari
+   jatuh tempo dan pastikan catatan yang sudah lunas tidak diingatkan.
+4. Pastikan satu notifikasi muncul dan klik membuka Budget pada workspace terkait.
+5. Ulangi request/reload; notifikasi threshold yang sama tidak boleh terkirim lagi.
+6. Uji jam tenang, logout perangkat, serta membership yang dicabut.
+7. Aktifkan kembali penyamaran sebelum memakai data nyata pada layar terkunci.
 
 Tombol mata pada kartu **Privasi isi notifikasi** hanya mengatur payload yang
 muncul di layar terkunci. Tombol mata global pada header aplikasi mengatur

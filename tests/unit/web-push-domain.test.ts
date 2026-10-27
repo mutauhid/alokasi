@@ -3,6 +3,7 @@ import {
   isQuietTime,
   nextAllowedPushTime,
   parseClockMinutes,
+  preferenceField,
   privacySafeContent,
   safeLocalNotificationUrl,
 } from "../../src/modules/web-push/domain";
@@ -51,5 +52,9 @@ describe("Web Push domain", () => {
       "/dashboard",
     );
     expect(safeLocalNotificationUrl("//attacker.test")).toBe("/dashboard");
+  });
+
+  it("routes debt due messages through their own preference", () => {
+    expect(preferenceField("debt_due")).toBe("debtDueRemindersEnabled");
   });
 });

@@ -13,6 +13,9 @@ describe("mobile history details", () => {
     const dashboard = await source("dashboard.tsx");
 
     expect(dashboard).toContain("Transaksi terbaru periode ini");
+    expect(dashboard).toContain("Ringkasan utang & piutang");
+    expect(dashboard).toContain("Aktivitas utang & piutang terbaru");
+    expect(dashboard).toContain('sectionHref("debts", workspaceId)');
     expect(dashboard).not.toContain(
       "Aktivitas terbaru pada periode yang dipilih",
     );

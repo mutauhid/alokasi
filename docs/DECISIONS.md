@@ -1,6 +1,6 @@
 # Catatan keputusan
 
-Diperbarui: 26 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
+Diperbarui: 27 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
 
 ## Keputusan dan kebutuhan pengguna
 
@@ -62,6 +62,7 @@ Diperbarui: 26 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent 
 | D55 | 27 Okt 2026 | Pengguna meminta ringkasan transaksi Dashboard dipadatkan serta daftar Transaksi dan Pengingat mobile memakai nominal tetap di kanan dengan detail/aksi setelah item diketuk | Kerjakan pada branch `feat/mobile-history-details`: seluruh baris menjadi trigger bottom sheet yang aksesibel, detail tersedia bagi semua role, sedangkan edit/hapus/nonaktifkan/catat/lewati tetap hanya dirender sesuai izin yang sudah berlaku |
 | D56 | 27 Okt 2026 | Pengguna meminta sheet detail transaksi tidak langsung memuat form edit yang panjang, melainkan pilihan ikon pensil dan trash | Tampilan awal sheet hanya berisi detail dan dua aksi ikon; pensil mengganti sheet ke tampilan edit dengan jalan kembali ke detail, sedangkan trash membuka dialog konfirmasi hapus |
 | D57 | 27 Okt 2026 | Pengguna meminta ikon edit/hapus dipindahkan ke atas agar bagian bawah detail bersih dan pola yang sama diterapkan pada Pengingat | Tempatkan action group pada header detail sebelum tombol tutup; Pengingat memakai pensil untuk view edit dan trash untuk dialog konfirmasi nonaktifkan, sedangkan Catat/Lewati tetap menjadi aksi jatuh tempo |
+| D58 | 27 Okt 2026 | Setelah meninjau gambaran fitur, pengguna meminta utang/piutang diterapkan pada proyek Alokasi | Aktifkan F14 pada branch `feat/debts-receivables`: catatan baru atau historis, pembayaran parsial/pelunasan, jatuh tempo, dampak saldo melalui ledger terpisah dari arus kas/budget, ekspor lengkap, serta pengingat Web Push D-3 dan hari jatuh tempo |
 
 ## Pilihan teknis hasil delegasi D07
 

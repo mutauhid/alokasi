@@ -45,7 +45,7 @@ export function CycleSettingsForm({
           name="startDay"
           value={startDay}
           onChange={(event) => setStartDay(Number(event.target.value))}
-          className="mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs"
+          className="m-4 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs"
         >
           {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
             <option key={day} value={day}>

@@ -4,7 +4,8 @@ export type PushKind =
   | "recurring_reminder"
   | "low_balance"
   | "stale_draft"
-  | "shared_activity";
+  | "shared_activity"
+  | "debt_due";
 
 export function parseClockMinutes(value: string) {
   if (!/^([01]\d|2[0-3]):[0-5]\d$/u.test(value)) return null;
@@ -69,6 +70,7 @@ export function preferenceField(kind: PushKind) {
     | "lowBalanceEnabled"
     | "staleDraftsEnabled"
     | "sharedActivityEnabled"
+    | "debtDueRemindersEnabled"
   > = {
     budget_alert: "budgetAlertsEnabled",
     weekly_summary: "weeklySummaryEnabled",
@@ -76,6 +78,7 @@ export function preferenceField(kind: PushKind) {
     low_balance: "lowBalanceEnabled",
     stale_draft: "staleDraftsEnabled",
     shared_activity: "sharedActivityEnabled",
+    debt_due: "debtDueRemindersEnabled",
   };
   return fields[kind];
 }
