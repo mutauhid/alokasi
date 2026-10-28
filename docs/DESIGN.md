@@ -173,6 +173,18 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Laporan menampilkan grafik batang pemasukan/pengeluaran dari transaksi yang sudah mengikuti seluruh filter. Pengeluaran per kategori menggunakan progress relatif terhadap kategori terbesar; grafik tidak memakai data demo.
 - Panduan automasi harus mempertahankan ilustrasi pada setiap langkah. Panduan iPhone wajib memperlihatkan pengisian header Authorization, Form `text` dan `image`, pengambilan `reviewUrl`, pengaturan Back Tap, serta pemeriksaan bukti; bukan hanya deskripsi teks.
 
+## Transaksi V2
+
+- Halaman memakai kelas terisolasi `transactions-v2`, surface/radius/border yang konsisten dengan Dashboard V2, dan riwayat sebagai kartu utama. Metadata, pencarian, page size, serta pagination tetap memakai data/query existing.
+- Tombol **Tambah transaksi** menjadi primary action dan **Scan struk** secondary action. Scan membuka kartu disclosure ringkas; draf OCR aktif membuka disclosure otomatis agar koreksi tidak tersembunyi.
+- Modal tambah transaksi menjadi sheet bawah pada mobile dan dialog terpusat pada desktop. Urutan visual: jenis, nominal, judul, tanggal/akun, kategori, catatan, lalu footer Batal/Simpan. Native input dan Server Action existing tetap menjadi sumber validasi.
+- Jenis transaksi dan kategori memakai tile dengan ikon, label, border, indikator cek, dan focus ring sehingga state terpilih tidak hanya bergantung pada warna.
+- Baris riwayat mempertahankan ikon kategori, judul, metadata, dan nominal kanan yang stabil. Baris terpilih memperoleh state subtle dari state sheet, bukan status finansial baru.
+- Detail menjadi bottom sheet pada mobile dan right drawer pada desktop. Nominal tetap mengikuti privacy mode; Edit/Hapus hanya muncul sesuai permission existing dan hapus tetap meminta konfirmasi.
+- Seluruh teks panjang dan nominal memakai wrapping/truncation pada area yang tepat tanpa horizontal overflow pada 360/390 px. Styling light/dark memakai token, bukan warna dark hardcoded.
+- Input nominal tambah/edit menyediakan tombol kalkulator yang membuka keypad inline. Pengguna dapat menghitung tambah, kurang, kali, atau bagi lalu menerapkan hasil secara eksplisit; menutup kalkulator tidak mengubah nominal form.
+- Area filter riwayat menggabungkan pencarian dengan tanggal mulai dan akhir. Label tanggal tetap terlihat, filter dapat direset sekaligus, dan nilai pencarian/rentang dipertahankan oleh pagination serta kontrol jumlah baris.
+
 ## Struktur Pengaturan
 
 - Pengaturan memakai navigasi lokal responsif dan menampilkan satu kelompok fungsi pada satu waktu: Akun, Automasi, Kategori, Ruang & data, atau Zona berbahaya.

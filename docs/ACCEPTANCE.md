@@ -925,3 +925,28 @@ Unit test domain mencakup validasi asal/akun, status, sisa, dan arah penyesuaian
 | DASHV2-16 | Area judul empat KPI memiliki tinggi dua baris pada seluruh breakpoint sehingga baseline nominal selalu sejajar |
 
 Verifikasi lokal lulus untuk lint, typecheck, build produksi, 172 unit test, serta 14 smoke Playwright Microsoft Edge pada viewport desktop/mobile dan tema light/dark. Suite integrasi PostgreSQL tidak berjalan karena `TEST_DATABASE_URL` khusus test tidak tersedia; seluruh 53 test dilewati sebelum setup dan tidak menunjukkan regresi Dashboard. Screenshot Dashboard terautentikasi belum dihasilkan karena browser otomasi tidak memiliki sesi login/database test, sehingga perbandingan visual dengan mockup perlu dilanjutkan pada sesi pengguna atau preview deployment.
+
+## Hasil tahap 47 — Transaksi V2, 28 Oktober 2026
+
+| ID | Kriteria penerimaan |
+|---|---|
+| TRXV2-01 | Riwayat tetap mengambil data dari service workspace existing serta mempertahankan pencarian, urutan, pagination, page size, category icon, dan privacy nominal |
+| TRXV2-02 | Scan struk menjadi disclosure keyboard-accessible; tombol Scan membuka panel, draf aktif membukanya otomatis, dan JPEG/PNG/WebP 10 MB tetap diproses OCR lokal dengan validasi existing |
+| TRXV2-03 | Modal tambah mempertahankan pemasukan, pengeluaran, transfer, kategori dinamis, saran judul, format Rupiah, validasi, duplicate warning, dan Server Action existing |
+| TRXV2-04 | Tile jenis/kategori memiliki label, ikon, indikator nonwarna, native radio, focus state, serta layout responsif tanpa overflow pada 360/390 px |
+| TRXV2-05 | Klik baris membuka bottom sheet pada mobile dan right drawer pada desktop; judul, ikon, jenis, nominal, tanggal, akun, kategori, catatan, dan pembuat bersama memakai data aktual |
+| TRXV2-06 | Edit dan Hapus hanya tersedia sesuai permission existing; edit memakai versi data yang benar, hapus tetap membuka konfirmasi, dan Viewer tetap detail baca-saja |
+| TRXV2-07 | Panduan Telegram/iPhone, tab Pengingat, workspace/theme switcher, period display, success/error state, serta amount privacy tidak dihapus atau diganti |
+| TRXV2-08 | Styling hanya memakai token tema/scoped class, mendukung reduced motion, light/dark, loading/empty state, focus keyboard, dan nominal panjang |
+| TRXV2-09 | Perubahan tidak menambah dependency atau menyentuh schema, migration, API, auth, service mutasi transaksi, routing, maupun formula saldo; query baca hanya menerima filter tanggal |
+| TRXV2-10 | Typecheck, lint, unit test, build, serta smoke visual dicatat berdasarkan pemeriksaan yang benar-benar dijalankan |
+| TRXV2-11 | Development overlay tidak lagi melaporkan missing key dari `TransactionActions`; edit/delete action node memakai key stabil per transaksi |
+| TRXV2-12 | Chip tanggal Transaksi berlabel “Periode workspace” dan tidak mengklaim sebagai filter riwayat; query riwayat seluruh data tetap tidak berubah |
+| TRXV2-13 | Native date input mempertahankan nilai/timezone existing serta menampilkan preview tanggal Indonesia; format kontrol native tetap mengikuti browser/OS |
+| TRXV2-14 | Nominal tambah/edit dapat dihitung melalui kalkulator tambah, kurang, kali, dan bagi; hasil baru masuk ke hidden integer input setelah **Gunakan hasil**, sementara input manual serta validasi existing tetap tersedia |
+| TRXV2-15 | Kalkulator menolak pembagian nol, hasil negatif, dan overflow batas penyimpanan; semua tombol bertipe non-submit, memiliki label/focus state, dan tidak menambah dependency atau `eval` |
+| TRXV2-16 | Riwayat dapat difilter dengan tanggal mulai/akhir inklusif bersama pencarian; filter tervalidasi, bertahan saat pagination/page-size, dapat direset, dan tidak mengubah label maupun perhitungan periode workspace |
+
+Verifikasi lokal tahap 47: lint lulus, typecheck lulus, build produksi lulus, 176 unit test lulus, dan 14 smoke Playwright Microsoft Edge lulus pada project desktop/mobile. Console issue yang diberikan pengguna berasal dari action node tanpa React `key`; key stabil ditambahkan pada edit/hapus dan kontraknya ditutup oleh unit test presentasi. Label Next.js 16.3.5 “stale” merupakan indikator versi development, bukan exception aplikasi, sehingga dependency tidak diubah dalam scope UI polish. Suite integrasi PostgreSQL tidak dapat dijalankan karena `TEST_DATABASE_URL` khusus test tidak tersedia; 53 test dilewati pada setup, bukan gagal karena assertion Transaksi V2. Full `format:check` lokal Windows melaporkan file lama akibat perbedaan LF/CRLF, sementara seluruh file kode/test yang diubah lulus pemeriksaan Prettier tertarget dan `git diff --check`. Screenshot halaman Transaksi terautentikasi belum dapat dihasilkan karena browser test tidak memiliki sesi login/database, serta tiga PNG referensi belum tersedia dalam checkout; visual comparison perlu dilanjutkan pada preview pengguna.
+
+Verifikasi refinement kalkulator/filter tanggal: typecheck, lint, build produksi, 183 unit test, dan 14 smoke Playwright Microsoft Edge lulus. Unit test mencakup operasi kalkulator, pembagian integer, pembagian nol, hasil negatif, overflow, serta parsing tanggal valid/tidak valid. Test integrasi riwayat telah ditambah untuk batas tanggal inklusif, tetapi belum dapat dieksekusi karena `TEST_DATABASE_URL` khusus test tidak tersedia; keenam suite berhenti pada guard environment dan 53 test dilewati.

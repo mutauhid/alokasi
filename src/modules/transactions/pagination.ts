@@ -6,16 +6,29 @@ export type TransactionPagination = {
   page: number;
   pageSize: TransactionPageSize;
   search: string;
+  dateFrom: string;
+  dateTo: string;
 };
 
 type PaginationQuery = {
   page?: string | string[];
   pageSize?: string | string[];
   search?: string | string[];
+  from?: string | string[];
+  to?: string | string[];
 };
 
 function singleValue(value: string | string[] | undefined) {
   return typeof value === "string" ? value : undefined;
+}
+
+function validDateValue(value: string | undefined) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/u.test(value)) return "";
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(date.valueOf()) &&
+    date.toISOString().slice(0, 10) === value
+    ? value
+    : "";
 }
 
 export function parseTransactionPagination(
@@ -36,8 +49,10 @@ export function parseTransactionPagination(
     .trim()
     .replace(/\s+/gu, " ")
     .slice(0, 100);
+  const dateFrom = validDateValue(singleValue(query.from));
+  const dateTo = validDateValue(singleValue(query.to));
 
-  return { page, pageSize, search };
+  return { page, pageSize, search, dateFrom, dateTo };
 }
 
 export function buildTransactionPageMeta(

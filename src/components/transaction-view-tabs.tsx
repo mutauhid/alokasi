@@ -22,7 +22,7 @@ export function TransactionViewTabs({
   return (
     <nav
       aria-label="Tampilan transaksi"
-      className="inline-flex w-full gap-1 rounded-xl border bg-card p-1 sm:w-auto"
+      className="inline-flex w-full gap-1 rounded-2xl border bg-card p-1.5 shadow-sm sm:w-auto"
     >
       {items.map((item) => {
         const Icon = item.icon;
@@ -33,7 +33,7 @@ export function TransactionViewTabs({
             href={href(item.view, workspaceId)}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors sm:flex-none",
+              "inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-medium transition-colors sm:flex-none",
               active
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",

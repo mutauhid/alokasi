@@ -1,6 +1,8 @@
 "use client";
 
 import { useId, useState, type ComponentProps } from "react";
+import { Calculator } from "lucide-react";
+import { RupiahCalculator } from "@/components/rupiah-calculator";
 import { formatRupiahInput, normalizeRupiahInput } from "@/lib/rupiah-input";
 import { cn } from "@/lib/utils";
 
@@ -9,12 +11,14 @@ type RupiahInputProps = Omit<
   "className" | "defaultValue" | "name" | "onChange" | "type" | "value"
 > & {
   className?: string;
+  calculator?: boolean;
   defaultValue?: string;
   name: string;
 };
 
 export function RupiahInput({
   className,
+  calculator = false,
   defaultValue = "",
   id,
   name,
@@ -27,6 +31,7 @@ export function RupiahInput({
     () => normalizeRupiahInput(defaultValue) ?? "",
   );
   const [tooLarge, setTooLarge] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
 
   return (
     <>
@@ -57,12 +62,41 @@ export function RupiahInput({
           }}
           className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
         />
+        {calculator && (
+          <button
+            type="button"
+            aria-label={
+              calculatorOpen
+                ? "Tutup kalkulator nominal"
+                : "Buka kalkulator nominal"
+            }
+            aria-expanded={calculatorOpen}
+            aria-controls={`${inputId}-calculator`}
+            onClick={() => setCalculatorOpen((current) => !current)}
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl border bg-primary/10 text-primary transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Calculator className="size-4" aria-hidden="true" />
+          </button>
+        )}
         <input type="hidden" name={name} value={rawValue} />
       </div>
       {tooLarge && (
         <span role="alert" className="mt-1 block text-xs text-destructive">
           Nominal melebihi batas penyimpanan.
         </span>
+      )}
+      {calculator && calculatorOpen && (
+        <div id={`${inputId}-calculator`}>
+          <RupiahCalculator
+            initialValue={rawValue}
+            onApply={(value) => {
+              setRawValue(value);
+              setTooLarge(false);
+              setCalculatorOpen(false);
+            }}
+            onClose={() => setCalculatorOpen(false)}
+          />
+        </div>
       )}
     </>
   );

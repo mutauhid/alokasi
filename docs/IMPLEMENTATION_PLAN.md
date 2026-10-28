@@ -387,6 +387,17 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Final refinement: tambahkan sumbu Y `bigint`, baseline nilai negatif, donut/progress budget yang lebih terbaca, status reminder dan ledger, kontras metadata khusus Dashboard, serta KPI mobile 2×2 tanpa mengubah data flow.
 - Tidak ada schema, migration, endpoint, autentikasi, routing, dependency, atau business logic baru. Mockup menjadi referensi komposisi dan hierarki; data aktual tetap sumber kebenaran.
 
+## Tahap 47 — Transaksi V2, 28 Oktober 2026
+
+- Tahap A: pertahankan AppShell/tab/filter periode lalu tata CTA, kartu OCR collapsible, panduan automasi, dan kartu riwayat dengan design system Dashboard V2.
+- Tahap B: tingkatkan modal tambah transaksi dengan hierarchy field, nominal dominan, tile jenis/kategori, footer aksi, validation/duplicate state, serta layout mobile/desktop tanpa mengubah Server Action.
+- Tahap C: gunakan bottom sheet mobile/right drawer desktop untuk detail, selected state subtle, mode edit terpisah, dan konfirmasi hapus existing.
+- Tahap D: tambahkan loading skeleton route, styling terisolasi, regression test kontrak presentasi, dokumentasi, typecheck/lint/unit/build, dan smoke visual jika sesi/database tersedia.
+- Scope tidak mencakup perubahan service mutasi, Prisma, API, auth, routing, formula saldo, pengingat, Dashboard, atau dependency. Query baca riwayat hanya diperluas dengan filter tanggal yang diminta. Mockup PNG belum tersedia pada checkout ketika implementasi dimulai; review visual pengguna menjadi langkah fidelity berikutnya.
+- Refinement kalkulator nominal: tambahkan helper aritmetika `bigint`, keypad aksesibel yang opt-in pada `RupiahInput`, dan penerapan hasil eksplisit pada form tambah/edit tanpa mengubah payload Server Action.
+- Refinement filter tanggal: validasi query `from`/`to`, terapkan batas tanggal inklusif pada query riwayat, dan pertahankan pencarian/rentang saat paging maupun perubahan page size.
+- Verifikasi tambahan mencakup unit test operasi kalkulator, parsing tanggal, kontrak UI, typecheck, lint, seluruh unit test, build, serta smoke browser sesuai ketersediaan environment.
+
 ## Backlog kandidat — bukan komitmen aktif
 
 F11 transaksi berulang diaktifkan melalui D33, F15 rekonsiliasi melalui D37, dan F14 utang/piutang melalui D58. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, dan F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.

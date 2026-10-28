@@ -23,6 +23,7 @@ export function TransactionActions({
   editHeading = "Ubah transaksi",
   editLabel = "Ubah transaksi",
   deleteAction,
+  presentation = "bottom",
 }: {
   title: string;
   children: ReactNode;
@@ -33,6 +34,7 @@ export function TransactionActions({
   editHeading?: string;
   editLabel?: string;
   deleteAction?: ReactNode;
+  presentation?: "bottom" | "drawer";
 }) {
   const [view, setView] = useState<"detail" | "edit">("detail");
 
@@ -56,14 +58,21 @@ export function TransactionActions({
         )}
       </SheetTrigger>
       <SheetContent
-        side="bottom"
-        className="max-h-[92dvh] overflow-y-auto rounded-t-3xl border-x px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2 sm:left-1/2 sm:right-auto sm:w-[calc(100vw-2rem)] sm:max-w-3xl sm:-translate-x-1/2 sm:px-6"
+        side={presentation === "drawer" ? "responsive" : "bottom"}
+        closeLabel={
+          presentation === "drawer" ? "Tutup detail transaksi" : "Tutup panel"
+        }
+        className={
+          presentation === "drawer"
+            ? "gap-2 overflow-y-auto bg-card px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2 sm:px-6 md:pt-5"
+            : "max-h-[92dvh] overflow-y-auto rounded-t-3xl border-x px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2 sm:left-1/2 sm:right-auto sm:w-[calc(100vw-2rem)] sm:max-w-3xl sm:-translate-x-1/2 sm:px-6"
+        }
       >
         <div
-          className="mx-auto mb-2 h-1 w-10 rounded-full bg-muted-foreground/25"
+          className={`mx-auto mb-2 h-1 w-10 rounded-full bg-muted-foreground/25 ${presentation === "drawer" ? "md:hidden" : ""}`}
           aria-hidden="true"
         />
-        <SheetHeader className="px-0 pb-2 pr-12">
+        <SheetHeader className="px-0 pb-1 pr-12">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <SheetTitle>{view === "edit" ? editHeading : heading}</SheetTitle>
