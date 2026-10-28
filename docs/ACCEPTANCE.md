@@ -950,3 +950,24 @@ Verifikasi lokal lulus untuk lint, typecheck, build produksi, 172 unit test, ser
 Verifikasi lokal tahap 47: lint lulus, typecheck lulus, build produksi lulus, 176 unit test lulus, dan 14 smoke Playwright Microsoft Edge lulus pada project desktop/mobile. Console issue yang diberikan pengguna berasal dari action node tanpa React `key`; key stabil ditambahkan pada edit/hapus dan kontraknya ditutup oleh unit test presentasi. Label Next.js 16.3.5 “stale” merupakan indikator versi development, bukan exception aplikasi, sehingga dependency tidak diubah dalam scope UI polish. Suite integrasi PostgreSQL tidak dapat dijalankan karena `TEST_DATABASE_URL` khusus test tidak tersedia; 53 test dilewati pada setup, bukan gagal karena assertion Transaksi V2. Full `format:check` lokal Windows melaporkan file lama akibat perbedaan LF/CRLF, sementara seluruh file kode/test yang diubah lulus pemeriksaan Prettier tertarget dan `git diff --check`. Screenshot halaman Transaksi terautentikasi belum dapat dihasilkan karena browser test tidak memiliki sesi login/database, serta tiga PNG referensi belum tersedia dalam checkout; visual comparison perlu dilanjutkan pada preview pengguna.
 
 Verifikasi refinement kalkulator/filter tanggal: typecheck, lint, build produksi, 183 unit test, dan 14 smoke Playwright Microsoft Edge lulus. Unit test mencakup operasi kalkulator, pembagian integer, pembagian nol, hasil negatif, overflow, serta parsing tanggal valid/tidak valid. Test integrasi riwayat telah ditambah untuk batas tanggal inklusif, tetapi belum dapat dieksekusi karena `TEST_DATABASE_URL` khusus test tidak tersedia; keenam suite berhenti pada guard environment dan 53 test dilewati.
+
+## Hasil tahap 48 — Budget V2, 28 Oktober 2026
+
+| ID | Kriteria penerimaan |
+|---|---|
+| BUDV2-01 | Halaman memakai `getBudgetOverview` existing; total limit, realisasi, belum dianggarkan, sisa, dan kategori tidak diganti nilai hardcoded |
+| BUDV2-02 | Status kartu tetap berasal dari `budgetStatus`; angka persentase aktual dapat melebihi 100% dan hanya progress/ring visual yang dijepit maksimal 100% |
+| BUDV2-03 | Seluruh nominal baca-saja pada KPI, ringkasan, kartu, detail, dan drawer salin memakai Amount Privacy Mode global; input create/edit tetap dapat dilihat pengguna |
+| BUDV2-04 | Create memakai dialog responsif dengan kategori dinamis, input Rupiah, validasi, pending state, Batal, Close, dan `createBudgetAction` existing |
+| BUDV2-05 | Copy memakai drawer kanan desktop/sheet bawah mobile, hanya memilih kategori eligible, menampilkan alasan disabled, jumlah dan total pilihan, serta memanggil `copyBudgetsAction` existing tanpa overwrite |
+| BUDV2-06 | Edit dan hapus memakai action drawer; edit mempertahankan version check dan hapus tetap memerlukan konfirmasi tanpa menghapus transaksi |
+| BUDV2-07 | Periode historis tetap baca-saja, Owner menjadi satu-satunya role yang mengelola budget aktif, sedangkan Editor/Viewer mendapat penjelasan akses |
+| BUDV2-08 | Grid KPI/kategori, modal, drawer, nominal panjang, light/dark mode, focus state, dan loading skeleton stabil pada desktop serta mobile tanpa horizontal overflow |
+| BUDV2-09 | Perubahan tidak menyentuh Prisma schema, migration, endpoint, auth, service perhitungan, routing, dependency, atau business logic keuangan |
+| BUDV2-10 | Lint, typecheck, unit test, build, integration test, format, serta smoke visual dicatat berdasarkan pemeriksaan yang benar-benar dijalankan |
+| BUDV2-11 | Total limit menjadi konteks KPI utama; belum dianggarkan memakai treatment informasi netral tanpa mengubah nilai atau definisi service |
+| BUDV2-12 | Badge ringkasan menyebut status secara eksplisit dan tetap berasal dari `budgetStatus`; kartu kategori mempertahankan seluruh status dan threshold existing |
+| BUDV2-13 | Menu kategori memiliki target sentuh minimal 44 px; dialog/drawer mempertahankan focus trap, Escape, focus restoration, scroll, label, dan pending state |
+| BUDV2-14 | Drawer copy membedakan sumber kosong dari kondisi seluruh item tidak eligible, menampilkan alasan existing, dan tidak mengaktifkan submit tanpa kategori terpilih |
+
+Verifikasi lokal tahap 48/final polish: lint lulus, typecheck lulus, build produksi lulus, 188 unit test lulus, dan 14 smoke Playwright Microsoft Edge lulus pada project desktop/mobile. Suite integrasi PostgreSQL tidak berjalan karena `TEST_DATABASE_URL` khusus test tidak tersedia; keenam suite berhenti pada guard environment dan 53 test dilewati, bukan gagal karena assertion Budget V2. Seluruh file kode/test yang diubah lulus Prettier tertarget dan `git diff --check`; full `format:check` tetap melaporkan 248 file repository akibat baseline line-ending Windows yang sudah ada. Screenshot Budget terautentikasi belum dihasilkan karena browser otomasi tidak memiliki sesi login/database test, sehingga perbandingan visual final perlu dilanjutkan pada sesi pengguna atau preview deployment.

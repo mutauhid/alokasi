@@ -104,101 +104,107 @@ export async function WorkspacePage({
     >
       <ActionSuccessToast code={success} />
       <div className="workspace-page-motion">
-        <div
-          className={`motion-page-heading mb-7 flex flex-wrap items-start justify-between gap-5 ${section === "dashboard" ? "dashboard-v2-heading" : ""}`}
-        >
-          <div>
-            {section === "dashboard" && (
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                {context.workspace.type === "personal"
-                  ? "Workspace pribadi"
-                  : context.workspace.name}
+        {section !== "budgets" && (
+          <div
+            className={`motion-page-heading mb-7 flex flex-wrap items-start justify-between gap-5 ${section === "dashboard" ? "dashboard-v2-heading" : ""}`}
+          >
+            <div>
+              {section === "dashboard" && (
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {context.workspace.type === "personal"
+                    ? "Workspace pribadi"
+                    : context.workspace.name}
+                </p>
+              )}
+              <h1 className="text-[27px] font-semibold leading-tight tracking-[-.8px]">
+                {section === "dashboard"
+                  ? "Selamat datang kembali 👋"
+                  : current.label}
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {section === "dashboard"
+                  ? "Kelola keuanganmu, capai tujuan finansial lebih mudah dalam satu tempat."
+                  : current.description}
               </p>
-            )}
-            <h1 className="text-[27px] font-semibold leading-tight tracking-[-.8px]">
-              {section === "dashboard"
-                ? "Selamat datang kembali 👋"
-                : current.label}
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {section === "dashboard"
-                ? "Kelola keuanganmu, capai tujuan finansial lebih mudah dalam satu tempat."
-                : current.description}
-            </p>
-          </div>
-          {showPeriod && (
-            <div className="flex flex-wrap items-center gap-2">
-              {periodSelection ? (
-                <form
-                  action={`/${section}`}
-                  method="get"
-                  className="flex flex-wrap items-center gap-2"
-                >
-                  <input
-                    type="hidden"
-                    name="workspaceId"
-                    value={context.workspace.id}
-                  />
-                  <label className="relative">
-                    <span className="sr-only">Periode yang ditampilkan</span>
+            </div>
+            {showPeriod && (
+              <div className="flex flex-wrap items-center gap-2">
+                {periodSelection ? (
+                  <form
+                    action={`/${section}`}
+                    method="get"
+                    className="flex flex-wrap items-center gap-2"
+                  >
+                    <input
+                      type="hidden"
+                      name="workspaceId"
+                      value={context.workspace.id}
+                    />
+                    <label className="relative">
+                      <span className="sr-only">Periode yang ditampilkan</span>
+                      <CalendarDays
+                        className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground"
+                        aria-hidden="true"
+                      />
+                      <select
+                        name="periodId"
+                        defaultValue={displayedPeriod.id}
+                        className="min-h-10 rounded-lg border bg-card py-2 pl-9 pr-8 text-xs"
+                      >
+                        {periodSelection.periods.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {`${periodFormat.format(item.startDate)}–${periodFormat.format(
+                              new Date(
+                                item.endDateExclusive.valueOf() - 86_400_000,
+                              ),
+                            )}${item.id === activePeriod.id ? " · aktif" : ""}${item.isTransition ? " · transisi" : ""}`}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      className="min-h-10"
+                    >
+                      Tampilkan
+                    </Button>
+                  </form>
+                ) : (
+                  <span
+                    className="inline-flex min-h-10 flex-wrap items-center gap-x-2 gap-y-0.5 rounded-lg border bg-card px-3 text-xs"
+                    aria-label={
+                      section === "transactions"
+                        ? `Periode workspace ${period}`
+                        : period
+                    }
+                  >
                     <CalendarDays
-                      className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground"
+                      className="size-4 text-muted-foreground"
                       aria-hidden="true"
                     />
-                    <select
-                      name="periodId"
-                      defaultValue={displayedPeriod.id}
-                      className="min-h-10 rounded-lg border bg-card py-2 pl-9 pr-8 text-xs"
+                    {section === "transactions" && (
+                      <span className="font-medium text-muted-foreground">
+                        Periode workspace
+                      </span>
+                    )}
+                    <span>{period}</span>
+                  </span>
+                )}
+                {section === "dashboard" && (
+                  <Button asChild className="min-h-10">
+                    <Link
+                      href={`${sectionHref("transactions", context.workspace.id)}&create=1`}
                     >
-                      {periodSelection.periods.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {`${periodFormat.format(item.startDate)}–${periodFormat.format(
-                            new Date(
-                              item.endDateExclusive.valueOf() - 86_400_000,
-                            ),
-                          )}${item.id === activePeriod.id ? " · aktif" : ""}${item.isTransition ? " · transisi" : ""}`}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <Button type="submit" variant="outline" className="min-h-10">
-                    Tampilkan
+                      <Plus className="size-4" />
+                      Catat transaksi
+                    </Link>
                   </Button>
-                </form>
-              ) : (
-                <span
-                  className="inline-flex min-h-10 flex-wrap items-center gap-x-2 gap-y-0.5 rounded-lg border bg-card px-3 text-xs"
-                  aria-label={
-                    section === "transactions"
-                      ? `Periode workspace ${period}`
-                      : period
-                  }
-                >
-                  <CalendarDays
-                    className="size-4 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                  {section === "transactions" && (
-                    <span className="font-medium text-muted-foreground">
-                      Periode workspace
-                    </span>
-                  )}
-                  <span>{period}</span>
-                </span>
-              )}
-              {section === "dashboard" && (
-                <Button asChild className="min-h-10">
-                  <Link
-                    href={`${sectionHref("transactions", context.workspace.id)}&create=1`}
-                  >
-                    <Plus className="size-4" />
-                    Catat transaksi
-                  </Link>
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         <SectionContent
           section={section}
           access={{

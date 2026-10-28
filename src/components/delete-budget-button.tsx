@@ -9,10 +9,12 @@ export function DeleteBudgetButton({
   workspaceId,
   id,
   version,
+  iconOnly = false,
 }: {
   workspaceId: string;
   id: string;
   version: number;
+  iconOnly?: boolean;
 }) {
   return (
     <DialogPrimitive.Root>
@@ -20,10 +22,13 @@ export function DeleteBudgetButton({
         <Button
           type="button"
           variant="outline"
-          className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          size={iconOnly ? "icon" : "default"}
+          className={`${iconOnly ? "size-11 rounded-xl" : "w-full"} border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive`}
+          aria-label={iconOnly ? "Hapus budget" : undefined}
+          title={iconOnly ? "Hapus budget" : undefined}
         >
           <Trash2 aria-hidden="true" />
-          Hapus budget
+          {!iconOnly && "Hapus budget"}
         </Button>
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>

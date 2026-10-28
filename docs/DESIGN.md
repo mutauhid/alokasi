@@ -185,6 +185,18 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 - Input nominal tambah/edit menyediakan tombol kalkulator yang membuka keypad inline. Pengguna dapat menghitung tambah, kurang, kali, atau bagi lalu menerapkan hasil secara eksplisit; menutup kalkulator tidak mengubah nominal form.
 - Area filter riwayat menggabungkan pencarian dengan tanggal mulai dan akhir. Label tanggal tetap terlihat, filter dapat direset sekaligus, dan nilai pencarian/rentang dipertahankan oleh pagination serta kontrol jumlah baris.
 
+## Budget V2
+
+- Header Budget menyatukan konteks periode, tombol tampilkan, salin periode, dan buat budget. Teks pengantar adalah “Pantau dan kelola anggaranmu dengan lebih jelas.”
+- Tiga KPI menampilkan total limit, realisasi pada kategori berbudget, serta pengeluaran pada kategori tanpa budget. Seluruh nominal baca-saja mengikuti Amount Privacy Mode global.
+- Ringkasan penggunaan memakai ring berbasis persentase aktual. Label persentase dapat melebihi 100%, tetapi sapuan ring dan progress bar berhenti pada satu lingkaran penuh agar visual tetap stabil.
+- Pengeluaran belum dianggarkan dijelaskan sebagai pengeluaran nyata pada kategori tanpa limit, bukan sisa dana atau saldo yang dapat dialokasikan.
+- Kartu kategori memakai ikon existing, status domain Normal/Hampir habis/Habis/Terlampaui, aktual, limit, progress, dan sisa atau kelebihan. Menu tiga titik membuka detail responsif, edit limit, dan konfirmasi hapus.
+- Buat budget memakai dialog terpusat pada desktop dan sheet bawah pada mobile. Salin periode memakai drawer kanan pada desktop dan sheet bawah pada mobile, dengan kategori eligible, alasan kategori disabled, jumlah pilihan, dan total limit terpilih.
+- Periode historis dan role selain Owner tetap baca-saja. Loading, kosong, konflik, serta state sukses/gagal dibedakan tanpa data dummy.
+- Total limit menjadi jangkar konteks pada tiga KPI. Belum dianggarkan tetap setara secara struktur tetapi memakai ikon/tone netral agar tidak mengalahkan konteks keseluruhan.
+- Badge ringkasan memakai teks “Status: …” dari domain existing. State salin tanpa kategori eligible menjelaskan bahwa kategori sudah ada atau diarsipkan, sambil tetap menampilkan alasan per item.
+
 ## Struktur Pengaturan
 
 - Pengaturan memakai navigasi lokal responsif dan menampilkan satu kelompok fungsi pada satu waktu: Akun, Automasi, Kategori, Ruang & data, atau Zona berbahaya.
