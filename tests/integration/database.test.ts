@@ -355,6 +355,8 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
             page: 1,
             pageSize: 10,
             search: "PAKAN",
+            dateFrom: "",
+            dateTo: "",
           })
         ).items.map((item) => item.id),
       ).toEqual([expenseTransaction.id]);
@@ -363,7 +365,31 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
           await transactions.listTransactionPage(room.id, {
             page: 1,
             pageSize: 10,
+            search: "PAKAN",
+            dateFrom: "2026-09-23",
+            dateTo: "2026-09-23",
+          })
+        ).items.map((item) => item.id),
+      ).toEqual([expenseTransaction.id]);
+      expect(
+        (
+          await transactions.listTransactionPage(room.id, {
+            page: 1,
+            pageSize: 10,
+            search: "PAKAN",
+            dateFrom: "2026-09-24",
+            dateTo: "2026-09-30",
+          })
+        ).items,
+      ).toHaveLength(0);
+      expect(
+        (
+          await transactions.listTransactionPage(room.id, {
+            page: 1,
+            pageSize: 10,
             search: "hewan",
+            dateFrom: "",
+            dateTo: "",
           })
         ).items.map((item) => item.id),
       ).toEqual([expenseTransaction.id]);
@@ -381,6 +407,8 @@ describe("PostgreSQL data integrity (all fixture writes rolled back)", () => {
             page: 1,
             pageSize: 10,
             search: "",
+            dateFrom: "",
+            dateTo: "",
           })
         ).items,
       ).toHaveLength(0);

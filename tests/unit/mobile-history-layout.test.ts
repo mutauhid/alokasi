@@ -28,12 +28,16 @@ describe("mobile history details", () => {
   it("uses a stable amount column and a tappable transaction detail sheet", async () => {
     const transactions = await source("transactions-section.tsx");
 
-    expect(transactions).toContain("grid-cols-[2.5rem_minmax(0,1fr)_auto]");
+    expect(transactions).toContain(
+      "grid-cols-[2.5rem_minmax(0,1fr)_minmax(5.75rem,auto)]",
+    );
     expect(transactions).toContain('heading="Detail transaksi"');
     expect(transactions).toContain("Lihat detail transaksi");
     expect(transactions).toContain("editContent=");
     expect(transactions).toContain("iconOnly");
     expect(transactions).toContain("DeleteTransactionButton");
+    expect(transactions).toContain('presentation="drawer"');
+    expect(transactions).toContain("data-[state=open]:shadow-");
   });
 
   it("moves reminder details and actions into the same tappable pattern", async () => {

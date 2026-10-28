@@ -9,27 +9,33 @@ export function TransactionPageSizeControl({
   workspaceId,
   pageSize,
   search,
+  dateFrom,
+  dateTo,
 }: {
   workspaceId: string;
   pageSize: TransactionPageSize;
   search: string;
+  dateFrom: string;
+  dateTo: string;
 }) {
   return (
     <form
       action="/transactions"
       method="get"
-      className="flex flex-wrap items-center gap-2 text-sm"
+      className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:text-sm"
     >
       <input type="hidden" name="workspaceId" value={workspaceId} />
       <input type="hidden" name="page" value="1" />
       {search && <input type="hidden" name="search" value={search} />}
+      {dateFrom && <input type="hidden" name="from" value={dateFrom} />}
+      {dateTo && <input type="hidden" name="to" value={dateTo} />}
       <label htmlFor="transaction-page-size">Tampilkan</label>
       <select
         id="transaction-page-size"
         name="pageSize"
         defaultValue={pageSize}
         onChange={(event) => event.currentTarget.form?.requestSubmit()}
-        className="min-h-9 rounded-md border bg-background px-3 py-1 text-sm"
+        className="min-h-9 rounded-lg border bg-background px-3 py-1 text-sm text-foreground"
       >
         {TRANSACTION_PAGE_SIZES.map((option) => (
           <option key={option} value={option}>

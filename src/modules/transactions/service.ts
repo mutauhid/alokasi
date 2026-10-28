@@ -191,6 +191,18 @@ export async function listTransactionPage(
   const where: Prisma.TransactionWhereInput = {
     workspaceId,
     deletedAt: null,
+    ...(pagination.dateFrom || pagination.dateTo
+      ? {
+          transactionDate: {
+            ...(pagination.dateFrom
+              ? { gte: new Date(`${pagination.dateFrom}T00:00:00.000Z`) }
+              : {}),
+            ...(pagination.dateTo
+              ? { lte: new Date(`${pagination.dateTo}T00:00:00.000Z`) }
+              : {}),
+          },
+        }
+      : {}),
     ...(pagination.search
       ? {
           OR: [

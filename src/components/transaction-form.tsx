@@ -1,7 +1,14 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { TriangleAlert } from "lucide-react";
+import type { ReactNode } from "react";
+import { useActionState, useId, useState } from "react";
+import {
+  ArrowDownLeft,
+  ArrowLeftRight,
+  ArrowUpRight,
+  Check,
+  TriangleAlert,
+} from "lucide-react";
 import {
   createTransactionAction,
   updateTransactionAction,
@@ -18,7 +25,38 @@ type CategoryOption = Option & { type: "income" | "expense" };
 type TransactionType = "income" | "expense" | "transfer";
 
 const inputClass =
-  "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
+  "mt-2 min-h-12 w-full rounded-xl border bg-background px-3.5 text-sm shadow-xs transition-colors focus:border-primary";
+
+const transactionTypes = [
+  {
+    value: "expense" as const,
+    label: "Pengeluaran",
+    description: "Uang keluar",
+    icon: ArrowUpRight,
+  },
+  {
+    value: "income" as const,
+    label: "Pemasukan",
+    description: "Uang masuk",
+    icon: ArrowDownLeft,
+  },
+  {
+    value: "transfer" as const,
+    label: "Transfer",
+    description: "Antar akun",
+    icon: ArrowLeftRight,
+  },
+];
+
+function displayDatePreview(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(value)) return null;
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00.000Z`));
+}
 
 export function TransactionForm({
   workspaceId,
@@ -30,6 +68,7 @@ export function TransactionForm({
   initial,
   compact = false,
   timeZone = "UTC",
+  cancelAction,
 }: {
   workspaceId: string;
   accounts: Option[];
@@ -51,6 +90,7 @@ export function TransactionForm({
   };
   compact?: boolean;
   timeZone?: string;
+  cancelAction?: ReactNode;
 }) {
   const [type, setType] = useState<TransactionType>(initial?.type ?? "expense");
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -65,6 +105,9 @@ export function TransactionForm({
     initial?.destinationAccountId ?? "",
   );
   const [note, setNote] = useState(initial?.note ?? "");
+  const dateHintId = useId();
+  const amountInputId = useId();
+  const datePreview = displayDatePreview(transactionDate);
   const [createState, createAction, createPending] = useActionState(
     createTransactionAction,
     initialTransactionCreateState,
@@ -93,9 +136,7 @@ export function TransactionForm({
   return (
     <form
       action={action}
-      className={
-        compact ? "grid gap-4" : "grid gap-4 md:grid-cols-2 xl:grid-cols-4"
-      }
+      className={compact ? "grid gap-5" : "grid gap-5 md:grid-cols-2"}
     >
       <input type="hidden" name="workspaceId" value={workspaceId} />
       {initial ? (
@@ -106,30 +147,63 @@ export function TransactionForm({
       ) : (
         <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
       )}
-      <label className="text-sm font-medium">
-        Jenis
-        <select
-          name="type"
-          value={type}
-          onChange={(event) =>
-            changeType(event.target.value as TransactionType)
-          }
-          className={inputClass}
-        >
-          <option value="expense">Pengeluaran</option>
-          <option value="income">Pemasukan</option>
-          <option value="transfer">Transfer</option>
-        </select>
-      </label>
-      <label className="text-sm font-medium">
-        Nominal
+      <fieldset className={compact ? "" : "md:col-span-2"}>
+        <legend className="text-sm font-semibold">Jenis transaksi</legend>
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          {transactionTypes.map((item) => {
+            const Icon = item.icon;
+            const selected = type === item.value;
+            return (
+              <label
+                key={item.value}
+                className={`relative flex min-w-0 cursor-pointer flex-col items-center gap-1 rounded-xl border px-2 py-3 text-center transition-[border-color,background-color,box-shadow,transform] motion-safe:hover:-translate-y-0.5 sm:flex-row sm:items-center sm:gap-3 sm:px-3 sm:text-left ${selected ? "border-primary bg-primary/10 shadow-[inset_0_0_0_1px_var(--primary)]" : "bg-background hover:bg-accent/45"}`}
+              >
+                <input
+                  type="radio"
+                  name="type"
+                  value={item.value}
+                  checked={selected}
+                  onChange={() => changeType(item.value)}
+                  className="peer sr-only"
+                />
+                <span
+                  className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${selected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-xs font-semibold sm:text-sm">
+                    {item.label}
+                  </span>
+                  <span className="hidden text-xs text-muted-foreground sm:block">
+                    {item.description}
+                  </span>
+                </span>
+                {selected && (
+                  <Check
+                    className="absolute right-2 top-2 size-3.5 text-primary sm:right-3 sm:top-3"
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="pointer-events-none absolute inset-0 rounded-xl ring-primary ring-offset-2 ring-offset-background peer-focus-visible:ring-2" />
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
+      <div
+        className={`text-sm font-semibold ${compact ? "" : "md:col-span-2"}`}
+      >
+        <label htmlFor={amountInputId}>Nominal</label>
         <RupiahInput
+          id={amountInputId}
           name="amount"
           required
+          calculator
           defaultValue={initial?.amount}
-          className={inputClass}
+          className={`${inputClass} h-16 text-xl font-semibold tracking-[-0.02em] sm:text-2xl`}
         />
-      </label>
+      </div>
       <div className={compact ? "" : "md:col-span-2"}>
         <TransactionTitleField
           value={title}
@@ -140,7 +214,7 @@ export function TransactionForm({
           showShortHint={!initial}
         />
       </div>
-      <label className="text-sm font-medium">
+      <label className="text-sm font-semibold">
         Tanggal
         <input
           name="transactionDate"
@@ -149,10 +223,19 @@ export function TransactionForm({
           max={defaultDate}
           value={transactionDate}
           onChange={(event) => setTransactionDate(event.target.value)}
+          aria-describedby={dateHintId}
           className={inputClass}
         />
+        <span
+          id={dateHintId}
+          className="mt-1.5 block text-xs font-normal text-muted-foreground"
+        >
+          {datePreview
+            ? `Tanggal terpilih: ${datePreview}`
+            : "Gunakan tanggal lokal sesuai perangkatmu."}
+        </span>
       </label>
-      <label className="text-sm font-medium">
+      <label className="text-sm font-semibold">
         {type === "transfer" ? "Akun asal" : "Akun"}
         <select
           name="accountId"
@@ -169,7 +252,7 @@ export function TransactionForm({
         </select>
       </label>
       {type === "transfer" ? (
-        <label className="text-sm font-medium">
+        <label className="text-sm font-semibold md:col-span-2">
           Akun tujuan
           <select
             name="destinationAccountId"
@@ -189,7 +272,7 @@ export function TransactionForm({
           </select>
         </label>
       ) : (
-        <div className={compact ? "" : "md:col-span-2 xl:col-span-4"}>
+        <div className={compact ? "" : "md:col-span-2"}>
           <CategoryRadioGroup
             categories={availableCategories}
             value={categoryId}
@@ -200,22 +283,23 @@ export function TransactionForm({
         </div>
       )}
       <label
-        className={`text-sm font-medium ${compact ? "" : `md:col-span-2 ${createState.duplicate ? "xl:col-span-4" : "xl:col-span-3"}`}`}
+        className={`text-sm font-semibold ${compact ? "" : "md:col-span-2"}`}
       >
         Catatan opsional
-        <input
+        <textarea
           name="note"
           maxLength={1000}
           value={note}
           onChange={(event) => setNote(event.target.value)}
           placeholder="Contoh: makan siang"
-          className={inputClass}
+          rows={3}
+          className={`${inputClass} min-h-24 resize-y py-3`}
         />
       </label>
       {!initial && createState.error && (
         <p
           role="alert"
-          className={`rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive ${compact ? "" : "md:col-span-2 xl:col-span-4"}`}
+          className={`rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive ${compact ? "" : "md:col-span-2"}`}
         >
           {createState.error}
         </p>
@@ -223,7 +307,7 @@ export function TransactionForm({
       {!initial && createState.duplicate && (
         <div
           role="alert"
-          className={`rounded-xl border border-amber-500/50 bg-amber-500/10 p-4 ${compact ? "" : "md:col-span-2 xl:col-span-4"}`}
+          className={`rounded-xl border border-amber-500/50 bg-amber-500/10 p-4 ${compact ? "" : "md:col-span-2"}`}
         >
           <div className="flex gap-3">
             <TriangleAlert
@@ -266,8 +350,13 @@ export function TransactionForm({
         </div>
       )}
       <div
-        className={`flex items-end ${!initial && createState.duplicate && !compact ? "md:col-span-2 justify-end xl:col-span-4" : ""}`}
+        className={
+          compact
+            ? "flex items-end"
+            : "sticky bottom-0 z-10 -mx-5 -mb-6 flex flex-col-reverse gap-2 border-t bg-card/95 px-5 py-4 backdrop-blur md:col-span-2 sm:-mx-7 sm:-mb-7 sm:flex-row sm:justify-end sm:px-7"
+        }
       >
+        {!initial && cancelAction}
         <Button
           type="submit"
           name={
@@ -281,7 +370,7 @@ export function TransactionForm({
             accounts.length === 0 ||
             (type === "transfer" && accounts.length < 2)
           }
-          className={`min-h-11 ${!initial && createState.duplicate ? "w-full sm:w-auto sm:min-w-44" : "w-full"}`}
+          className={`min-h-12 rounded-xl ${compact ? "w-full" : "w-full sm:w-auto sm:min-w-52"}`}
         >
           {initial
             ? "Simpan perubahan"

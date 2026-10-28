@@ -91,6 +91,7 @@ export function ReceiptScanPanel({
   suggestions = [],
   initialState = initialReceiptDraftState,
   timeZone,
+  compact = false,
 }: {
   workspaceId: string;
   accounts: Option[];
@@ -98,6 +99,7 @@ export function ReceiptScanPanel({
   suggestions?: TransactionSuggestion[];
   initialState?: ReceiptDraftFormState;
   timeZone: string;
+  compact?: boolean;
 }) {
   const [state, action, pending] = useActionState(
     receiptDraftAction,
@@ -192,20 +194,28 @@ export function ReceiptScanPanel({
   const displayedPreviewUrl = previewUrl ?? remotePreviewUrl;
 
   return (
-    <Card className="shadow-none">
-      <CardHeader>
-        <div className="flex flex-wrap items-center gap-2">
-          <CardTitle>Scan bukti pembayaran</CardTitle>
-          <Badge variant="secondary">
-            <Sparkles aria-hidden="true" /> OCR lokal
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Membaca struk, bukti transfer, atau QRIS di browser lalu menyiapkan
-          draf yang dapat dikoreksi.
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Card
+      className={
+        compact
+          ? "gap-0 border-0 bg-transparent py-0 shadow-none"
+          : "shadow-none"
+      }
+    >
+      {!compact && (
+        <CardHeader>
+          <div className="flex flex-wrap items-center gap-2">
+            <CardTitle>Scan bukti pembayaran</CardTitle>
+            <Badge variant="secondary">
+              <Sparkles aria-hidden="true" /> OCR lokal
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Membaca struk, bukti transfer, atau QRIS di browser lalu menyiapkan
+            draf yang dapat dikoreksi.
+          </p>
+        </CardHeader>
+      )}
+      <CardContent className={compact ? "space-y-4 p-0" : "space-y-4"}>
         <div className="flex gap-3 rounded-xl border border-dashed p-4 text-sm">
           <ShieldCheck
             className="mt-0.5 size-5 shrink-0 text-primary"

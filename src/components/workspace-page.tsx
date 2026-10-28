@@ -166,12 +166,24 @@ export async function WorkspacePage({
                   </Button>
                 </form>
               ) : (
-                <span className="inline-flex min-h-10 items-center gap-2 rounded-lg border bg-card px-3 text-xs">
+                <span
+                  className="inline-flex min-h-10 flex-wrap items-center gap-x-2 gap-y-0.5 rounded-lg border bg-card px-3 text-xs"
+                  aria-label={
+                    section === "transactions"
+                      ? `Periode workspace ${period}`
+                      : period
+                  }
+                >
                   <CalendarDays
                     className="size-4 text-muted-foreground"
                     aria-hidden="true"
                   />
-                  {period}
+                  {section === "transactions" && (
+                    <span className="font-medium text-muted-foreground">
+                      Periode workspace
+                    </span>
+                  )}
+                  <span>{period}</span>
                 </span>
               )}
               {section === "dashboard" && (

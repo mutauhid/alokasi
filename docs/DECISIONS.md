@@ -1,6 +1,6 @@
 # Catatan keputusan
 
-Diperbarui: 27 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
+Diperbarui: 28 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent tidak mengubah saran menjadi persetujuan pengguna.
 
 ## Keputusan dan kebutuhan pengguna
 
@@ -68,6 +68,9 @@ Diperbarui: 27 Oktober 2026. Dokumen ini membedakan sumber keputusan agar agent 
 | D61 | 27 Okt 2026 | Pengguna menyetujui visual Dashboard V2 dan meminta final polish/QA sebelum merge | Pertahankan desain; haluskan scrollbar sidebar desktop, biarkan kartu Transaksi setinggi kontennya agar tidak menciptakan ruang kosong internal, pecah label periode chart menjadi dua baris pada mobile, dan gunakan warna netral untuk nominal ledger agar tidak menyiratkan pemasukan |
 | D62 | 27 Okt 2026 | Pengguna melaporkan nominal pada kartu ringkasan saldo Dashboard terpotong | Hapus ellipsis dari seluruh nominal KPI, keluarkan ikon dari aliran lebar konten melalui posisi absolut, dan izinkan nominal ekstrem membungkus secara aman tanpa mengubah nilai atau ukuran kartu |
 | D63 | 27 Okt 2026 | Pengguna meminta posisi nominal empat kartu ringkasan sejajar meskipun judul pemasukan/pengeluaran menjadi dua baris | Pertahankan area judul KPI setinggi dua baris pada seluruh breakpoint agar baseline nominal Total saldo, Pemasukan, Pengeluaran, dan Arus kas bersih konsisten |
+| D64 | 28 Okt 2026 | Pengguna meminta Transaksi V2 mengikuti design system Dashboard V2 tanpa mengubah logic | Kerjakan pada branch `feat/transactions-v2`: jadikan riwayat fokus utama, OCR kartu collapsible, form tambah modal responsif, serta detail bottom sheet mobile/right drawer desktop; pertahankan service, CRUD, permission, pencarian, pagination, OCR lokal, pengingat, automasi, dan privacy existing |
+| D65 | 28 Okt 2026 | Setelah visual review Transaksi V2, pengguna menyetujui arah desain dan meminta final polish/QA serta perbaikan indikator Next.js “1 Issue” | Pertahankan desain; perbaiki missing React key pada action node, padatkan tab/CTA/OCR, tempatkan panduan setelah riwayat, jelaskan bahwa tanggal header adalah periode workspace bukan filter riwayat, tampilkan preview tanggal Indonesia tanpa mengubah native date value/timezone, serta haluskan selected/focus/scrollbar |
+| D66 | 28 Okt 2026 | Pengguna meminta kalkulator pada input nominal transaksi dan filter tanggal pada riwayat, tetap pada branch Transaksi V2 | Tambahkan kalkulator integer yang menerapkan hasil secara eksplisit ke input nominal, serta rentang tanggal inklusif yang dapat digabung dengan pencarian dan bertahan saat paging tanpa mengubah schema atau logic mutasi transaksi |
 
 ## Pilihan teknis hasil delegasi D07
 
@@ -196,6 +199,12 @@ D61 menghasilkan T54: scrollbar tipis hanya dipasang pada `aside` desktop dengan
 D62 menghasilkan T55: ikon KPI tetap berada di kanan atas secara visual tetapi tidak lagi mengurangi lebar nominal. Nominal memakai lebar kartu penuh tanpa `truncate`; `overflow-wrap: anywhere` hanya menjadi fallback untuk angka yang lebih panjang daripada kartu, sehingga seluruh digit tetap terlihat pada desktop maupun mobile.
 
 D63 menghasilkan T56: tinggi minimum judul KPI tidak lagi dilepas pada breakpoint `sm`; judul satu baris menyisakan ruang baris kedua, sedangkan judul dua baris mengisinya. Margin nominal setelah judul tetap sama, sehingga keempat nilai sejajar tanpa posisi absolut pada teks finansial.
+
+D64 menghasilkan T57: redesign Transaksi memakai komponen dan token existing tanpa schema, migration, endpoint, atau dependency baru. Trigger Scan struk mengontrol disclosure yang tetap merender parser OCR lokal existing; draf aktif membuka panel otomatis. Detail memakai varian sheet responsif baru tetapi authorization, form edit, dan konfirmasi hapus tetap berasal dari alur existing. Karena tiga PNG referensi belum tersedia di checkout saat implementasi, spesifikasi tekstual dan design system Dashboard V2 menjadi acuan visual sementara sampai review preview pengguna.
+
+D65 menghasilkan T58: warning React berasal dari `editContent`/`deleteAction` yang dibuat di dalam `transactions.map()` lalu diteruskan sebagai children ke `TransactionActions`; kedua node diberi key stabil berbasis ID transaksi. Riwayat tetap tidak difilter oleh periode budget workspace, sehingga chip header diberi label eksplisit “Periode workspace” tanpa mengubah query. Native `<input type=date>` tetap mengikuti locale browser/OS; preview `id-ID` ditambahkan sebagai penjelas tampilan tanpa mengubah string `YYYY-MM-DD` yang dikirim server.
+
+D66 menghasilkan T59: input nominal tambah/edit transaksi menyediakan kalkulator integer opsional yang memakai aritmetika `bigint` tanpa evaluasi kode atau dependency baru. Hasil hanya menggantikan nilai form setelah pengguna memilih **Gunakan hasil**; input manual, validasi nominal, Server Action, serta penyimpanan integer tetap sama. Riwayat menerima filter tanggal inklusif `from`/`to` berbasis kolom tanggal transaksi dan menggabungkannya dengan pencarian existing. Filter bertahan saat paging atau perubahan page size, sedangkan reset kembali menampilkan seluruh riwayat tanpa mengubah periode workspace.
 
 ## Default kerja, bukan keputusan eksplisit pengguna
 

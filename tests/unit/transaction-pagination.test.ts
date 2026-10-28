@@ -10,6 +10,8 @@ describe("transaction pagination", () => {
       page: 1,
       pageSize: 10,
       search: "",
+      dateFrom: "",
+      dateTo: "",
     });
   });
 
@@ -18,7 +20,13 @@ describe("transaction pagination", () => {
     (pageSize) => {
       expect(
         parseTransactionPagination({ page: "3", pageSize: String(pageSize) }),
-      ).toEqual({ page: 3, pageSize, search: "" });
+      ).toEqual({
+        page: 3,
+        pageSize,
+        search: "",
+        dateFrom: "",
+        dateTo: "",
+      });
     },
   );
 
@@ -27,22 +35,51 @@ describe("transaction pagination", () => {
       page: 1,
       pageSize: 10,
       search: "",
+      dateFrom: "",
+      dateTo: "",
     });
     expect(
       parseTransactionPagination({ page: ["2", "3"], pageSize: ["5", "10"] }),
-    ).toEqual({ page: 1, pageSize: 10, search: "" });
+    ).toEqual({
+      page: 1,
+      pageSize: 10,
+      search: "",
+      dateFrom: "",
+      dateTo: "",
+    });
   });
 
   it("normalizes a bounded transaction search query", () => {
     expect(
       parseTransactionPagination({ search: "  Makan   &   Minum  " }),
-    ).toEqual({ page: 1, pageSize: 10, search: "Makan & Minum" });
+    ).toEqual({
+      page: 1,
+      pageSize: 10,
+      search: "Makan & Minum",
+      dateFrom: "",
+      dateTo: "",
+    });
     expect(
       parseTransactionPagination({ search: ["Belanja", "Dating"] }).search,
     ).toBe("");
     expect(
       parseTransactionPagination({ search: "x".repeat(120) }).search,
     ).toHaveLength(100);
+  });
+
+  it("accepts valid inclusive dates and ignores malformed calendar dates", () => {
+    expect(
+      parseTransactionPagination({ from: "2026-10-01", to: "2026-10-31" }),
+    ).toEqual({
+      page: 1,
+      pageSize: 10,
+      search: "",
+      dateFrom: "2026-10-01",
+      dateTo: "2026-10-31",
+    });
+    expect(
+      parseTransactionPagination({ from: "2026-02-30", to: ["2026-10-31"] }),
+    ).toMatchObject({ dateFrom: "", dateTo: "" });
   });
 
   it("clamps a page beyond the last page and reports its visible range", () => {

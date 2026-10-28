@@ -219,14 +219,14 @@
 }
 
 .workspace-sidebar-scrollbar {
-  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 42%, transparent)
+  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 32%, transparent)
     transparent;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
 }
 
 .workspace-sidebar-scrollbar::-webkit-scrollbar {
-  width: 0.4rem;
+  width: 0.3rem;
 }
 
 .workspace-sidebar-scrollbar::-webkit-scrollbar-track {
@@ -236,7 +236,7 @@
 .workspace-sidebar-scrollbar::-webkit-scrollbar-thumb {
   background-color: color-mix(
     in srgb,
-    var(--muted-foreground) 42%,
+    var(--muted-foreground) 32%,
     transparent
   );
   background-clip: padding-box;
@@ -247,7 +247,7 @@
 .workspace-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: color-mix(
     in srgb,
-    var(--muted-foreground) 64%,
+    var(--muted-foreground) 52%,
     transparent
   );
 }
@@ -391,6 +391,52 @@
 
 .dark .dashboard-v2-card:hover {
   box-shadow: 0 20px 52px rgb(0 0 0 / 25%);
+}
+
+.transactions-v2 .text-muted-foreground,
+.transaction-v2-dialog .text-muted-foreground {
+  color: color-mix(in srgb, var(--muted-foreground) 88%, var(--foreground));
+}
+
+.transactions-v2-card,
+.transactions-v2 [id="scan-struk"] {
+  min-width: 0;
+  box-shadow: 0 14px 36px color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+
+.transaction-v2-dialog {
+  box-shadow: 0 28px 90px rgb(0 0 0 / 28%);
+  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 42%, transparent)
+    transparent;
+  scrollbar-width: thin;
+}
+
+.transaction-v2-dialog::-webkit-scrollbar {
+  width: 0.45rem;
+}
+
+.transaction-v2-dialog::-webkit-scrollbar-thumb {
+  background-color: color-mix(
+    in srgb,
+    var(--muted-foreground) 42%,
+    transparent
+  );
+  border-radius: 999px;
+}
+
+.dark .transactions-v2-card,
+.dark .transactions-v2 [id="scan-struk"] {
+  box-shadow: 0 18px 46px rgb(0 0 0 / 18%);
+}
+
+@media (max-width: 390px) {
+  .transactions-v2 [data-slot="card-header"] {
+    padding-inline: 1rem;
+  }
+
+  .transaction-v2-dialog {
+    width: 100%;
+  }
 }
 
 .motion-guide-step {
