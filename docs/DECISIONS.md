@@ -206,6 +206,10 @@ D65 menghasilkan T58: warning React berasal dari `editContent`/`deleteAction` ya
 
 D66 menghasilkan T59: input nominal tambah/edit transaksi menyediakan kalkulator integer opsional yang memakai aritmetika `bigint` tanpa evaluasi kode atau dependency baru. Hasil hanya menggantikan nilai form setelah pengguna memilih **Gunakan hasil**; input manual, validasi nominal, Server Action, serta penyimpanan integer tetap sama. Riwayat menerima filter tanggal inklusif `from`/`to` berbasis kolom tanggal transaksi dan menggabungkannya dengan pencarian existing. Filter bertahan saat paging atau perubahan page size, sedangkan reset kembali menampilkan seluruh riwayat tanpa mengubah periode workspace.
 
+D67 menghasilkan T60: Budget V2 hanya mengubah lapisan presentasi pada branch `feat/budget-v2`. Overview, Server Action, izin Owner, periode historis baca-saja, aturan salin tanpa overwrite, status domain, perhitungan `bigint`, dan privacy nominal tetap menjadi sumber kebenaran existing. Pembuatan budget memakai dialog responsif; salin periode memakai drawer kanan pada desktop dan sheet bawah pada mobile; persentase aktual tetap dapat melebihi 100% sedangkan ring/progress visual dijepit maksimal penuh. Pengeluaran belum dianggarkan tetap dijelaskan sebagai transaksi di kategori tanpa limit, bukan saldo bebas.
+
+D68 menghasilkan T61: final polish Budget V2 mempertahankan komposisi dan domain yang telah disetujui. Total limit menjadi konteks KPI utama, sedangkan belum dianggarkan memakai treatment informasi netral. Badge ringkasan menyebut “Status” secara eksplisit tetapi tetap memakai `budgetStatus` existing. Kartu kategori dipadatkan tanpa menghapus metadata, target sentuh menu menjadi 44 px, drawer copy menjelaskan state semua item tidak eligible, dan submit create/copy menampilkan pending state yang menghormati reduced motion.
+
 ## Default kerja, bukan keputusan eksplisit pengguna
 
 Default di bawah cukup untuk menjaga rancangan konsisten. Gunakan selama tidak ada instruksi yang mengganti; jangan berhenti meminta persetujuan ulang pada tiap detail.
