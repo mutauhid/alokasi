@@ -104,7 +104,7 @@ export async function WorkspacePage({
     >
       <ActionSuccessToast code={success} />
       <div className="workspace-page-motion">
-        {section !== "budgets" && (
+        {section !== "budgets" && section !== "reports" && (
           <div
             className={`motion-page-heading mb-7 flex flex-wrap items-start justify-between gap-5 ${section === "dashboard" ? "dashboard-v2-heading" : ""}`}
           >

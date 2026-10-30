@@ -509,6 +509,101 @@
   box-shadow: 0 20px 52px rgb(0 0 0 / 25%);
 }
 
+.reports-v2 .text-muted-foreground,
+.reports-v2-filter-sheet .text-muted-foreground {
+  color: color-mix(in srgb, var(--muted-foreground) 90%, var(--foreground));
+}
+
+.reports-v2-card {
+  min-width: 0;
+  box-shadow: 0 14px 36px color-mix(in srgb, var(--foreground) 5%, transparent);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.reports-v2-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 22%, var(--border));
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+
+.reports-v2-kpi {
+  animation: workspace-card-in 360ms ease-out both;
+}
+
+.reports-v2-kpi:nth-child(2) {
+  animation-delay: 45ms;
+}
+
+.reports-v2-kpi:nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.reports-v2-kpi:nth-child(4) {
+  animation-delay: 135ms;
+}
+
+.reports-v2-kpi-amount {
+  max-width: 100%;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.reports-v2-sparkline {
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 3px 5px currentColor);
+}
+
+.reports-v2-kpi-accent {
+  position: relative;
+}
+
+.reports-v2-kpi-accent::after {
+  position: absolute;
+  inset: 0.8rem 0 0.75rem;
+  content: "";
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.22;
+}
+
+.reports-v2-category-chart {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--border) 68%, transparent),
+    0 12px 30px color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.reports-v2-filter-scroll {
+  overscroll-behavior: contain;
+  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 42%, transparent)
+    transparent;
+  scrollbar-width: thin;
+}
+
+.reports-v2-filter-scroll::-webkit-scrollbar {
+  width: 0.45rem;
+}
+
+.reports-v2-filter-scroll::-webkit-scrollbar-thumb {
+  background-color: color-mix(
+    in srgb,
+    var(--muted-foreground) 42%,
+    transparent
+  );
+  border-radius: 999px;
+}
+
+.dark .reports-v2-card {
+  box-shadow: 0 18px 46px rgb(0 0 0 / 18%);
+}
+
+.dark .reports-v2-card:hover {
+  box-shadow: 0 20px 52px rgb(0 0 0 / 25%);
+}
+
 @media (max-width: 390px) {
   .transactions-v2 [data-slot="card-header"] {
     padding-inline: 1rem;
@@ -542,6 +637,7 @@
   .dashboard-chart-bar,
   .dashboard-progress-fill,
   .budget-v2-card,
+  .reports-v2-kpi,
   .motion-guide-step {
     opacity: 1;
     transform: none;
