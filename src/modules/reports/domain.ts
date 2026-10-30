@@ -36,6 +36,23 @@ export type ReportFilters = {
   query: string | null;
 };
 
+export function previousReportPeriod(from: Date, toExclusive: Date) {
+  const duration = toExclusive.valueOf() - from.valueOf();
+  return {
+    from: new Date(from.valueOf() - duration),
+    toExclusive: new Date(from),
+  };
+}
+
+export function reportPercentageChangeTenths(
+  current: bigint,
+  previous: bigint,
+) {
+  if (previous === 0n) return null;
+  const denominator = previous < 0n ? -previous : previous;
+  return ((current - previous) * 1_000n) / denominator;
+}
+
 function nextDate(value: string) {
   const date = new Date(`${value}T00:00:00.000Z`);
   date.setUTCDate(date.getUTCDate() + 1);

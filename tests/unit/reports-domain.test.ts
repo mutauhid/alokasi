@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   csvCell,
   csvDocument,
+  previousReportPeriod,
+  reportPercentageChangeTenths,
   resolveReportFilters,
 } from "@/modules/reports/domain";
 
@@ -42,6 +44,27 @@ describe("report filters", () => {
       type: null,
       accountId: null,
     });
+  });
+});
+
+describe("report comparison", () => {
+  it("uses the immediately preceding range with identical duration", () => {
+    expect(
+      previousReportPeriod(
+        new Date("2026-10-25T00:00:00.000Z"),
+        new Date("2026-11-25T00:00:00.000Z"),
+      ),
+    ).toEqual({
+      from: new Date("2026-09-24T00:00:00.000Z"),
+      toExclusive: new Date("2026-10-25T00:00:00.000Z"),
+    });
+  });
+
+  it("calculates signed tenths of a percent without floating point", () => {
+    expect(reportPercentageChangeTenths(1_125n, 1_000n)).toBe(125n);
+    expect(reportPercentageChangeTenths(750n, 1_000n)).toBe(-250n);
+    expect(reportPercentageChangeTenths(100n, 0n)).toBeNull();
+    expect(reportPercentageChangeTenths(100n, -100n)).toBe(2_000n);
   });
 });
 

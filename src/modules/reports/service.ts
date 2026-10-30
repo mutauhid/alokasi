@@ -5,6 +5,7 @@ import { getBudgetOverview } from "@/modules/budgets/service";
 import { listCategories } from "@/modules/categories/service";
 import {
   csvDocument,
+  previousReportPeriod,
   resolveReportFilters,
   type ReportFilters,
 } from "@/modules/reports/domain";
@@ -18,6 +19,37 @@ function dateValue(date: Date) {
 
 function inclusiveEnd(date: Date) {
   return new Date(date.valueOf() - 86_400_000);
+}
+
+function previousPeriodFilters(filters: ReportFilters): ReportFilters {
+  const { from, toExclusive } = previousReportPeriod(
+    filters.from,
+    filters.toExclusive,
+  );
+  return {
+    ...filters,
+    from,
+    toExclusive,
+    fromValue: dateValue(from),
+    toValue: dateValue(inclusiveEnd(toExclusive)),
+  };
+}
+
+function summarizeTransactions(
+  transactions: Array<{
+    type: "income" | "expense" | "transfer";
+    amount: bigint;
+  }>,
+) {
+  let income = 0n;
+  let expense = 0n;
+  let transfer = 0n;
+  for (const transaction of transactions) {
+    if (transaction.type === "income") income += transaction.amount;
+    if (transaction.type === "expense") expense += transaction.amount;
+    if (transaction.type === "transfer") transfer += transaction.amount;
+  }
+  return { income, expense, transfer, netCashFlow: income - expense };
 }
 
 function transactionWhere(workspaceId: string, filters: ReportFilters) {
@@ -100,39 +132,41 @@ export async function getReportOverview(
 ) {
   const db = getDatabase();
   const context = await reportContext(workspaceId, today, query);
-  const [transactions, accounts, categories] = await Promise.all([
-    db.transaction.findMany({
-      where: transactionWhere(workspaceId, context.filters),
-      include: {
-        account: { select: { name: true } },
-        destinationAccount: { select: { name: true } },
-        category: { select: { name: true } },
-        creator: {
-          select: {
-            user: { select: { displayName: true, email: true } },
+  const comparisonFilters = previousPeriodFilters(context.filters);
+  const [transactions, previousTransactions, accounts, categories] =
+    await Promise.all([
+      db.transaction.findMany({
+        where: transactionWhere(workspaceId, context.filters),
+        include: {
+          account: { select: { name: true } },
+          destinationAccount: { select: { name: true } },
+          category: { select: { name: true } },
+          creator: {
+            select: {
+              user: { select: { displayName: true, email: true } },
+            },
           },
         },
-      },
-      orderBy: [{ transactionDate: "desc" }, { createdAt: "desc" }],
-    }),
-    listAccounts(workspaceId),
-    listCategories(workspaceId),
-  ]);
-  let income = 0n;
-  let expense = 0n;
-  let transfer = 0n;
+        orderBy: [{ transactionDate: "desc" }, { createdAt: "desc" }],
+      }),
+      db.transaction.findMany({
+        where: transactionWhere(workspaceId, comparisonFilters),
+        select: { type: true, amount: true },
+      }),
+      listAccounts(workspaceId),
+      listCategories(workspaceId),
+    ]);
+  const totals = summarizeTransactions(transactions);
+  const comparisonTotals = summarizeTransactions(previousTransactions);
   const categoryTotals = new Map<string, bigint>();
   for (const transaction of transactions) {
-    if (transaction.type === "income") income += transaction.amount;
     if (transaction.type === "expense") {
-      expense += transaction.amount;
       const name = transaction.category?.name ?? "Tanpa kategori";
       categoryTotals.set(
         name,
         (categoryTotals.get(name) ?? 0n) + transaction.amount,
       );
     }
-    if (transaction.type === "transfer") transfer += transaction.amount;
   }
   const isPeriodView =
     context.filters.fromValue === context.defaults.from &&
@@ -146,10 +180,12 @@ export async function getReportOverview(
     transactions,
     accounts,
     categories,
-    income,
-    expense,
-    transfer,
-    netCashFlow: income - expense,
+    ...totals,
+    comparison: {
+      from: comparisonFilters.from,
+      toExclusive: comparisonFilters.toExclusive,
+      ...comparisonTotals,
+    },
     categoryTotals: [...categoryTotals.entries()]
       .map(([name, amount]) => ({ name, amount }))
       .sort((a, b) =>

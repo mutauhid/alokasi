@@ -1,6 +1,6 @@
 # Rencana implementasi dan status
 
-Diperbarui 27 Oktober 2026. Setup UI dan fondasi database telah dibangun; status di bawah membedakan fondasi dari implementasi fitur.
+Diperbarui 30 Oktober 2026. Setup UI dan fondasi database telah dibangun; status di bawah membedakan fondasi dari implementasi fitur.
 
 ## Status nyata
 
@@ -52,6 +52,7 @@ Diperbarui 27 Oktober 2026. Setup UI dan fondasi database telah dibangun; status
 | Tahap 46 percakapan: Dashboard V2 | Dikerjakan pada `feat/dashboard-v2`: empat KPI, banner pengingat, chart/utang, budget/pengingat/transaksi, ledger aktivitas, loading skeleton, dan styling responsif khusus Dashboard tanpa mengubah business logic |
 | Tahap 48 percakapan: Budget V2 | Dikerjakan pada `feat/budget-v2`: header dan KPI premium, ringkasan penggunaan, kartu kategori responsif, dialog create, drawer copy selektif, action drawer edit/hapus, loading skeleton, privacy nominal, serta state historis/role tanpa mengubah service atau schema |
 | Tahap 49 percakapan: final polish Budget V2 | Dikerjakan pada branch yang sama: hierarchy KPI, label status yang eksplisit, kartu kategori lebih compact, target sentuh 44 px, empty/disabled state copy yang informatif, pending/focus form, audit amount privacy, serta regression QA tanpa perubahan domain |
+| Tahap 50 percakapan: Laporan V2 | Dikerjakan pada `feat/reports-v2`: header analytics, filter toolbar desktop dan bottom sheet mobile berikon, KPI responsif dengan pembanding periode lalu/sparkline, chart berskala dinamis, donut kategori, Budget vs Aktual, transaksi progressive disclosure, loading skeleton, privacy, dan styling terisolasi; service hanya menambah pembacaan pembanding tanpa perubahan API/schema/dependency |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Storage bukti permanen/provider OCR eksternal | Belum diimplementasikan; preview Shortcut sementara memakai database draf dengan retensi 24 jam, sedangkan consent, biaya, callback, data residency, dan lifecycle lampiran permanen masih terbuka |
@@ -399,6 +400,17 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Refinement kalkulator nominal: tambahkan helper aritmetika `bigint`, keypad aksesibel yang opt-in pada `RupiahInput`, dan penerapan hasil eksplisit pada form tambah/edit tanpa mengubah payload Server Action.
 - Refinement filter tanggal: validasi query `from`/`to`, terapkan batas tanggal inklusif pada query riwayat, dan pertahankan pencarian/rentang saat paging maupun perubahan page size.
 - Verifikasi tambahan mencakup unit test operasi kalkulator, parsing tanggal, kontrak UI, typecheck, lint, seluruh unit test, build, serta smoke browser sesuai ketersediaan environment.
+
+## Tahap 50 — Laporan V2, 30 Oktober 2026
+
+- Tahap A: pertahankan `getReportOverview` dan filter GET existing, lalu susun header, rentang laporan, Export CSV, toolbar desktop, indikator filter aktif, dan bottom sheet mobile dengan draft/applied state yang terpisah.
+- Tahap B: susun empat KPI responsif dan grafik arus kas memakai agregasi existing serta skala `bigint` Dashboard V2; semua nilai/tooltip/sumbu mengikuti Amount Privacy Mode dan seluruh-nol mendapat empty state.
+- Tahap C: tampilkan kategori sebagai proporsi total pengeluaran, Budget vs Aktual hanya ketika `isPeriodView`, serta transaksi compact desktop/mobile dengan progressive disclosure presentasional tanpa membatasi hasil ringkasan atau CSV.
+- Tahap D: tambah loading skeleton, styling `.reports-v2`, focus/scroll/reduced-motion behavior, regression test kontrak presentasi, dokumentasi, typecheck, lint, unit test, build, dan visual smoke pada viewport target bila sesi terautentikasi tersedia.
+- Refinement koreksi mockup: baca agregat periode tepat sebelumnya dengan durasi/filter non-tanggal identik untuk persentase KPI, gambar sparkline dari bucket aktif, ganti progress kategori menjadi donut seluruh kategori aktual, dan beri ikon pada setiap field filter.
+- Final polish visual review: pertahankan rumus pembanding, tetapi gunakan selisih nominal untuk perubahan minimal 1.000% dan status surplus/defisit untuk perubahan tanda net cash flow; gunakan aksen statis saat sparkline tidak punya cukup bucket aktual, prioritaskan Filter pada aksi mobile, serta bedakan copy transaksi lengkap dari daftar yang masih bertahap.
+- Refinement Budget vs Aktual: gunakan preview compact tiga kategori sesuai mockup dengan hierarchy nama–progress–persentase–Aktual/Limit dan tautan fungsional ke halaman Budget lengkap tanpa mengubah perhitungan atau validitas periode.
+- Scope tidak mencakup perubahan query/urutan transaksi periode aktif, algoritma chart arus kas, Route Handler CSV, permission, Prisma, migrasi, dependency, atau modul lain. Bottom navigation mobile dipisahkan ke branch AppShell berikutnya. Mockup komposit `reports-v2-mobile.png` menjadi referensi desktop/mobile; data ilustratif dan kontrol granularitas yang tidak tersedia tidak diterapkan.
 
 ## Backlog kandidat — bukan komitmen aktif
 
