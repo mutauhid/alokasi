@@ -7,6 +7,7 @@ import type { ShortcutIntegrationState } from "@/modules/shortcut-integration/do
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AutomationGuideDialog } from "@/components/automation-guide-dialog";
+import { AppSelect } from "@/components/ui/app-select";
 
 type Option = { id: string; name: string };
 const inputClass =
@@ -116,25 +117,29 @@ export function ShortcutIntegrationCard({
           <input type="hidden" name="intent" value="configure" />
           <label className="text-sm font-medium">
             Akun default
-            <select name="accountId" required className={inputClass}>
-              <option value="">Pilih akun</option>
-              {accounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
-              ))}
-            </select>
+            <AppSelect
+              name="accountId"
+              required
+              className={inputClass}
+              placeholder="Pilih akun"
+              options={accounts.map((account) => ({
+                value: account.id,
+                label: account.name,
+              }))}
+            />
           </label>
           <label className="text-sm font-medium">
             Kategori default
-            <select name="categoryId" required className={inputClass}>
-              <option value="">Pilih kategori</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+            <AppSelect
+              name="categoryId"
+              required
+              className={inputClass}
+              placeholder="Pilih kategori"
+              options={categories.map((category) => ({
+                value: category.id,
+                label: category.name,
+              }))}
+            />
           </label>
           <Button
             type="submit"

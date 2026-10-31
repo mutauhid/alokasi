@@ -224,6 +224,8 @@ D72 menghasilkan T65: panel Budget vs Aktual menjadi preview compact maksimal ti
 
 D73 menghasilkan T66: AppShell mobile memakai bottom navigation fixed lima slot: Beranda, Transaksi, aksi tambah, Budget, dan Lainnya; sidebar desktop tidak berubah. Transaksi dipertahankan sebagai destinasi langsung, sedangkan Laporan dan modul sekunder berada pada popover Lainnya. Tombol tambah hanya aktif bagi Owner/Editor dan menuju alur manual atau OCR lokal existing melalui query presentasional `create=1`/`scan=1`; tidak ada endpoint, izin, atau business logic baru. Navigasi menghormati safe area iPhone, reduced motion, focus/active semantics, dan memberi padding konten agar tidak tertutup.
 
+D74 menghasilkan T67: Dashboard mobile memakai hero heading compact dengan periode satu baris penuh serta aksi Tampilkan/Catat transaksi yang seimbang. Dropdown periode Dashboard dan Budget memakai Radix Select custom dengan visual, keyboard, focus, checked state, collision handling, dan portal seperti workspace selector. Dropdown form lintas modul memakai `AppSelect` reusable yang mempertahankan nama/nilai FormData, required validation, controlled state, reset, serta submit-on-change; Server Action dan business logic tidak berubah. Native select tema desktop dipertahankan untuk pilihan Otomatis/Terang/Gelap, sedangkan mobile tetap toggle light/dark langsung.
+
 ## Default kerja, bukan keputusan eksplisit pengguna
 
 Default di bawah cukup untuk menjaga rancangan konsisten. Gunakan selama tidak ada instruksi yang mengganti; jangan berhenti meminta persetujuan ulang pada tiap detail.

@@ -19,6 +19,7 @@ import { TransactionTitleField } from "@/components/transaction-title-field";
 import { CategoryRadioGroup } from "@/components/category-radio-group";
 import type { TransactionSuggestion } from "@/modules/transactions/suggestions";
 import { initialTransactionCreateState } from "@/modules/transactions/form-state";
+import { AppSelect } from "@/components/ui/app-select";
 
 type Option = { id: string; name: string };
 type CategoryOption = Option & { type: "income" | "expense" };
@@ -237,39 +238,35 @@ export function TransactionForm({
       </label>
       <label className="text-sm font-semibold">
         {type === "transfer" ? "Akun asal" : "Akun"}
-        <select
+        <AppSelect
           name="accountId"
           required
           value={accountId}
-          onChange={(event) => setAccountId(event.target.value)}
+          onValueChange={setAccountId}
           className={inputClass}
-        >
-          {accounts.map((account) => (
-            <option key={account.id} value={account.id}>
-              {account.name}
-            </option>
-          ))}
-        </select>
+          options={accounts.map((account) => ({
+            value: account.id,
+            label: account.name,
+          }))}
+        />
       </label>
       {type === "transfer" ? (
         <label className="text-sm font-semibold md:col-span-2">
           Akun tujuan
-          <select
+          <AppSelect
             name="destinationAccountId"
             required
             value={destinationAccountId}
-            onChange={(event) => setDestinationAccountId(event.target.value)}
+            onValueChange={setDestinationAccountId}
             className={inputClass}
-          >
-            <option value="">Pilih akun tujuan</option>
-            {accounts
+            placeholder="Pilih akun tujuan"
+            options={accounts
               .filter((account) => account.id !== accountId)
-              .map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
-              ))}
-          </select>
+              .map((account) => ({
+                value: account.id,
+                label: account.name,
+              }))}
+          />
         </label>
       ) : (
         <div className={compact ? "" : "md:col-span-2"}>

@@ -18,6 +18,7 @@ import { SensitiveAmount } from "@/components/amount-privacy";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RupiahInput } from "@/components/ui/rupiah-input";
+import { AppSelect } from "@/components/ui/app-select";
 import {
   Sheet,
   SheetContent,
@@ -372,18 +373,16 @@ export function DebtsPanel({
               </Field>
               {origin === "current" ? (
                 <Field label="Akun penerima/sumber dana">
-                  <select
+                  <AppSelect
                     name="accountId"
                     required
                     className="min-h-11 w-full rounded-lg border bg-background px-3"
-                  >
-                    <option value="">Pilih akun</option>
-                    {accounts.map((account) => (
-                      <option key={account.id} value={account.id}>
-                        {account.name}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Pilih akun"
+                    options={accounts.map((account) => ({
+                      value: account.id,
+                      label: account.name,
+                    }))}
+                  />
                 </Field>
               ) : (
                 <input type="hidden" name="accountId" value="" />
@@ -521,18 +520,16 @@ export function DebtsPanel({
                         />
                       </Field>
                       <Field label="Akun">
-                        <select
+                        <AppSelect
                           name="accountId"
                           required
                           className="min-h-11 w-full rounded-lg border bg-background px-3"
-                        >
-                          <option value="">Pilih akun</option>
-                          {accounts.map((account) => (
-                            <option key={account.id} value={account.id}>
-                              {account.name}
-                            </option>
-                          ))}
-                        </select>
+                          placeholder="Pilih akun"
+                          options={accounts.map((account) => ({
+                            value: account.id,
+                            label: account.name,
+                          }))}
+                        />
                       </Field>
                       <Field label="Catatan (opsional)">
                         <input

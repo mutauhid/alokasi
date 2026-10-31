@@ -12,6 +12,7 @@ import { WorkspaceDomainError } from "@/modules/workspaces/errors";
 import { ensurePeriod, getPeriodSelection } from "@/modules/periods/service";
 import { parseTransactionPagination } from "@/modules/transactions/pagination";
 import { ActionSuccessToast } from "@/components/action-success-toast";
+import { PeriodSelect } from "@/components/period-select";
 
 export type WorkspaceSearchParams = Promise<{
   workspaceId?: string | string[];
@@ -109,7 +110,13 @@ export async function WorkspacePage({
           <div
             className={`motion-page-heading mb-7 flex flex-wrap items-start justify-between gap-5 ${section === "dashboard" ? "dashboard-v2-heading" : ""}`}
           >
-            <div>
+            <div
+              className={
+                section === "dashboard"
+                  ? "dashboard-v2-heading-copy"
+                  : undefined
+              }
+            >
               {section === "dashboard" && (
                 <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   {context.workspace.type === "personal"
@@ -117,7 +124,7 @@ export async function WorkspacePage({
                     : context.workspace.name}
                 </p>
               )}
-              <h1 className="text-[27px] font-semibold leading-tight tracking-[-.8px]">
+              <h1 className="text-[25px] font-semibold leading-tight tracking-[-.8px] sm:text-[27px]">
                 {section === "dashboard"
                   ? "Selamat datang kembali 👋"
                   : current.label}
@@ -129,44 +136,45 @@ export async function WorkspacePage({
               </p>
             </div>
             {showPeriod && (
-              <div className="flex flex-wrap items-center gap-2">
+              <div
+                className={`flex flex-wrap items-center gap-2 ${section === "dashboard" ? "dashboard-v2-heading-actions" : ""}`}
+              >
                 {periodSelection ? (
                   <form
                     action={`/${section}`}
                     method="get"
-                    className="flex flex-wrap items-center gap-2"
+                    className={`flex flex-wrap items-center gap-2 ${section === "dashboard" ? "dashboard-v2-period-form" : ""}`}
                   >
                     <input
                       type="hidden"
                       name="workspaceId"
                       value={context.workspace.id}
                     />
-                    <label className="relative">
-                      <span className="sr-only">Periode yang ditampilkan</span>
-                      <CalendarDays
-                        className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                      <select
+                    <div
+                      className={
+                        section === "dashboard"
+                          ? "dashboard-v2-period-control"
+                          : undefined
+                      }
+                    >
+                      <PeriodSelect
                         name="periodId"
                         defaultValue={displayedPeriod.id}
-                        className="min-h-10 rounded-lg border bg-card py-2 pl-9 pr-8 text-xs"
-                      >
-                        {periodSelection.periods.map((item) => (
-                          <option key={item.id} value={item.id}>
-                            {`${periodFormat.format(item.startDate)}–${periodFormat.format(
-                              new Date(
-                                item.endDateExclusive.valueOf() - 86_400_000,
-                              ),
-                            )}${item.id === activePeriod.id ? " · aktif" : ""}${item.isTransition ? " · transisi" : ""}`}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                        ariaLabel="Periode yang ditampilkan"
+                        options={periodSelection.periods.map((item) => ({
+                          value: item.id,
+                          label: `${periodFormat.format(item.startDate)}–${periodFormat.format(
+                            new Date(
+                              item.endDateExclusive.valueOf() - 86_400_000,
+                            ),
+                          )}${item.id === activePeriod.id ? " · aktif" : ""}${item.isTransition ? " · transisi" : ""}`,
+                        }))}
+                      />
+                    </div>
                     <Button
                       type="submit"
                       variant="outline"
-                      className="min-h-10"
+                      className={`min-h-11 rounded-xl ${section === "dashboard" ? "dashboard-v2-period-submit" : ""}`}
                     >
                       Tampilkan
                     </Button>
@@ -193,7 +201,10 @@ export async function WorkspacePage({
                   </span>
                 )}
                 {section === "dashboard" && (
-                  <Button asChild className="min-h-10">
+                  <Button
+                    asChild
+                    className="dashboard-v2-create-action min-h-11 rounded-xl"
+                  >
                     <Link
                       href={`${sectionHref("transactions", context.workspace.id)}&create=1`}
                     >

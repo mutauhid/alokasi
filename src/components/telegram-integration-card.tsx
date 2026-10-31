@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AutomationGuideDialog } from "@/components/automation-guide-dialog";
+import { AppSelect } from "@/components/ui/app-select";
 
 type Option = { id: string; name: string };
 
@@ -196,51 +197,45 @@ export function TelegramIntegrationCard({
           <input type="hidden" name="intent" value="configure" />
           <label className="text-sm font-medium">
             Akun default
-            <select
+            <AppSelect
               name="accountId"
               defaultValue={state.accountId ?? ""}
               required
               className="mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
-            >
-              <option value="">Pilih akun</option>
-              {accounts.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
+              placeholder="Pilih akun"
+              options={accounts.map((item) => ({
+                value: item.id,
+                label: item.name,
+              }))}
+            />
           </label>
           <label className="text-sm font-medium">
             Kategori pengeluaran default
-            <select
+            <AppSelect
               name="categoryId"
               defaultValue={state.categoryId ?? ""}
               required
               className="mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
-            >
-              <option value="">Pilih kategori</option>
-              {expenseCategories.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
+              placeholder="Pilih kategori"
+              options={expenseCategories.map((item) => ({
+                value: item.id,
+                label: item.name,
+              }))}
+            />
           </label>
           <label className="text-sm font-medium">
             Kategori pemasukan default
-            <select
+            <AppSelect
               name="incomeCategoryId"
               defaultValue={state.incomeCategoryId ?? ""}
               required
               className="mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
-            >
-              <option value="">Pilih kategori</option>
-              {incomeCategories.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
+              placeholder="Pilih kategori"
+              options={incomeCategories.map((item) => ({
+                value: item.id,
+                label: item.name,
+              }))}
+            />
           </label>
           <Button
             type="submit"

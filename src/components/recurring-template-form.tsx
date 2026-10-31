@@ -7,6 +7,7 @@ import {
 } from "@/app/(workspace)/actions";
 import { Button } from "@/components/ui/button";
 import { RupiahInput } from "@/components/ui/rupiah-input";
+import { AppSelect } from "@/components/ui/app-select";
 
 type Option = { id: string; name: string };
 type CategoryOption = Option & { type: "income" | "expense" };
@@ -73,15 +74,16 @@ export function RecurringTemplateForm({
       </label>
       <label className="text-sm font-medium">
         Jenis
-        <select
+        <AppSelect
           name="type"
           value={type}
-          onChange={(event) => setType(event.target.value as RecurringType)}
+          onValueChange={(value) => setType(value as RecurringType)}
           className={inputClass}
-        >
-          <option value="expense">Pengeluaran</option>
-          <option value="income">Pemasukan</option>
-        </select>
+          options={[
+            { value: "expense", label: "Pengeluaran" },
+            { value: "income", label: "Pemasukan" },
+          ]}
+        />
       </label>
       <label className="text-sm font-medium">
         Nominal
@@ -107,35 +109,31 @@ export function RecurringTemplateForm({
       </label>
       <label className="text-sm font-medium">
         Akun
-        <select
+        <AppSelect
           name="accountId"
           required
           defaultValue={initial?.accountId ?? accounts[0]?.id}
           className={inputClass}
-        >
-          {accounts.map((account) => (
-            <option key={account.id} value={account.id}>
-              {account.name}
-            </option>
-          ))}
-        </select>
+          options={accounts.map((account) => ({
+            value: account.id,
+            label: account.name,
+          }))}
+        />
       </label>
       <label className="text-sm font-medium">
         Kategori
-        <select
+        <AppSelect
           key={`${type}-${initial?.categoryId ?? "new"}`}
           name="categoryId"
           required
           defaultValue={initial?.type === type ? initial.categoryId : undefined}
           className={inputClass}
-        >
-          <option value="">Pilih kategori</option>
-          {availableCategories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
+          placeholder="Pilih kategori"
+          options={availableCategories.map((category) => ({
+            value: category.id,
+            label: category.name,
+          }))}
+        />
       </label>
       <label
         className={`text-sm font-medium ${compact ? "" : "md:col-span-2 xl:col-span-2"}`}

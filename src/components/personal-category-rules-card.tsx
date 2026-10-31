@@ -8,6 +8,7 @@ import {
 } from "@/app/(workspace)/category-rule-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppSelect } from "@/components/ui/app-select";
 
 type Option = { id: string; name: string };
 type Rule = {
@@ -68,19 +69,17 @@ export function PersonalCategoryRulesCard({
           </label>
           <label className="text-sm font-medium">
             Kategori
-            <select
+            <AppSelect
               name="categoryId"
               required
               defaultValue=""
               className="mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
-            >
-              <option value="">Pilih kategori</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+              placeholder="Pilih kategori"
+              options={categories.map((category) => ({
+                value: category.id,
+                label: category.name,
+              }))}
+            />
           </label>
           <Button
             type="submit"

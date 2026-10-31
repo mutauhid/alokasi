@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty-state";
+import { AppSelect } from "@/components/ui/app-select";
 import {
   getMembersOverview,
   getWorkspaceDeletionSummary,
@@ -267,15 +268,16 @@ export async function MembersSection({
                             name="version"
                             value={member.version}
                           />
-                          <select
+                          <AppSelect
                             name="role"
                             defaultValue={member.role}
-                            aria-label={`Peran ${member.user.displayName ?? member.user.email ?? "anggota"}`}
+                            ariaLabel={`Peran ${member.user.displayName ?? member.user.email ?? "anggota"}`}
                             className="min-h-9 rounded-lg border bg-background px-2 text-xs"
-                          >
-                            <option value="editor">Editor</option>
-                            <option value="viewer">Viewer</option>
-                          </select>
+                            options={[
+                              { value: "editor", label: "Editor" },
+                              { value: "viewer", label: "Viewer" },
+                            ]}
+                          />
                           <Button type="submit" size="sm" variant="outline">
                             Simpan
                           </Button>
@@ -366,16 +368,16 @@ export async function MembersSection({
                 />
                 <label className="text-sm font-medium">
                   Calon Owner
-                  <select name="membershipId" className={inputClass} required>
-                    {transferCandidates.map((member) => (
-                      <option key={member.id} value={member.id}>
-                        {member.user.displayName ??
-                          member.user.email ??
-                          "Anggota"}
-                        {` · ${member.role === "editor" ? "Editor" : "Viewer"}`}
-                      </option>
-                    ))}
-                  </select>
+                  <AppSelect
+                    name="membershipId"
+                    className={inputClass}
+                    required
+                    defaultValue={transferCandidates[0]?.id ?? ""}
+                    options={transferCandidates.map((member) => ({
+                      value: member.id,
+                      label: `${member.user.displayName ?? member.user.email ?? "Anggota"} · ${member.role === "editor" ? "Editor" : "Viewer"}`,
+                    }))}
+                  />
                 </label>
                 <Button type="submit" className="min-h-11 w-full sm:w-auto">
                   <Crown /> Minta persetujuan

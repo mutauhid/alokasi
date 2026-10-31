@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RupiahInput } from "@/components/ui/rupiah-input";
+import { AppSelect } from "@/components/ui/app-select";
 import { TransactionTitleField } from "@/components/transaction-title-field";
 import { CategoryRadioGroup } from "@/components/category-radio-group";
 import type { TransactionSuggestion } from "@/modules/transactions/suggestions";
@@ -383,19 +384,17 @@ export function ReceiptScanPanel({
                 />
                 <label className="text-sm font-medium">
                   Akun
-                  <select
+                  <AppSelect
                     name="accountId"
                     required
                     defaultValue={draft.accountId}
                     className={inputClass}
-                  >
-                    <option value="">Pilih akun</option>
-                    {accounts.map((account) => (
-                      <option key={account.id} value={account.id}>
-                        {account.name}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Pilih akun"
+                    options={accounts.map((account) => ({
+                      value: account.id,
+                      label: account.name,
+                    }))}
+                  />
                   <span className="mt-1 block text-xs text-muted-foreground">
                     Selalu dipilih pengguna.
                   </span>

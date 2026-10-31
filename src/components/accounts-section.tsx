@@ -23,6 +23,7 @@ import { ReconciliationForm } from "@/components/reconciliation-form";
 import { TransactionActions } from "@/components/transaction-actions";
 import { ArchiveAccountButton } from "@/components/archive-account-button";
 import { SensitiveAmount } from "@/components/amount-privacy";
+import { AppSelect } from "@/components/ui/app-select";
 
 const inputClass =
   "m-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
@@ -333,11 +334,16 @@ export async function AccountsSection({
               </label>
               <label className="text-sm font-medium">
                 Jenis
-                <select name="type" className={inputClass} defaultValue="bank">
-                  <option value="bank">Bank</option>
-                  <option value="ewallet">E-wallet</option>
-                  <option value="cash">Tunai</option>
-                </select>
+                <AppSelect
+                  name="type"
+                  className={inputClass}
+                  defaultValue="bank"
+                  options={[
+                    { value: "bank", label: "Bank" },
+                    { value: "ewallet", label: "E-wallet" },
+                    { value: "cash", label: "Tunai" },
+                  ]}
+                />
               </label>
               <label className="text-sm font-medium">
                 Saldo awal

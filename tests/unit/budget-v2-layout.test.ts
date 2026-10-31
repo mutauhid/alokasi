@@ -69,6 +69,7 @@ describe("Budget V2 presentation contract", () => {
       "Pembuatan atau perubahan budget dikelola oleh Owner",
     );
     expect(section).toContain('name="periodId"');
+    expect(section).toContain("<PeriodSelect");
   });
 
   it("keeps read-only amounts private while leaving create and edit inputs usable", async () => {

@@ -4,6 +4,7 @@ import {
   TRANSACTION_PAGE_SIZES,
   type TransactionPageSize,
 } from "@/modules/transactions/pagination";
+import { AppSelect } from "@/components/ui/app-select";
 
 export function TransactionPageSizeControl({
   workspaceId,
@@ -30,19 +31,17 @@ export function TransactionPageSizeControl({
       {dateFrom && <input type="hidden" name="from" value={dateFrom} />}
       {dateTo && <input type="hidden" name="to" value={dateTo} />}
       <label htmlFor="transaction-page-size">Tampilkan</label>
-      <select
+      <AppSelect
         id="transaction-page-size"
         name="pageSize"
-        defaultValue={pageSize}
-        onChange={(event) => event.currentTarget.form?.requestSubmit()}
+        defaultValue={pageSize.toString()}
+        submitOnChange
         className="min-h-9 rounded-lg border bg-background px-3 py-1 text-sm text-foreground"
-      >
-        {TRANSACTION_PAGE_SIZES.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
+        options={TRANSACTION_PAGE_SIZES.map((option) => ({
+          value: option.toString(),
+          label: option.toString(),
+        }))}
+      />
       <span>transaksi</span>
     </form>
   );
