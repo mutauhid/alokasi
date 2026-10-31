@@ -1,6 +1,5 @@
 import type { CSSProperties } from "react";
 import {
-  CalendarDays,
   ChartPie,
   Copy,
   Info,
@@ -20,6 +19,7 @@ import { TransactionCategoryIcon } from "@/components/transaction-category-icon"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RupiahInput } from "@/components/ui/rupiah-input";
+import { PeriodSelect } from "@/components/period-select";
 import { budgetPercent, budgetStatus } from "@/modules/finance/domain";
 import { getBudgetOverview } from "@/modules/budgets/service";
 
@@ -188,24 +188,17 @@ export async function BudgetsSection({
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           <form action="/budgets" method="get" className="flex gap-2">
             <input type="hidden" name="workspaceId" value={workspaceId} />
-            <label className="relative min-w-0 flex-1 sm:min-w-64">
-              <span className="sr-only">Periode budget yang ditampilkan</span>
-              <CalendarDays
-                className="pointer-events-none absolute left-3 top-3.5 size-4 text-muted-foreground"
-                aria-hidden="true"
-              />
-              <select
+            <div className="min-w-0 flex-1 sm:min-w-64">
+              <PeriodSelect
                 name="periodId"
                 defaultValue={overview.period.id}
-                className="min-h-11 w-full rounded-xl border bg-card py-2 pl-9 pr-8 text-xs outline-none focus:border-ring focus:ring-2 focus:ring-ring/40"
-              >
-                {overview.periods.map((period) => (
-                  <option key={period.id} value={period.id}>
-                    {`${periodLabel(period.startDate, period.endDateExclusive)}${period.id === overview.activePeriod.id ? " · aktif" : ""}${period.isTransition ? " · transisi" : ""}`}
-                  </option>
-                ))}
-              </select>
-            </label>
+                ariaLabel="Periode budget yang ditampilkan"
+                options={overview.periods.map((period) => ({
+                  value: period.id,
+                  label: `${periodLabel(period.startDate, period.endDateExclusive)}${period.id === overview.activePeriod.id ? " · aktif" : ""}${period.isTransition ? " · transisi" : ""}`,
+                }))}
+              />
+            </div>
             <Button
               type="submit"
               variant="outline"

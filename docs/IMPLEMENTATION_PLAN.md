@@ -420,6 +420,14 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Pertahankan workspace scope, role Viewer, client navigation Next.js, active state, safe area iPhone, content clearance, light/dark mode, reduced motion, dan target sentuh minimum.
 - Tambahkan contract test presentasi, dokumentasi, targeted format check, lint, typecheck, unit test, build, serta smoke browser sesuai ketersediaan sesi terautentikasi.
 
+## Tahap 52 — Dashboard mobile dan dropdown konsisten, 31 Oktober 2026
+
+- Rapikan hero Dashboard mobile menjadi panel compact dengan typography, spacing, periode, dan CTA yang seimbang tanpa mengubah sumber data atau query periode.
+- Ganti dropdown periode Dashboard/Budget dengan panel custom seperti workspace selector yang mendukung keyboard, focus, checked state, portal, dan collision handling.
+- Gunakan `AppSelect` reusable pada dropdown form lintas modul sambil mempertahankan FormData, required validation, controlled/default state, reset, dan auto-submit existing.
+- Pertahankan native selector tema desktop untuk tiga pilihan existing; toggle tema mobile tetap light/dark langsung.
+- Verifikasi lint, typecheck, unit test, build, format/diff, mobile overflow, dan interaksi terautentikasi sesuai ketersediaan environment.
+
 ## Backlog kandidat — bukan komitmen aktif
 
 F11 transaksi berulang diaktifkan melalui D33, F15 rekonsiliasi melalui D37, dan F14 utang/piutang melalui D58. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, dan F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.

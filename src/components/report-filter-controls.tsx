@@ -21,6 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { AppSelect } from "@/components/ui/app-select";
 
 export type ReportFilterValues = {
   from: string;
@@ -52,13 +53,19 @@ function FilterFields({
   controlled?: boolean;
   onChange?: (name: keyof ReportFilterValues, value: string) => void;
 }) {
-  const valueProps = (name: keyof ReportFilterValues) =>
+  const inputValueProps = (name: keyof ReportFilterValues) =>
     controlled
       ? {
           value: values[name],
-          onChange: (
-            event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-          ) => onChange?.(name, event.target.value),
+          onChange: (event: ChangeEvent<HTMLInputElement>) =>
+            onChange?.(name, event.target.value),
+        }
+      : { defaultValue: values[name] };
+  const selectValueProps = (name: keyof ReportFilterValues) =>
+    controlled
+      ? {
+          value: values[name],
+          onValueChange: (value: string) => onChange?.(name, value),
         }
       : { defaultValue: values[name] };
 
@@ -77,7 +84,7 @@ function FilterFields({
             name="from"
             required
             max={controlled ? values.to || undefined : undefined}
-            {...valueProps("from")}
+            {...inputValueProps("from")}
           />
         </span>
       </label>
@@ -94,70 +101,56 @@ function FilterFields({
             name="to"
             required
             min={controlled ? values.from || undefined : undefined}
-            {...valueProps("to")}
+            {...inputValueProps("to")}
           />
         </span>
       </label>
       <label className="text-xs font-medium text-muted-foreground">
         Jenis transaksi
-        <span className="relative block">
-          <ArrowLeftRight
-            className="pointer-events-none absolute left-3 top-[1.05rem] size-4"
-            aria-hidden="true"
-          />
-          <select
-            className={`${inputClass} pl-9`}
-            name="type"
-            {...valueProps("type")}
-          >
-            <option value="">Semua jenis</option>
-            <option value="income">Pemasukan</option>
-            <option value="expense">Pengeluaran</option>
-            <option value="transfer">Transfer internal</option>
-          </select>
-        </span>
+        <AppSelect
+          className={inputClass}
+          name="type"
+          leading={<ArrowLeftRight className="size-4" aria-hidden="true" />}
+          options={[
+            { value: "", label: "Semua jenis" },
+            { value: "income", label: "Pemasukan" },
+            { value: "expense", label: "Pengeluaran" },
+            { value: "transfer", label: "Transfer internal" },
+          ]}
+          {...selectValueProps("type")}
+        />
       </label>
       <label className="text-xs font-medium text-muted-foreground">
         Akun
-        <span className="relative block">
-          <WalletCards
-            className="pointer-events-none absolute left-3 top-[1.05rem] size-4"
-            aria-hidden="true"
-          />
-          <select
-            className={`${inputClass} pl-9`}
-            name="accountId"
-            {...valueProps("accountId")}
-          >
-            <option value="">Semua akun</option>
-            {accounts.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.label}
-              </option>
-            ))}
-          </select>
-        </span>
+        <AppSelect
+          className={inputClass}
+          name="accountId"
+          leading={<WalletCards className="size-4" aria-hidden="true" />}
+          options={[
+            { value: "", label: "Semua akun" },
+            ...accounts.map((account) => ({
+              value: account.id,
+              label: account.label,
+            })),
+          ]}
+          {...selectValueProps("accountId")}
+        />
       </label>
       <label className="text-xs font-medium text-muted-foreground">
         Kategori
-        <span className="relative block">
-          <Tags
-            className="pointer-events-none absolute left-3 top-[1.05rem] size-4"
-            aria-hidden="true"
-          />
-          <select
-            className={`${inputClass} pl-9`}
-            name="categoryId"
-            {...valueProps("categoryId")}
-          >
-            <option value="">Semua kategori</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.label}
-              </option>
-            ))}
-          </select>
-        </span>
+        <AppSelect
+          className={inputClass}
+          name="categoryId"
+          leading={<Tags className="size-4" aria-hidden="true" />}
+          options={[
+            { value: "", label: "Semua kategori" },
+            ...categories.map((category) => ({
+              value: category.id,
+              label: category.label,
+            })),
+          ]}
+          {...selectValueProps("categoryId")}
+        />
       </label>
       <label className="text-xs font-medium text-muted-foreground">
         Pencarian
@@ -172,7 +165,7 @@ function FilterFields({
             name="query"
             maxLength={100}
             placeholder="Judul, catatan, akun, kategori"
-            {...valueProps("query")}
+            {...inputValueProps("query")}
           />
         </span>
       </label>

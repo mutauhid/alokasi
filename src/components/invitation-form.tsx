@@ -6,6 +6,7 @@ import {
   type InvitationActionState,
 } from "@/app/(workspace)/workspace-actions";
 import { Button } from "@/components/ui/button";
+import { AppSelect } from "@/components/ui/app-select";
 
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
@@ -35,10 +36,15 @@ export function InvitationForm({ workspaceId }: { workspaceId: string }) {
         </label>
         <label className="text-sm font-medium">
           Peran
-          <select name="role" defaultValue="editor" className={inputClass}>
-            <option value="editor">Editor</option>
-            <option value="viewer">Viewer</option>
-          </select>
+          <AppSelect
+            name="role"
+            defaultValue="editor"
+            className={inputClass}
+            options={[
+              { value: "editor", label: "Editor" },
+              { value: "viewer", label: "Viewer" },
+            ]}
+          />
         </label>
         <div className="flex items-end">
           <Button type="submit" disabled={pending} className="min-h-11 w-full">

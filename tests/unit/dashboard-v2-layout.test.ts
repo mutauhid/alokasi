@@ -27,12 +27,39 @@ describe("Dashboard V2 presentation contract", () => {
   });
 
   it("keeps period filtering and transaction navigation functional", async () => {
-    const workspace = await componentSource("workspace-page.tsx");
+    const [workspace, periodSelect, styles] = await Promise.all([
+      componentSource("workspace-page.tsx"),
+      componentSource("period-select.tsx"),
+      projectSource("src/app/globals.css"),
+    ]);
 
     expect(workspace).toContain('name="periodId"');
+    expect(workspace).toContain("<PeriodSelect");
     expect(workspace).toContain("Tampilkan");
     expect(workspace).toContain("Catat transaksi");
     expect(workspace).toContain('sectionHref("transactions"');
+    expect(periodSelect).toContain("SelectPrimitive.Content");
+    expect(periodSelect).toContain("data-[state=checked]:bg-primary/10");
+    expect(styles).toContain(".dashboard-v2-heading-actions");
+    expect(styles).toContain(".dashboard-v2-period-form");
+    expect(styles).toContain("grid-template-columns: auto minmax(0, 1fr)");
+  });
+
+  it("uses the shared custom dropdown contract across forms", async () => {
+    const [select, transaction, reports, settings] = await Promise.all([
+      componentSource("ui/app-select.tsx"),
+      componentSource("transaction-form.tsx"),
+      componentSource("report-filter-controls.tsx"),
+      componentSource("settings-section.tsx"),
+    ]);
+
+    expect(select).toContain("SelectPrimitive.Content");
+    expect(select).toContain("name={name}");
+    expect(select).toContain("required={required}");
+    expect(select).toContain("submitOnChange");
+    expect(transaction).toContain("<AppSelect");
+    expect(reports).toContain("<AppSelect");
+    expect(settings).toContain("<AppSelect");
   });
 
   it("applies privacy-aware dynamic chart labels and real budget values", async () => {

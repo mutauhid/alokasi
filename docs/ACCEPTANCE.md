@@ -1023,3 +1023,14 @@ Refinement referensi header terbaru: mobile memakai satu baris hamburger, worksp
 Refinement theme mobile: kontrol compact menjadi tombol light/dark langsung tanpa native dropdown. Ikon matahari menunjukkan mode terang dan ikon bulan menunjukkan mode gelap; klik menyimpan preference eksplisit kebalikannya. Selector Otomatis/Terang/Gelap desktop dan sinkronisasi system theme existing tetap dipertahankan.
 
 Final alignment header mobile: hamburger, sisi bawah tombol workspace, privacy, dan theme toggle memakai bottom alignment yang sama; label Ruang Aktif tetap berada di atas field tanpa menggeser baseline kontrol lain.
+
+## Acceptance tahap 52 — Dashboard mobile dan dropdown
+
+| ID | Kriteria |
+|---|---|
+| SELECT-01 | Periode Dashboard dan Budget memakai trigger/panel custom theme-aware seperti workspace selector, mempertahankan `periodId`, pilihan aktif/transisi, dan submit GET eksplisit |
+| SELECT-02 | Dropdown form memakai `AppSelect` dengan nilai FormData asli, required validation, controlled/default state, form reset, disabled state, serta auto-submit page size existing |
+| SELECT-03 | Dropdown dapat digunakan dengan pointer dan keyboard, memiliki focus/checked/disabled state yang bukan hanya warna, portal z-index aman, dan tidak overflow pada mobile |
+| SELECT-04 | Selector tema desktop tetap menyediakan Otomatis/Terang/Gelap; toggle tema mobile tetap langsung light/dark tanpa dropdown |
+| DASHM-01 | Hero Dashboard mobile memakai panel compact, heading/deskripsi terbaca, periode selebar panel, serta Tampilkan/Catat transaksi sejajar tanpa horizontal overflow |
+| DASHM-02 | Dashboard desktop, data dinamis, periode, navigation, privacy, service, Server Action, dan business logic tidak berubah |

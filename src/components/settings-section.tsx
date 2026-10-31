@@ -44,6 +44,7 @@ import { WebPushNotificationCard } from "@/components/web-push-notification-card
 import { formatClockMinutes } from "@/modules/web-push/domain";
 import { getWebPushSettings } from "@/modules/web-push/service";
 import { cn } from "@/lib/utils";
+import { AppSelect } from "@/components/ui/app-select";
 
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
@@ -480,14 +481,15 @@ export async function SettingsSection({
                   </label>
                   <label className="text-sm font-medium">
                     Jenis
-                    <select
+                    <AppSelect
                       name="type"
                       defaultValue="expense"
                       className={inputClass}
-                    >
-                      <option value="expense">Pengeluaran</option>
-                      <option value="income">Pemasukan</option>
-                    </select>
+                      options={[
+                        { value: "expense", label: "Pengeluaran" },
+                        { value: "income", label: "Pemasukan" },
+                      ]}
+                    />
                   </label>
                   <div className="flex items-end">
                     <Button type="submit" className="min-h-11 w-full">

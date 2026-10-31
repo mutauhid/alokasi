@@ -7,6 +7,7 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { createBudgetAction } from "@/app/(workspace)/actions";
 import { Button } from "@/components/ui/button";
 import { RupiahInput } from "@/components/ui/rupiah-input";
+import { AppSelect } from "@/components/ui/app-select";
 
 type CategoryOption = { id: string; name: string };
 
@@ -97,23 +98,19 @@ export function CreateBudgetDialog({
               <>
                 <label className="block text-sm font-semibold">
                   Kategori pengeluaran
-                  <select
+                  <AppSelect
                     name="categoryId"
                     required
                     defaultValue=""
                     autoFocus
-                    aria-describedby="budget-category-help"
+                    ariaDescribedBy="budget-category-help"
                     className="mt-2 min-h-12 w-full rounded-xl border bg-background px-3 text-sm shadow-xs outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/40"
-                  >
-                    <option value="" disabled>
-                      Pilih kategori
-                    </option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Pilih kategori"
+                    options={categories.map((category) => ({
+                      value: category.id,
+                      label: category.name,
+                    }))}
+                  />
                   <span
                     id="budget-category-help"
                     className="mt-1.5 block text-xs font-normal text-muted-foreground"

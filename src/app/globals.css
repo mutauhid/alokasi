@@ -86,6 +86,30 @@
   select {
     cursor: pointer;
   }
+  select:not([multiple]) {
+    border-color: var(--border);
+    color: var(--foreground);
+    transition:
+      border-color 180ms ease,
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+  select:not([multiple]):hover {
+    border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+  }
+  select:not([multiple]):focus-visible {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 22%, transparent);
+    outline: none;
+  }
+  select option {
+    background-color: var(--popover);
+    color: var(--popover-foreground);
+  }
+  select option:checked {
+    background: linear-gradient(var(--accent), var(--accent));
+    color: var(--accent-foreground);
+  }
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 4px;
@@ -268,6 +292,54 @@
 
 .dashboard-v2-heading > div:first-child {
   max-width: 34rem;
+}
+
+@media (max-width: 639px) {
+  .dashboard-v2-heading {
+    margin-bottom: 1rem;
+    gap: 0;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    background: color-mix(in srgb, var(--card) 96%, var(--primary));
+    box-shadow: 0 14px 32px
+      color-mix(in srgb, var(--foreground) 6%, transparent);
+  }
+
+  .dashboard-v2-heading-copy {
+    width: 100%;
+  }
+
+  .dashboard-v2-heading-copy > p:last-child {
+    max-width: 31rem;
+    line-height: 1.6;
+  }
+
+  .dashboard-v2-heading-actions {
+    display: grid;
+    width: 100%;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .dashboard-v2-period-form {
+    display: contents;
+  }
+
+  .dashboard-v2-period-control {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .dashboard-v2-period-submit {
+    grid-column: 1;
+  }
+
+  .dashboard-v2-create-action {
+    grid-column: 2;
+    width: 100%;
+  }
 }
 
 .dashboard-v2 .text-muted-foreground {

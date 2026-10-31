@@ -81,12 +81,13 @@ describe("mobile bottom navigation contract", () => {
     expect(shell).not.toContain('aria-label="Buka pengaturan notifikasi"');
     expect(shell).not.toContain("<ConnectionStatusBadge />");
     expect(shell).toContain("<ThemeSwitcher compact />");
-    expect(shell).toContain("<WorkspaceSwitcher\n                compact");
+    expect(shell).toMatch(/<WorkspaceSwitcher\s+compact/);
     expect(switcher).toContain('compact ? "flex-1"');
     expect(switcher).toContain("sm:w-[290px]");
     expect(switcher).toContain('"fixed left-4 right-4 top-[4.75rem] w-auto"');
-    expect(theme).toContain("w-full min-w-0");
-    expect(theme).toContain("sm:w-[132px]");
+    expect(theme).toContain("<AppSelect");
+    expect(theme).toContain('name="theme"');
+    expect(theme).toContain("sm:w-[142px]");
     expect(theme).toContain("if (compact)");
     expect(theme).toContain("const CompactIcon = dark ? Moon : Sun");
     expect(theme).toContain('const nextTheme = dark ? "light" : "dark"');
