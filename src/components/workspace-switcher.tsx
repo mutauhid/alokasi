@@ -24,10 +24,12 @@ export function WorkspaceSwitcher({
   section,
   workspace,
   workspaces,
+  compact = false,
 }: {
   section: Section;
   workspace: WorkspaceSummary;
   workspaces: WorkspaceSummary[];
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -49,10 +51,18 @@ export function WorkspaceSwitcher({
 
   return (
     <div
-      className="relative min-w-0"
+      className={cn(
+        "relative min-w-0",
+        compact ? "flex-1" : "w-full sm:w-auto",
+      )}
       onClick={(event) => event.stopPropagation()}
     >
-      <p className="mb-1 text-[10px] font-medium uppercase tracking-[.12em] text-muted-foreground">
+      <p
+        className={cn(
+          "text-[10px] font-medium uppercase tracking-[.12em] text-muted-foreground",
+          compact ? "mb-0.5 px-1" : "mb-1",
+        )}
+      >
         Ruang aktif
       </p>
       <button
@@ -61,18 +71,31 @@ export function WorkspaceSwitcher({
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
         className={cn(
-          "group flex min-h-12 w-[230px] max-w-[calc(100vw-7.5rem)] items-center gap-3 rounded-xl border bg-background px-3 text-left shadow-xs transition-colors hover:border-primary/50 hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-[290px]",
+          "group flex w-full items-center rounded-xl border bg-background text-left shadow-xs transition-colors hover:border-primary/50 hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          compact
+            ? "min-h-10 gap-2 px-2.5"
+            : "min-h-12 gap-3 px-3 sm:w-[290px]",
           open && "border-primary/60 bg-accent/40 ring-2 ring-primary/10",
         )}
       >
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary">
+        <span
+          className={cn(
+            "flex shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary",
+            compact ? "size-7" : "size-8",
+          )}
+        >
           <ActiveIcon className="size-4" aria-hidden="true" />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold">
             {workspace.name}
           </span>
-          <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+          <span
+            className={cn(
+              "mt-0.5 truncate text-[11px] text-muted-foreground",
+              compact ? "hidden" : "block",
+            )}
+          >
             {typeLabel(workspace.type)} · {roleLabel(workspace.role)}
           </span>
         </span>
@@ -89,7 +112,12 @@ export function WorkspaceSwitcher({
         <div
           role="menu"
           aria-label="Pilih ruang aktif"
-          className="absolute left-0 top-[calc(100%+8px)] z-50 w-[300px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border bg-popover p-1.5 text-popover-foreground shadow-xl shadow-black/20"
+          className={cn(
+            "z-[70] overflow-hidden rounded-xl border bg-popover p-1.5 text-popover-foreground shadow-2xl shadow-black/30",
+            compact
+              ? "fixed left-4 right-4 top-[4.75rem] w-auto"
+              : "absolute left-0 top-[calc(100%+8px)] w-[300px] max-w-[calc(100vw-2rem)]",
+          )}
         >
           <div className="px-2.5 pb-2 pt-1.5">
             <p className="text-xs font-semibold">Pilih ruang keuangan</p>

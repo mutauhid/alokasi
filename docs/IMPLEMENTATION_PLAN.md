@@ -412,6 +412,14 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Refinement Budget vs Aktual: gunakan preview compact tiga kategori sesuai mockup dengan hierarchy nama–progress–persentase–Aktual/Limit dan tautan fungsional ke halaman Budget lengkap tanpa mengubah perhitungan atau validitas periode.
 - Scope tidak mencakup perubahan query/urutan transaksi periode aktif, algoritma chart arus kas, Route Handler CSV, permission, Prisma, migrasi, dependency, atau modul lain. Bottom navigation mobile dipisahkan ke branch AppShell berikutnya. Mockup komposit `reports-v2-mobile.png` menjadi referensi desktop/mobile; data ilustratif dan kontrol granularitas yang tidak tersedia tidak diterapkan.
 
+## Tahap 51 — Bottom navigation mobile, 31 Oktober 2026
+
+- Tambahkan navigasi fixed lima slot pada AppShell mobile: Beranda, Transaksi, aksi tambah, Budget, dan Lainnya; pertahankan sidebar desktop existing.
+- Hubungkan aksi tambah ke modal transaksi manual atau panel Scan struk/OCR lokal existing, termasuk auto-scroll/focus upload, tanpa mengubah service, Server Action, permission, atau pemrosesan draf.
+- Tempatkan Laporan, Akun, Utang & Piutang, Pengingat, Anggota & akses, Pengaturan, dan menu akun pada popover Lainnya yang mendukung keyboard, Escape, outside click, serta focus restoration.
+- Pertahankan workspace scope, role Viewer, client navigation Next.js, active state, safe area iPhone, content clearance, light/dark mode, reduced motion, dan target sentuh minimum.
+- Tambahkan contract test presentasi, dokumentasi, targeted format check, lint, typecheck, unit test, build, serta smoke browser sesuai ketersediaan sesi terautentikasi.
+
 ## Backlog kandidat — bukan komitmen aktif
 
 F11 transaksi berulang diaktifkan melalui D33, F15 rekonsiliasi melalui D37, dan F14 utang/piutang melalui D58. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, dan F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.

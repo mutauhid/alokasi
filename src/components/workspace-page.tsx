@@ -30,6 +30,7 @@ export type WorkspaceSearchParams = Promise<{
   pageSize?: string | string[];
   search?: string | string[];
   create?: string | string[];
+  scan?: string | string[];
   view?: string | string[];
 }>;
 
@@ -244,6 +245,7 @@ export async function WorkspacePage({
           transactionView={transactionView}
           transactionPagination={parseTransactionPagination(query)}
           openCreateTransaction={query.create === "1"}
+          openReceiptScan={query.scan === "1"}
           settingsView={typeof query.view === "string" ? query.view : undefined}
         />
       </div>

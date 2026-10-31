@@ -48,7 +48,9 @@ function setAmountsHidden(hidden: boolean) {
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
-export function AmountPrivacyToggle() {
+export function AmountPrivacyToggle({
+  className,
+}: { className?: string } = {}) {
   const hidden = useAmountsHidden();
   const label = hidden
     ? "Tampilkan semua nominal"
@@ -58,7 +60,7 @@ export function AmountPrivacyToggle() {
       type="button"
       variant="outline"
       size="icon"
-      className="size-10"
+      className={cn("size-10", className)}
       aria-label={label}
       aria-pressed={hidden}
       title={label}
