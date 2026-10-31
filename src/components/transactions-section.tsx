@@ -118,6 +118,7 @@ export async function TransactionsSection({
   view = "history",
   pagination,
   openCreateTransaction = false,
+  openReceiptScan = false,
 }: {
   access: WorkspaceAccess;
   today: Date;
@@ -126,6 +127,7 @@ export async function TransactionsSection({
   view?: "history" | "reminders";
   pagination: TransactionPagination;
   openCreateTransaction?: boolean;
+  openReceiptScan?: boolean;
 }) {
   if (view === "reminders") {
     return (
@@ -195,7 +197,8 @@ export async function TransactionsSection({
                 : "Draf privat hasil OCR siap diperiksa"
               : undefined
           }
-          defaultOpen={Boolean(activeReceiptDraft)}
+          defaultOpen={Boolean(activeReceiptDraft) || openReceiptScan}
+          focusScanOnMount={openReceiptScan}
           createAction={
             <CreateTransactionDialog
               workspaceId={access.workspaceId}

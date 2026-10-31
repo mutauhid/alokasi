@@ -1001,3 +1001,25 @@ Verifikasi lokal tahap 50 beserta koreksi D70: typecheck lulus, lint lulus, buil
 Verifikasi final polish D71: typecheck dan lint lulus, build produksi Next.js lulus, 41 file/199 unit test lulus, serta regression tertarget Laporan/domain/chart/presentation berjumlah 26 test lulus. Kasus yang diuji mencakup pembanding nol, nilai identik, persentase representatif, perubahan ekstrem +29.150%/−18.950% yang dialihkan menjadi selisih nominal, dan perpindahan surplus/defisit. Smoke Playwright Microsoft Edge pertama menghasilkan 12 lulus dan dua timeout navigasi registrasi yang tidak terkait diff; dua test tersebut lulus saat diulang terisolasi dan seluruh 14 test kemudian lulus dalam run serial desktop/mobile. Prettier tertarget dan `git diff --check` lulus. Suite integrasi PostgreSQL, interaksi data laporan terautentikasi, filter kombinasi terhadap database, serta unduhan CSV end-to-end tidak dijalankan karena `.env.test.local` tidak tersedia; kontrak filter/route/permission/seluruh dataset CSV tetap dijaga oleh unit contract test. Screenshot final Laporan tidak dihasilkan pada environment CLI tanpa sesi autentikasi.
 
 Verifikasi refinement D72: typecheck, lint, 41 file/199 unit test, 22 regression test tertarget Laporan, dan build produksi Next.js lulus. Perubahan hanya menyentuh komposisi preview Budget vs Aktual dan dokumentasi; query budget, `budgetPercent`, `budgetStatus`, `isPeriodView`, privacy nominal, serta modul Budget tidak diubah.
+
+## Acceptance tahap 51 — Bottom navigation mobile
+
+| ID | Kriteria |
+|---|---|
+| MOBNAV-01 | Viewport di bawah breakpoint desktop selalu menampilkan lima slot Beranda, Transaksi, tambah, Budget, dan Lainnya; sidebar desktop dan seluruh route existing tetap berlaku |
+| MOBNAV-02 | Semua tautan membawa `workspaceId`, active destination memakai `aria-current`, teks dan indikator visual, serta client navigation existing tanpa full-page control buatan |
+| MOBNAV-03 | Tombol tambah membuka popover Scan struk/Tambah manual; Scan membuka disclosure OCR lokal, scroll ke panel, dan memfokuskan file input, sedangkan manual membuka modal existing |
+| MOBNAV-04 | Viewer tidak dapat membuka aksi mutasi; Owner/Editor tetap melewati authorization dan validasi Server Action existing |
+| MOBNAV-05 | Lainnya menyediakan Laporan, Akun, Utang & Piutang, Pengingat, Anggota & akses, Pengaturan, menu profil, dan Keluar tanpa menghilangkan fitur navigasi lama |
+| MOBNAV-06 | Bottom navigation fixed tidak menutupi footer/konten, menghormati `env(safe-area-inset-bottom)`, target sentuh, keyboard, Escape, outside click, focus restoration, light/dark mode, dan reduced motion |
+| MOBNAV-07 | Tidak ada schema, migration, endpoint, dependency, atau perubahan business logic; format, lint, typecheck, unit test, build, dan smoke yang dijalankan dilaporkan apa adanya |
+
+Verifikasi lokal tahap 51: targeted Prettier check, `git diff --check`, lint, typecheck, production build Next.js, 42 file/202 unit test, dan 14 smoke Playwright Microsoft Edge desktop/mobile lulus. Percobaan Playwright pertama tanpa channel browser berhenti karena binary Chromium bawaan belum terpasang; pengulangan memakai Edge sistem lulus seluruhnya. Smoke terautentikasi untuk membuka popover, OCR, modal transaksi, navigasi lintas modul, role Viewer, safe area iPhone nyata, dan screenshot light/dark belum dijalankan karena suite browser tidak memiliki sesi login/database; contract test dan build menutup wiring presentasional tanpa memutasi data pengguna.
+
+Refinement header mobile: pemilih ruang memakai lebar kontainer pada layar sempit, kontrol privasi dan tema disusun pada grid yang sejajar di bawahnya, lalu seluruh komponen kembali ke tata letak satu baris existing mulai breakpoint `sm`. Perilaku pemilihan workspace, privacy mode, dan theme preference tidak berubah.
+
+Refinement referensi header terbaru: mobile memakai satu baris hamburger, workspace compact, privacy, dan theme icon; brand, notifikasi, serta status koneksi tidak dirender. Dropdown workspace memakai panel fixed dengan inset aman sehingga berada di atas konten tanpa overflow. Desktop mempertahankan selector dan kontrol lengkap existing; bottom navigation, role, preference, serta business logic tidak berubah.
+
+Refinement theme mobile: kontrol compact menjadi tombol light/dark langsung tanpa native dropdown. Ikon matahari menunjukkan mode terang dan ikon bulan menunjukkan mode gelap; klik menyimpan preference eksplisit kebalikannya. Selector Otomatis/Terang/Gelap desktop dan sinkronisasi system theme existing tetap dipertahankan.
+
+Final alignment header mobile: hamburger, sisi bawah tombol workspace, privacy, dan theme toggle memakai bottom alignment yang sama; label Ruang Aktif tetap berada di atas field tanpa menggeser baseline kontrol lain.

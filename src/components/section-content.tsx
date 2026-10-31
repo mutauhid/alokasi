@@ -24,6 +24,7 @@ export function SectionContent({
   transactionView = "history",
   transactionPagination,
   openCreateTransaction = false,
+  openReceiptScan = false,
   settingsView,
 }: {
   section: Section;
@@ -38,6 +39,7 @@ export function SectionContent({
   transactionView?: "history" | "reminders";
   transactionPagination: TransactionPagination;
   openCreateTransaction?: boolean;
+  openReceiptScan?: boolean;
   settingsView?: string;
 }) {
   switch (section) {
@@ -60,6 +62,7 @@ export function SectionContent({
           view={transactionView}
           pagination={transactionPagination}
           openCreateTransaction={openCreateTransaction}
+          openReceiptScan={openReceiptScan}
         />
       );
     case "budgets":

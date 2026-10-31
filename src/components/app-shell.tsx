@@ -22,10 +22,10 @@ import {
   type WorkspaceSummary,
 } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { AccountMenu } from "@/components/account-menu";
+import { MobileBottomNavigation } from "@/components/mobile-bottom-navigation";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { AmountPrivacyToggle } from "@/components/amount-privacy";
 import {
@@ -155,18 +155,19 @@ export function AppShell({
       </aside>
 
       <div className="min-w-0 lg:pl-56">
-        <header className="border-b bg-card">
-          <div className="mx-auto flex min-h-[77px] max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-7 lg:px-9">
-            <div className="flex min-w-0 items-center gap-3">
+        <header className="relative z-40 border-b bg-card/95 backdrop-blur-lg">
+          <div className="mx-auto max-w-[1440px] px-4 py-3 sm:flex sm:min-h-[77px] sm:items-center sm:justify-between sm:gap-3 sm:px-7 lg:px-9">
+            <div className="flex min-h-[52px] items-end gap-2 sm:hidden">
               <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                 <SheetTrigger asChild>
                   <Button
+                    type="button"
                     variant="outline"
                     size="icon"
-                    className="size-11 lg:hidden"
+                    className="size-11 shrink-0 rounded-xl"
                     aria-label="Buka navigasi"
                   >
-                    <Menu className="size-5" />
+                    <Menu className="size-5" aria-hidden="true" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent
@@ -197,31 +198,31 @@ export function AppShell({
                 </SheetContent>
               </Sheet>
               <WorkspaceSwitcher
+                compact
+                section={section}
+                workspace={workspace}
+                workspaces={workspaces}
+              />
+              <AmountPrivacyToggle className="size-11 shrink-0 rounded-xl" />
+              <ThemeSwitcher compact />
+            </div>
+            <div className="hidden min-w-0 items-center sm:flex sm:w-auto">
+              <WorkspaceSwitcher
                 section={section}
                 workspace={workspace}
                 workspaces={workspaces}
               />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="hidden w-full items-center gap-2 sm:flex sm:w-auto sm:gap-3">
               <AmountPrivacyToggle />
               <ThemeSwitcher />
-              <Badge
-                variant="outline"
-                className="hidden gap-2 border-border bg-background px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground sm:inline-flex"
-              >
-                <span
-                  className="size-1.5 rounded-full bg-primary"
-                  aria-hidden="true"
-                />
-                Tersambung
-              </Badge>
             </div>
           </div>
         </header>
         <main
           id="main-content"
           tabIndex={-1}
-          className="mx-auto max-w-[1440px] px-4 py-6 focus-visible:outline-none sm:px-7 sm:py-8 lg:px-9"
+          className="mx-auto max-w-[1440px] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-6 focus-visible:outline-none sm:px-7 sm:pt-8 lg:px-9 lg:pb-8"
         >
           {children}
           <footer className="mt-8 flex flex-wrap justify-between gap-2 border-t pt-5 text-xs text-muted-foreground">
@@ -240,6 +241,12 @@ export function AppShell({
           </footer>
         </main>
       </div>
+      <MobileBottomNavigation
+        section={section}
+        workspace={workspace}
+        userLabel={userLabel}
+        userEmail={userEmail}
+      />
     </div>
   );
 }

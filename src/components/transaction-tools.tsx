@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, ChevronDown, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,30 +12,45 @@ export function TransactionTools({
   scanContent,
   scanDescription = "OCR lokal di browser · JPEG, PNG, atau WebP hingga 10 MB",
   defaultOpen = false,
+  focusScanOnMount = false,
 }: {
   leading: ReactNode;
   createAction: ReactNode;
   scanContent: ReactNode;
   scanDescription?: string;
   defaultOpen?: boolean;
+  focusScanOnMount?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  function revealScanPanel(focusUpload = false) {
+    requestAnimationFrame(() => {
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      panelRef.current?.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "start",
+      });
+      if (focusUpload) {
+        panelRef.current
+          ?.querySelector<HTMLElement>('input[type="file"]')
+          ?.focus({
+            preventScroll: true,
+          });
+      }
+    });
+  }
+
+  useEffect(() => {
+    if (focusScanOnMount) revealScanPanel(true);
+  }, [focusScanOnMount]);
+
   function toggleScanPanel() {
     const nextOpen = !open;
     setOpen(nextOpen);
-    if (nextOpen) {
-      requestAnimationFrame(() => {
-        const reduceMotion = window.matchMedia(
-          "(prefers-reduced-motion: reduce)",
-        ).matches;
-        panelRef.current?.scrollIntoView({
-          behavior: reduceMotion ? "auto" : "smooth",
-          block: "start",
-        });
-      });
-    }
+    if (nextOpen) revealScanPanel();
   }
 
   return (

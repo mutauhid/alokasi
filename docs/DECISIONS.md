@@ -222,6 +222,8 @@ D71 menghasilkan T64: angka KPI, rentang pembanding, dan rumus persentase tidak 
 
 D72 menghasilkan T65: panel Budget vs Aktual menjadi preview compact maksimal tiga kategori seperti mockup. “Lihat semua” membuka halaman Budget dalam workspace yang sama sehingga kategori lain tidak tersembunyi permanen. Nilai Aktual/Limit dan persentase tetap memakai `budgetPercent`, status tetap dihitung oleh `budgetStatus` untuk semantics progress, bar visual tetap dijepit ke 100%, dan panel tetap tidak menampilkan perbandingan saat filter membuat `isPeriodView` tidak valid.
 
+D73 menghasilkan T66: AppShell mobile memakai bottom navigation fixed lima slot: Beranda, Transaksi, aksi tambah, Budget, dan Lainnya; sidebar desktop tidak berubah. Transaksi dipertahankan sebagai destinasi langsung, sedangkan Laporan dan modul sekunder berada pada popover Lainnya. Tombol tambah hanya aktif bagi Owner/Editor dan menuju alur manual atau OCR lokal existing melalui query presentasional `create=1`/`scan=1`; tidak ada endpoint, izin, atau business logic baru. Navigasi menghormati safe area iPhone, reduced motion, focus/active semantics, dan memberi padding konten agar tidak tertutup.
+
 ## Default kerja, bukan keputusan eksplisit pengguna
 
 Default di bawah cukup untuk menjaga rancangan konsisten. Gunakan selama tidak ada instruksi yang mengganti; jangan berhenti meminta persetujuan ulang pada tiap detail.
