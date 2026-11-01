@@ -1062,3 +1062,18 @@ Final polish tahap 53 mempertahankan hasil di atas: typecheck, lint, 43 file/208
 | TXMOB-03 | Create/update recurring action, tanggal 1–31, akun/kategori workspace, permission, serta aturan saldo/budget transaksi berulang tidak berubah |
 
 Verifikasi refinement TXMOB: typecheck dan lint lulus, 43 file/209 unit test lulus, 9 regression test transaksi/pengingat tertarget lulus, production build lulus, serta 14 smoke E2E Microsoft Edge desktop/mobile lulus. Pengujian visual halaman terautentikasi pada perangkat fisik tetap memerlukan review pengguna.
+
+## Acceptance tahap 54 — Akun V2
+
+| ID | Kriteria |
+|---|---|
+| ACCTV2-01 | KPI dan daftar memakai `listAccounts` serta overview rekonsiliasi existing; total aktif, saldo, dan status tidak hardcoded |
+| ACCTV2-02 | Tambah akun memakai dialog responsif dan `createAccountAction` existing; saldo awal tetap bukan pemasukan, tanggal/nilai tetap tervalidasi, dan pending mencegah submit ganda |
+| ACCTV2-03 | Kelola akun memakai drawer/sheet; rename dan archive tetap memakai action, role, version check, serta konfirmasi existing; jenis hanya baca-saja dan tidak ada unarchive fiktif |
+| ACCTV2-04 | Rekonsiliasi memakai historical balance, idempotensi, resolusi, dan action existing; perubahan tanggal membatalkan hasil lama, selisih dijelaskan tekstual, dan tidak ada mutasi sebelum konfirmasi |
+| ACCTV2-05 | Riwayat memakai snapshot aktual; selisih nol tidak membuat penyesuaian nonnol dan akun arsip tetap baca-saja |
+| ACCTV2-06 | Semua nominal baca-saja pada KPI, kartu, manage sheet, reconciliation sheet, dan history mengikuti Amount Privacy tanpa tooltip/title bocor |
+| ACCTV2-07 | Dialog/sheet mendukung focus trap, Escape, focus restoration, scroll, safe area, loading, light/dark, reduced motion, serta viewport 360/390/430 px tanpa overflow horizontal |
+| ACCTV2-08 | Tidak ada schema, migration, dependency, API, auth, atau perubahan formula saldo/rekonsiliasi; temuan archive balance debt adjustment tetap dicatat terpisah |
+
+Verifikasi lokal tahap 54: lint dan typecheck lulus, production build Next.js lulus, 44 file/214 unit test lulus, serta regression tertarget akun/workspace/rekonsiliasi berjumlah 15 test lulus. Seluruh file kode/test yang diubah lulus Prettier tertarget dan `git diff --check`; `format:check` global tetap melaporkan 192 file baseline akibat perbedaan line ending Windows yang sudah ada. Empat belas smoke Playwright desktop/mobile seluruhnya melaporkan lulus ketika dijalankan dengan Microsoft Edge sistem; proses runner tidak menutup sendiri setelah hasil selesai sehingga dihentikan pada tahap teardown. Suite PostgreSQL create/rename/archive/rekonsiliasi tidak dijalankan karena `.env.test.local` terisolasi tidak tersedia; variabel di `.env.local` tidak digunakan sebagai pengganti agar database pengguna tidak termutasi. Screenshot terautentikasi 360/390/430 px, soft keyboard perangkat nyata, dan visual comparison light/dark masih memerlukan sesi test login atau preview pengguna.

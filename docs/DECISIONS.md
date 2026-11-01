@@ -260,6 +260,8 @@ Default di bawah cukup untuk menjaga rancangan konsisten. Gunakan selama tidak a
 | Gajian variabel, periode per akun, atau siklus 14 hari | Jika kebutuhan tersebut muncul | Di luar siklus bulanan per ruang |
 | Retensi akun, backup, audit untuk rilis publik | Sebelum produksi | Angka di PRD masih target usulan; harus diwujudkan dalam prosedur nyata |
 
+D77 menghasilkan T70 (1 November 2026): Akun V2 merupakan peningkatan presentasi pada branch `feat/accounts-v2`. Daftar akun menjadi konten utama; tambah akun memakai dialog responsif, pengelolaan memakai drawer/sheet, dan rekonsiliasi memakai drawer/sheet dengan review selisih serta riwayat. `listAccounts`, `getAccountReconciliationOverview`, Server Action existing, perhitungan `bigint`, otorisasi workspace, idempotensi, dan Amount Privacy tetap menjadi sumber kebenaran. Status ringkasan hanya menghitung akun yang belum pernah dicocokkan dan tidak membuat ambang kedaluwarsa baru. Akun arsip ditampilkan baca-saja karena pemulihan serta perubahan jenis akun belum didukung. Tidak ada schema, migration, dependency, kontrak API, atau perubahan algoritma saldo/rekonsiliasi. Audit menemukan pemeriksaan saldo sebelum arsip belum memasukkan penyesuaian utang/piutang yang sudah dipakai saldo tampilan; temuan dicatat terpisah dan tidak diperbaiki diam-diam dalam scope UI ini.
+
 ## Protokol revisi
 
 Tambahkan baris keputusan baru dengan sumber dan tanggal, tandai keputusan lama yang digantikan, lalu perbarui dokumen terdampak. Perubahan pengguna tidak memerlukan konfirmasi ulang hanya karena baseline sebelumnya berbeda. Keputusan implementasi yang reversibel dapat dicatat sebagai default; jangan mengubahnya menjadi kutipan pengguna.
