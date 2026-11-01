@@ -76,4 +76,26 @@ describe("Transactions V2 presentation contract", () => {
     expect(sheet).toContain('side === "responsive"');
     expect(deletion).toContain("Hapus transaksi?");
   });
+
+  it("keeps mobile automation guides compact and aligns reminder input with manual transactions", async () => {
+    const [section, guide, recurringForm] = await Promise.all([
+      componentSource("transactions-section.tsx"),
+      componentSource("automation-guide-dialog.tsx"),
+      componentSource("recurring-template-form.tsx"),
+    ]);
+
+    expect(section).toContain("grid grid-cols-2 gap-2");
+    expect(section).toContain('triggerClassName="w-full rounded-xl');
+    expect(guide).toContain("triggerClassName?: string");
+    expect(recurringForm).toContain("CategoryRadioGroup");
+    expect(recurringForm).toContain("calculator");
+    expect(recurringForm).toContain("reminderTypes.map");
+    expect(recurringForm).toContain("useFormStatus");
+    expect(recurringForm).toContain("createRecurringTemplateAction");
+    expect(recurringForm).toContain("updateRecurringTemplateAction");
+    expect(recurringForm).toContain(
+      "md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]",
+    );
+    expect(recurringForm).toContain("min-w-0 w-full max-w-full");
+  });
 });

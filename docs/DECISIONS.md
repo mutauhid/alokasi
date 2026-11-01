@@ -226,6 +226,12 @@ D73 menghasilkan T66: AppShell mobile memakai bottom navigation fixed lima slot:
 
 D74 menghasilkan T67: Dashboard mobile memakai hero heading compact dengan periode satu baris penuh serta aksi Tampilkan/Catat transaksi yang seimbang. Dropdown periode Dashboard dan Budget memakai Radix Select custom dengan visual, keyboard, focus, checked state, collision handling, dan portal seperti workspace selector. Dropdown form lintas modul memakai `AppSelect` reusable yang mempertahankan nama/nilai FormData, required validation, controlled state, reset, serta submit-on-change; Server Action dan business logic tidak berubah. Native select tema desktop dipertahankan untuk pilihan Otomatis/Terang/Gelap, sedangkan mobile tetap toggle light/dark langsung.
 
+D75 menghasilkan T68: Utang & Piutang V2 memakai data `getDebtOverview` dan action existing sebagai satu-satunya sumber nominal, status, pembayaran, serta dampak saldo. Presentasi menonjolkan outstanding, progress aktual, overdue, drawer/sheet, dan history tanpa membuat status atau mutasi baru. Privacy mode juga menyembunyikan persentase serta lebar progress agar proporsi finansial tidak bocor. Placeholder pembayaran hanya berisi digit terformat karena `RupiahInput` sudah merender prefix `Rp`; payload integer existing tetap sama.
+
+Final polish D75: KPI Terlambat disembunyikan pada mobile karena alert compact sudah menyampaikan jumlah dan membuka catatan overdue; desktop tetap menampilkan KPI dan banner. Pemilih akun pembayaran membedakan konteks pembayaran utang dan penerimaan piutang tanpa default otomatis. Bayar/Terima penuh tetap langsung menjalankan settlement existing dan diberi penjelasan konsekuensi; kedua submit dinonaktifkan bersama selama pending. Header sheet dibuat sticky, padding safe-area diperkuat, dan persentase compact ditampilkan melalui privacy mechanism existing.
+
+D76 menghasilkan T69: kartu panduan automasi pada Riwayat Transaksi memakai copy ringkas dan dua tombol sejajar pada mobile tanpa mengubah isi dialog. Form Pengingat mengikuti pola input transaksi manual untuk jenis transaksi, nominal berkalkulator, akun, kategori berikon, catatan, focus, dan pending state; create/update action serta aturan transaksi berulang existing tetap menjadi sumber perilaku.
+
 ## Default kerja, bukan keputusan eksplisit pengguna
 
 Default di bawah cukup untuk menjaga rancangan konsisten. Gunakan selama tidak ada instruksi yang mengganti; jangan berhenti meminta persetujuan ulang pada tiap detail.

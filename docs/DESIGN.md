@@ -234,3 +234,11 @@ Warna merupakan baseline, bukan pengecualian terhadap aksesibilitas. Verifikasi 
 ## Batas otoritas mockup
 
 Mockup menunjukkan arah visual dan interaksi, bukan kontrak domain. Jangan menyalin nama demo, tanggal tetap, seluruh dataset, penyimpanan memory-only, aturan izin yang belum diimplementasikan, atau grafik contoh ke produksi. Jika prototype berbeda dari PRD/DOMAIN_RULES, gunakan dokumen tersebut untuk perilaku dan pertahankan desain visualnya.
+
+## Utang & Piutang V2
+
+- Halaman memakai header/CTA, KPI coral–mint–amber, alert overdue kondisional, serta daftar catatan sebagai konten utama. Dua nominal utama tetap dua kolom pada mobile dan kartu overdue membentang penuh.
+- Baris catatan memuat jenis, pihak, status teks, jatuh tempo, outstanding, dan progress aktual; selected/focus/hover state berbeda dan seluruh baris menjadi target detail.
+- Detail memakai `Sheet` responsive: bottom sheet pada mobile dan drawer kanan pada desktop. Urutannya outstanding hero, progress, informasi catatan, form pembayaran, lalu history.
+- Coral hanya bermakna sisa kewajiban utang, mint untuk piutang/penerimaan, amber untuk overdue, dan status selalu memiliki label teks.
+- Seluruh nominal baca-saja memakai `SensitiveAmount`; privacy mode meniadakan nilai serta lebar progress, sementara input pembayaran tetap terlihat agar dapat dikoreksi pengguna.

@@ -69,7 +69,7 @@ export function RecurringTransactionsPanel({
   const canWrite = access.role !== "viewer";
 
   return (
-    <Card className="shadow-none">
+    <Card className="min-w-0 overflow-hidden shadow-none">
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2">
           <CardTitle>Transaksi berulang</CardTitle>
@@ -80,10 +80,15 @@ export function RecurringTransactionsPanel({
           setelah kamu menekan Catat sekarang.
         </p>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="min-w-0 space-y-6">
         {canWrite && (
-          <div className="rounded-xl border bg-muted/30 p-4">
-            <p className="mb-4 text-sm font-medium">Buat template</p>
+          <div className="min-w-0 overflow-hidden rounded-2xl border bg-muted/20 p-4 sm:p-5">
+            <div className="mb-5">
+              <p className="font-semibold">Buat pengingat</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Isi detail transaksi seperti saat mencatat transaksi manual.
+              </p>
+            </div>
             {accounts.length === 0 || categories.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 Template memerlukan akun aktif dan kategori pemasukan atau

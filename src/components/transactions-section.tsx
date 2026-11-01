@@ -614,20 +614,24 @@ export async function TransactionsSection({
         </CardContent>
       </Card>
       {access.role !== "viewer" && (
-        <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-4 text-sm shadow-sm sm:px-5">
-          <span className="mr-auto text-muted-foreground">
+        <div className="rounded-2xl border bg-card p-4 text-sm shadow-sm sm:flex sm:items-center sm:gap-4 sm:px-5">
+          <span className="block leading-relaxed text-muted-foreground sm:mr-auto">
             Catat lebih praktis lewat Telegram atau Back Tap iPhone.
           </span>
-          <AutomationGuideDialog
-            kind="telegram"
-            workspaceId={access.workspaceId}
-            triggerLabel="Panduan Telegram"
-          />
-          <AutomationGuideDialog
-            kind="iphone"
-            workspaceId={access.workspaceId}
-            triggerLabel="Panduan iPhone"
-          />
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-0 sm:flex sm:shrink-0">
+            <AutomationGuideDialog
+              kind="telegram"
+              workspaceId={access.workspaceId}
+              triggerLabel="Panduan Telegram"
+              triggerClassName="w-full rounded-xl px-3 sm:w-auto"
+            />
+            <AutomationGuideDialog
+              kind="iphone"
+              workspaceId={access.workspaceId}
+              triggerLabel="Panduan iPhone"
+              triggerClassName="w-full rounded-xl px-3 sm:w-auto"
+            />
+          </div>
         </div>
       )}
     </div>
