@@ -75,6 +75,25 @@ describe("Accounts V2 presentation contract", () => {
     expect(panels).not.toContain("title={account.balanceLabel}");
   });
 
+  it("keeps long balances readable and reconciliation wording unambiguous", async () => {
+    const [section, panels, form, styles] = await Promise.all([
+      componentSource("accounts-section.tsx"),
+      componentSource("account-v2-panels.tsx"),
+      componentSource("reconciliation-form.tsx"),
+      projectSource("src/app/globals.css"),
+    ]);
+
+    expect(section).toContain('label="Belum pernah dicocokkan"');
+    expect(section).toContain('"Sudah dicocokkan"');
+    expect(section).toContain('"Perlu diperiksa kembali"');
+    expect(section).toContain('"Saldo cocok"');
+    expect(panels).toContain("accounts-v2-manage-balance");
+    expect(panels).toContain("whitespace-nowrap");
+    expect(styles).toContain(".accounts-v2-manage-balance");
+    expect(form).toContain("Review dampak");
+    expect(form).toContain("bukan transaksi dan tidak masuk");
+  });
+
   it("does not expose unsupported account mutations", async () => {
     const [section, panels] = await Promise.all([
       componentSource("accounts-section.tsx"),

@@ -251,3 +251,4 @@ Mockup menunjukkan arah visual dan interaksi, bukan kontrak domain. Jangan menya
 - Kelola akun memakai drawer kanan/sheet bawah. Jenis akun hanya informasi baca-saja; rename dan archive dipisahkan secara visual serta tetap mengikuti izin/konfirmasi existing.
 - Cocokkan saldo memakai drawer kanan/sheet bawah dengan urutan tanggal, hitung saldo, bandingkan saldo aktual, review selisih, lalu konfirmasi. Mengubah tanggal setelah perhitungan menandai hasil lama tidak berlaku tanpa memutasi data.
 - Riwayat rekonsiliasi memakai baris compact dari snapshot aktual. Seluruh nominal baca-saja memakai Amount Privacy; tidak ada fixture, unarchive, edit/delete history, atau perubahan jenis akun fiktif.
+- Final polish mempertahankan komposisi existing: nominal pada ringkasan drawer mendapat kolom minimum dan tidak dibungkus untuk nilai normal, sedangkan review rekonsiliasi menyebut nominal adjustment, tanggal efektif, dan dampaknya sebelum tombol konfirmasi.

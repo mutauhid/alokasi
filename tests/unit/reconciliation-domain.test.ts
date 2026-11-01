@@ -36,8 +36,18 @@ describe("balance reconciliation domain", () => {
     },
   );
 
-  it("calculates a signed difference and rejects one outside BIGINT", () => {
-    expect(reconciliationDifference(1_400_000n, 1_350_000n)).toBe(-50_000n);
+  it.each([
+    { recorded: 1_400_000n, actual: 1_350_000n, expected: -50_000n },
+    { recorded: 1_400_000n, actual: 1_450_000n, expected: 50_000n },
+    { recorded: 1_400_000n, actual: 1_400_000n, expected: 0n },
+  ])(
+    "calculates difference $expected from actual $actual minus recorded $recorded",
+    ({ recorded, actual, expected }) => {
+      expect(reconciliationDifference(recorded, actual)).toBe(expected);
+    },
+  );
+
+  it("rejects a difference outside BIGINT", () => {
     expect(() =>
       reconciliationDifference(-9223372036854775808n, 9223372036854775807n),
     ).toThrow(RangeError);

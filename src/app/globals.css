@@ -765,8 +765,15 @@
   overflow-wrap: anywhere;
 }
 
+.accounts-v2-manage-balance {
+  max-width: 100%;
+  font-size: clamp(0.875rem, 2.2vw, 1.05rem);
+  line-height: 1.2;
+}
+
 .accounts-v2-dialog,
 .accounts-v2-sheet {
+  scroll-padding-bottom: max(6rem, env(safe-area-inset-bottom));
   scrollbar-color: color-mix(in srgb, var(--muted-foreground) 42%, transparent)
     transparent;
   scrollbar-width: thin;

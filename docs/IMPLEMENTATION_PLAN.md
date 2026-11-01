@@ -457,5 +457,6 @@ F11 transaksi berulang diaktifkan melalui D33, F15 rekonsiliasi melalui D37, dan
 - Pindahkan rekonsiliasi ke drawer/sheet responsif. Perubahan tanggal membatalkan hasil hitung lama secara presentasional; input saldo aktual, selisih, review, konfirmasi, dan history tetap memakai data/action existing.
 - Terapkan Amount Privacy pada seluruh nominal baca-saja, loading skeleton, safe area, focus/keyboard semantics dari primitive existing, light/dark token, dan reduced motion tanpa dependency baru.
 - Tutup dengan regression contract, unit, integrasi database terisolasi bila tersedia, lint, typecheck, build, format, E2E, dan visual review terautentikasi bila environment memungkinkan. Jangan merge ke `main` sebelum persetujuan pengguna.
+- Final polish: perlebar area nominal drawer tanpa redesign, samakan semantik status akun/history, perjelas dampak adjustment sebelum submit, audit atomicity/idempotency/concurrency, dan jangan menjalankan suite finansial terhadap URL yang sama dengan development/staging.
 
 Fase boleh berubah atas instruksi pengguna. Perbarui rencana dan keputusan, lalu lanjutkan pekerjaan yang sudah diotorisasi; jangan menjadikan dokumen ini alasan meminta konfirmasi berulang.

@@ -68,6 +68,12 @@ export function ReconciliationForm({
   const [tooLarge, setTooLarge] = useState(false);
   const actual = /^-?\d+$/u.test(actualBalance) ? BigInt(actualBalance) : null;
   const difference = actual === null ? null : actual - BigInt(recordedBalance);
+  const reconciliationDateLabel = new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${reconciliationDate}T00:00:00.000Z`));
 
   return (
     <form
@@ -188,8 +194,26 @@ export function ReconciliationForm({
 
       {difference !== null && (
         <div className="rounded-xl border border-dashed p-3 text-xs leading-relaxed text-muted-foreground">
-          Periksa kembali tanggal, saldo aktual, dan selisih. Penyesuaian hanya
-          dibuat setelah tombol konfirmasi berhasil diproses server.
+          <p className="font-semibold text-foreground">Review dampak</p>
+          {difference === 0n ? (
+            <p className="mt-1">
+              Konfirmasi menyimpan hasil pencocokan tanggal{" "}
+              {reconciliationDateLabel} tanpa mengubah saldo.
+            </p>
+          ) : (
+            <p className="mt-1">
+              Konfirmasi akan mencatat penyesuaian sebesar{" "}
+              <SensitiveAmount className="font-semibold text-foreground">
+                {rupiah(difference)}
+              </SensitiveAmount>{" "}
+              pada {reconciliationDateLabel}. Penyesuaian memengaruhi saldo
+              sejak tanggal tersebut, tetapi bukan transaksi dan tidak masuk
+              pemasukan, pengeluaran, budget, atau arus kas.
+            </p>
+          )}
+          <p className="mt-1">
+            Perubahan hanya dibuat setelah permintaan berhasil diproses server.
+          </p>
         </div>
       )}
 

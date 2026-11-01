@@ -221,7 +221,7 @@ export function CreateAccountDialog({
                 </span>
               </label>
             </div>
-            <div className="sticky bottom-0 -mx-5 flex flex-col-reverse gap-2 border-t bg-card/95 px-5 pb-[max(0rem,env(safe-area-inset-bottom))] pt-5 backdrop-blur sm:static sm:mx-0 sm:flex-row sm:justify-end sm:bg-transparent sm:px-0 sm:pb-0">
+            <div className="sticky bottom-0 -mx-5 flex flex-col-reverse gap-2 border-t bg-card/95 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-5 backdrop-blur sm:static sm:mx-0 sm:flex-row sm:justify-end sm:bg-transparent sm:px-0 sm:pb-0">
               <DialogPrimitive.Close asChild>
                 <Button
                   type="button"
@@ -280,7 +280,7 @@ export function ManageAccountSheet({
       <SheetContent
         side="responsive"
         closeLabel="Tutup kelola akun"
-        className="accounts-v2-sheet gap-0 overflow-y-auto overscroll-contain bg-card p-0 pb-[max(5.75rem,env(safe-area-inset-bottom))] md:max-w-[34rem] md:pb-6"
+        className="accounts-v2-sheet gap-0 overflow-y-auto overscroll-contain bg-card p-0 pb-[max(5.75rem,env(safe-area-inset-bottom))] md:max-w-[36rem] md:pb-6"
       >
         <SheetHeader className="sticky top-0 z-10 border-b bg-card/95 px-5 py-5 pr-16 backdrop-blur-xl sm:px-6">
           <SheetTitle className="text-xl tracking-[-0.02em]">
@@ -291,27 +291,27 @@ export function ManageAccountSheet({
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-5 p-4 sm:p-6">
-          <section className="grid gap-4 rounded-2xl border bg-secondary/20 p-4 sm:grid-cols-[auto_1fr] sm:items-center">
+          <section className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4 rounded-2xl border bg-secondary/20 p-4 sm:items-center">
             <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
               <Icon className="size-5.5" aria-hidden="true" />
             </span>
-            <div className="grid min-w-0 gap-3 sm:grid-cols-3 sm:divide-x">
+            <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[minmax(4.25rem,.55fr)_minmax(10.5rem,1.2fr)_minmax(7.5rem,1fr)] sm:divide-x">
               <div className="min-w-0 sm:px-3">
                 <p className="text-xs text-muted-foreground">Jenis</p>
                 <p className="mt-1 font-semibold">{detail.label}</p>
               </div>
-              <div className="min-w-0 sm:px-3">
+              <div className="col-span-2 min-w-0 sm:col-span-1 sm:px-3">
                 <p className="text-xs text-muted-foreground">Saldo saat ini</p>
                 <SensitiveAmount
                   className={cn(
-                    "mt-1 block break-words font-semibold",
+                    "accounts-v2-manage-balance mt-1 block whitespace-nowrap font-semibold tabular-nums tracking-[-0.02em]",
                     account.balanceNegative && "text-destructive",
                   )}
                 >
                   {account.balanceLabel}
                 </SensitiveAmount>
               </div>
-              <div className="min-w-0 sm:px-3">
+              <div className="col-span-2 min-w-0 sm:col-span-1 sm:px-3">
                 <p className="text-xs text-muted-foreground">Rekonsiliasi</p>
                 <p
                   className={cn(

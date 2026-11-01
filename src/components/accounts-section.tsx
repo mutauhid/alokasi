@@ -184,7 +184,7 @@ export async function AccountsSection({
             icon={Landmark}
           />
           <SummaryCard
-            label="Belum dicocokkan"
+            label="Belum pernah dicocokkan"
             value={`${neverReconciled} akun`}
             icon={AlertTriangle}
             warning={neverReconciled > 0}
@@ -229,7 +229,7 @@ export async function AccountsSection({
               const reconciliationLabel = latest
                 ? latest.needsReview
                   ? "Perlu diperiksa kembali"
-                  : `Dicocokkan ${displayDate.format(latest.reconciliationDate)}`
+                  : "Sudah dicocokkan"
                 : "Belum pernah dicocokkan";
               const tone = latest
                 ? latest.needsReview
@@ -410,7 +410,7 @@ export async function AccountsSection({
               ? "Perlu diperiksa kembali"
               : item.resolution === "adjusted"
                 ? "Disesuaikan"
-                : "Cocok",
+                : "Saldo cocok",
             needsReview: item.needsReview,
           }))}
         />
