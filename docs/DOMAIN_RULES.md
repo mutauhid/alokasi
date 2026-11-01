@@ -260,6 +260,8 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 ### F15 — rekonsiliasi saldo
 
 - Saldo catatan pada tanggal rekonsiliasi adalah saldo awal ditambah pemasukan, dikurangi pengeluaran/transfer keluar, ditambah transfer masuk, dan ditambah penyesuaian rekonsiliasi sampai tanggal tersebut.
+- Status akun “Belum pernah dicocokkan” hanya berarti akun belum memiliki snapshot. “Sudah dicocokkan” berarti snapshot terakhir masih valid. “Perlu diperiksa kembali” berarti ada perubahan ledger yang dibuat setelah snapshot tetapi bertanggal pada/sebelum tanggal snapshot; tidak ada threshold umur rekonsiliasi.
+- Status history menjelaskan snapshot masing-masing: resolusi tanpa adjustment adalah “Saldo cocok”, resolusi dengan adjustment adalah “Disesuaikan”, dan snapshot yang terdampak perubahan ledger menjadi “Perlu diperiksa kembali”. Status akun terkini tidak disalin ke seluruh history.
 - Snapshot hanya dapat dibuat pada akun aktif, dalam workspace yang sama, sejak tanggal mulai akun sampai hari ini menurut zona waktu ruang.
 - Snapshot cocok memiliki selisih dan penyesuaian nol. Snapshot disesuaikan wajib memiliki selisih bukan nol dan `adjustment_amount = actual_balance - recorded_balance`.
 - Penyesuaian mengubah saldo akun tetapi tidak masuk tabel transaksi, pemasukan, pengeluaran, transfer, budget, tren, atau laporan arus kas.

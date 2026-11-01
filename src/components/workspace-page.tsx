@@ -106,7 +106,9 @@ export async function WorkspacePage({
     >
       <ActionSuccessToast code={success} />
       <div className="workspace-page-motion">
-        {!(["budgets", "reports", "debts"] as Section[]).includes(section) && (
+        {!(["budgets", "reports", "debts", "accounts"] as Section[]).includes(
+          section,
+        ) && (
           <div
             className={`motion-page-heading mb-7 flex flex-wrap items-start justify-between gap-5 ${section === "dashboard" ? "dashboard-v2-heading" : ""}`}
           >

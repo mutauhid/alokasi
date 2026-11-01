@@ -242,3 +242,13 @@ Mockup menunjukkan arah visual dan interaksi, bukan kontrak domain. Jangan menya
 - Detail memakai `Sheet` responsive: bottom sheet pada mobile dan drawer kanan pada desktop. Urutannya outstanding hero, progress, informasi catatan, form pembayaran, lalu history.
 - Coral hanya bermakna sisa kewajiban utang, mint untuk piutang/penerimaan, amber untuk overdue, dan status selalu memiliki label teks.
 - Seluruh nominal baca-saja memakai `SensitiveAmount`; privacy mode meniadakan nilai serta lebar progress, sementara input pembayaran tetap terlihat agar dapat dikoreksi pengguna.
+
+## Akun V2
+
+- Halaman Akun memakai header ringkas, total saldo aktif sebagai KPI utama, jumlah akun aktif, serta jumlah akun yang belum pernah dicocokkan. KPI terakhir tidak boleh menyiratkan masa kedaluwarsa yang tidak dimiliki domain.
+- Daftar akun aktif adalah fokus utama. Baris desktop memisahkan identitas, saldo, status rekonsiliasi, dan tindakan; kartu mobile menumpuk informasi yang sama dengan menu di kanan atas tanpa mengorbankan lebar nominal.
+- Tambah akun memakai dialog terpusat pada desktop dan sheet bawah pada mobile. Informasi saldo awal menjelaskan bahwa nilainya menjadi titik mulai dan bukan pemasukan; submit tetap memakai action serta parsing Rupiah existing.
+- Kelola akun memakai drawer kanan/sheet bawah. Jenis akun hanya informasi baca-saja; rename dan archive dipisahkan secara visual serta tetap mengikuti izin/konfirmasi existing.
+- Cocokkan saldo memakai drawer kanan/sheet bawah dengan urutan tanggal, hitung saldo, bandingkan saldo aktual, review selisih, lalu konfirmasi. Mengubah tanggal setelah perhitungan menandai hasil lama tidak berlaku tanpa memutasi data.
+- Riwayat rekonsiliasi memakai baris compact dari snapshot aktual. Seluruh nominal baca-saja memakai Amount Privacy; tidak ada fixture, unarchive, edit/delete history, atau perubahan jenis akun fiktif.
+- Final polish mempertahankan komposisi existing: nominal pada ringkasan drawer mendapat kolom minimum dan tidak dibungkus untuk nilai normal, sedangkan review rekonsiliasi menyebut nominal adjustment, tanggal efektif, dan dampaknya sebelum tombol konfirmasi.

@@ -1,6 +1,7 @@
 "use client";
 
-import { Archive } from "lucide-react";
+import { useFormStatus } from "react-dom";
+import { Archive, LoaderCircle } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { archiveAccountAction } from "@/app/(workspace)/actions";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,11 @@ export function ArchiveAccountButton({
   return (
     <DialogPrimitive.Root>
       <DialogPrimitive.Trigger asChild>
-        <Button type="button" variant="outline" className="w-full">
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11 w-full rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+        >
           <Archive aria-hidden="true" />
           Arsipkan akun
         </Button>
@@ -44,14 +49,33 @@ export function ArchiveAccountButton({
               <input type="hidden" name="workspaceId" value={workspaceId} />
               <input type="hidden" name="id" value={id} />
               <input type="hidden" name="version" value={version} />
-              <Button type="submit" variant="secondary" className="w-full">
-                <Archive aria-hidden="true" />
-                Ya, arsipkan akun
-              </Button>
+              <ArchiveSubmit />
             </form>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
+  );
+}
+
+function ArchiveSubmit() {
+  const { pending } = useFormStatus();
+  return (
+    <Button
+      type="submit"
+      variant="destructive"
+      disabled={pending}
+      className="min-h-10 w-full rounded-xl"
+    >
+      {pending ? (
+        <LoaderCircle
+          className="size-4 motion-safe:animate-spin"
+          aria-hidden="true"
+        />
+      ) : (
+        <Archive aria-hidden="true" />
+      )}
+      {pending ? "Mengarsipkan…" : "Ya, arsipkan akun"}
+    </Button>
   );
 }

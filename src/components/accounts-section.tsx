@@ -1,32 +1,29 @@
-import { randomUUID } from "node:crypto";
+﻿import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import {
+  AlertTriangle,
+  Archive,
   Banknote,
   CalendarCheck2,
+  CheckCircle2,
   CreditCard,
   Landmark,
-  Plus,
-  Scale,
   Wallet,
-  X,
+  WalletCards,
 } from "lucide-react";
-import {
-  createAccountAction,
-  renameAccountAction,
-} from "@/app/(workspace)/actions";
 import { listAccounts } from "@/modules/accounts/service";
 import { getAccountReconciliationOverview } from "@/modules/reconciliations/service";
+import {
+  CreateAccountDialog,
+  ManageAccountSheet,
+  type AccountKind,
+} from "@/components/account-v2-panels";
+import { ReconciliationSheet } from "@/components/reconciliation-sheet";
+import { SensitiveAmount } from "@/components/amount-privacy";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ReconciliationForm } from "@/components/reconciliation-form";
-import { TransactionActions } from "@/components/transaction-actions";
-import { ArchiveAccountButton } from "@/components/archive-account-button";
-import { SensitiveAmount } from "@/components/amount-privacy";
-import { AppSelect } from "@/components/ui/app-select";
-
-const inputClass =
-  "m-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 const typeDetails = {
   bank: { label: "Bank", icon: Landmark },
@@ -110,6 +107,13 @@ export async function AccountsSection({
   const archived = accounts.filter((account) => account.archivedAt);
   const status = error ?? success;
   const canReconcile = role === "owner" || role === "editor";
+  const totalBalance = active.reduce(
+    (total, account) => total + account.balance,
+    0n,
+  );
+  const neverReconciled = active.filter(
+    (account) => !account.lastReconciliation,
+  ).length;
   const displayDate = new Intl.DateTimeFormat("id-ID", {
     day: "numeric",
     month: "short",
@@ -118,410 +122,336 @@ export async function AccountsSection({
   });
 
   return (
-    <div className="space-y-5">
+    <div className="accounts-v2 space-y-5">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-[25px] font-semibold leading-tight tracking-[-.8px] sm:text-[27px]">
+            Akun
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Kelola seluruh sumber dana dalam satu pandangan.
+          </p>
+        </div>
+        {canManage && (
+          <CreateAccountDialog workspaceId={workspaceId} today={todayValue} />
+        )}
+      </header>
+
       {status && messages[status] && (
         <p
-          role="status"
-          className={
+          role={error ? "alert" : "status"}
+          className={cn(
+            "rounded-xl border p-3 text-sm",
             error
-              ? "rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
-              : "rounded-lg bg-secondary p-3 text-sm"
-          }
+              ? "border-destructive/25 bg-destructive/10 text-destructive"
+              : "border-primary/20 bg-primary/[0.07]",
+          )}
         >
           {messages[status]}
         </p>
       )}
 
-      {reconciliation && (
-        <Card className="border-primary/30 shadow-none">
-          <CardHeader>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <Scale
-                  className="mb-2 size-5 text-primary"
-                  aria-hidden="true"
-                />
-                <CardTitle>
-                  Rekonsiliasi · {reconciliation.account.name}
-                </CardTitle>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Bandingkan saldo catatan Alokasi dengan saldo aktual. Tidak
-                  ada perubahan saldo sebelum kamu mengonfirmasi.
-                </p>
-              </div>
-              <Button asChild variant="ghost" size="icon">
-                <Link
-                  href={`/accounts?workspaceId=${encodeURIComponent(workspaceId)}`}
-                  aria-label="Tutup rekonsiliasi"
-                >
-                  <X />
-                </Link>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <form
-              action="/accounts"
-              method="get"
-              className="grid gap-3 rounded-xl border p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
-            >
-              <input type="hidden" name="workspaceId" value={workspaceId} />
-              <input
-                type="hidden"
-                name="reconcileAccountId"
-                value={reconciliation.account.id}
-              />
-              <label className="text-sm font-medium">
-                Tanggal pengecekan
-                <input
-                  type="date"
-                  name="reconcileDate"
-                  min={reconciliation.account.openingDate
-                    .toISOString()
-                    .slice(0, 10)}
-                  max={todayValue}
-                  defaultValue={selectedDateValue}
-                  className={inputClass}
-                />
-              </label>
-              <Button type="submit" variant="outline" className="min-h-11">
-                Hitung saldo
-              </Button>
-            </form>
-
-            {reconciliation.recordedBalance === null ? (
-              <p className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">
-                Pilih tanggal yang sama dengan atau setelah tanggal mulai akun.
-              </p>
-            ) : (
-              <>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-xl border p-4">
-                    <p className="text-xs text-muted-foreground">
-                      Saldo menurut Alokasi
-                    </p>
-                    <p className="mt-1 text-lg font-semibold">
-                      <SensitiveAmount>
-                        {rupiah(reconciliation.recordedBalance)}
-                      </SensitiveAmount>
-                    </p>
-                  </div>
-                  <div className="rounded-xl border p-4">
-                    <p className="text-xs text-muted-foreground">Per tanggal</p>
-                    <p className="mt-1 text-lg font-semibold">
-                      {displayDate.format(selectedDate)}
-                    </p>
-                  </div>
-                </div>
-                {canReconcile && !reconciliation.account.archivedAt ? (
-                  <ReconciliationForm
-                    workspaceId={workspaceId}
-                    accountId={reconciliation.account.id}
-                    reconciliationDate={selectedDateValue}
-                    recordedBalance={reconciliation.recordedBalance.toString()}
-                    idempotencyKey={randomUUID()}
-                  />
-                ) : (
-                  <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-                    Rekonsiliasi baru hanya tersedia bagi Owner atau Editor pada
-                    akun aktif.
+      {active.length > 0 ? (
+        <section
+          aria-label="Ringkasan akun"
+          className="grid grid-cols-2 gap-3 lg:grid-cols-3"
+        >
+          <Card className="accounts-v2-card accounts-v2-kpi-featured col-span-2 gap-0 overflow-hidden rounded-2xl py-0 lg:col-span-1">
+            <CardContent className="min-h-[7.5rem] p-4 sm:p-5">
+              <div className="flex items-start gap-3">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                  <WalletCards className="size-5" aria-hidden="true" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Total saldo akun aktif
                   </p>
-                )}
-              </>
-            )}
-
-            <section>
-              <h3 className="text-sm font-semibold">Riwayat rekonsiliasi</h3>
-              {reconciliation.history.length === 0 ? (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Belum ada rekonsiliasi untuk akun ini.
-                </p>
-              ) : (
-                <ul className="mt-2 divide-y">
-                  {reconciliation.history.map((item) => (
-                    <li
-                      key={item.id}
-                      className="grid gap-2 py-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start"
-                    >
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-medium">
-                            {displayDate.format(item.reconciliationDate)}
-                          </span>
-                          <Badge
-                            variant={item.needsReview ? "outline" : "secondary"}
-                          >
-                            {item.needsReview
-                              ? "Perlu diperiksa kembali"
-                              : item.resolution === "adjusted"
-                                ? "Disesuaikan"
-                                : "Cocok"}
-                          </Badge>
-                        </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          Catatan{" "}
-                          <SensitiveAmount>
-                            {rupiah(item.recordedBalance)}
-                          </SensitiveAmount>{" "}
-                          · aktual{" "}
-                          <SensitiveAmount>
-                            {rupiah(item.actualBalance)}
-                          </SensitiveAmount>
-                          {item.note ? ` · ${item.note}` : ""}
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          Oleh{" "}
-                          {item.creator.user.displayName ??
-                            item.creator.user.email ??
-                            "Anggota"}
-                        </p>
-                      </div>
-                      <div className="text-left sm:text-right">
-                        <p
-                          className={
-                            item.difference === 0n
-                              ? "font-medium"
-                              : "font-medium text-destructive"
-                          }
-                        >
-                          Selisih{" "}
-                          <SensitiveAmount>
-                            {rupiah(item.difference)}
-                          </SensitiveAmount>
-                        </p>
-                        {item.adjustmentAmount !== 0n && (
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            Penyesuaian{" "}
-                            <SensitiveAmount>
-                              {rupiah(item.adjustmentAmount)}
-                            </SensitiveAmount>
-                          </p>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </CardContent>
-        </Card>
-      )}
-
-      {canManage && (
-        <Card className="shadow-none">
-          <CardHeader>
-            <CardTitle>Tambah akun keuangan</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Saldo awal menjadi titik mulai pencatatan dan tidak dihitung
-              sebagai pemasukan.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <form
-              action={createAccountAction}
-              className="grid gap-4 md:grid-cols-4"
-            >
-              <input type="hidden" name="workspaceId" value={workspaceId} />
-              <label className="text-sm font-medium md:col-span-2">
-                Nama akun
-                <input
-                  name="name"
-                  required
-                  maxLength={100}
-                  placeholder="Contoh: BCA utama"
-                  className={inputClass}
-                />
-              </label>
-              <label className="text-sm font-medium">
-                Jenis
-                <AppSelect
-                  name="type"
-                  className={inputClass}
-                  defaultValue="bank"
-                  options={[
-                    { value: "bank", label: "Bank" },
-                    { value: "ewallet", label: "E-wallet" },
-                    { value: "cash", label: "Tunai" },
-                  ]}
-                />
-              </label>
-              <label className="text-sm font-medium">
-                Saldo awal
-                <input
-                  name="openingBalance"
-                  type="number"
-                  step="1"
-                  required
-                  defaultValue="0"
-                  className={inputClass}
-                />
-              </label>
-              <label className="text-sm font-medium md:col-span-2">
-                Tanggal mulai
-                <input
-                  name="openingDate"
-                  type="date"
-                  required
-                  max={todayValue}
-                  defaultValue={todayValue}
-                  className={inputClass}
-                />
-              </label>
-              <div className="flex items-end md:col-span-2 md:justify-end">
-                <Button type="submit" className="min-h-11 w-full md:w-auto">
-                  <Plus /> Tambah akun
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {active.map((account) => {
-          const detail = typeDetails[account.type];
-          const Icon = detail.icon;
-          return (
-            <Card key={account.id} className="gap-4 shadow-none">
-              <CardHeader>
-                <div className="flex items-start justify-between gap-4">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-secondary text-primary">
-                    <Icon className="size-5" aria-hidden="true" />
-                  </span>
-                  <Badge variant="outline">{detail.label}</Badge>
-                </div>
-                <CardTitle className="mt-3">{account.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-xs text-muted-foreground">
-                    Saldo saat ini
-                  </p>
-                  <p
-                    className={`mt-1 text-xl font-semibold ${account.balance < 0n ? "text-destructive" : ""}`}
+                  <SensitiveAmount
+                    className={cn(
+                      "accounts-v2-balance mt-2 block text-2xl font-semibold tracking-[-0.04em] sm:text-[1.7rem]",
+                      totalBalance < 0n && "text-destructive",
+                    )}
                   >
-                    <SensitiveAmount>{rupiah(account.balance)}</SensitiveAmount>
-                  </p>
+                    {rupiah(totalBalance)}
+                  </SensitiveAmount>
                 </div>
-                <div className="rounded-lg bg-muted/50 p-3 text-xs">
-                  {account.lastReconciliation ? (
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-muted-foreground">
-                        Terakhir dicocokkan{" "}
-                        {displayDate.format(
-                          account.lastReconciliation.reconciliationDate,
-                        )}
-                      </span>
-                      <Badge
-                        variant={
-                          account.lastReconciliation.needsReview
-                            ? "outline"
-                            : "secondary"
-                        }
-                      >
-                        {account.lastReconciliation.needsReview
-                          ? "Periksa lagi"
-                          : "Terverifikasi"}
+              </div>
+            </CardContent>
+          </Card>
+          <SummaryCard
+            label="Akun aktif"
+            value={`${active.length} akun`}
+            icon={Landmark}
+          />
+          <SummaryCard
+            label="Belum pernah dicocokkan"
+            value={`${neverReconciled} akun`}
+            icon={AlertTriangle}
+            warning={neverReconciled > 0}
+          />
+        </section>
+      ) : (
+        <Card className="accounts-v2-card gap-0 rounded-2xl py-0 shadow-none">
+          <CardContent className="flex flex-col items-center px-5 py-10 text-center">
+            <span className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Wallet className="size-7" aria-hidden="true" />
+            </span>
+            <h2 className="mt-4 text-lg font-semibold">Belum ada akun aktif</h2>
+            <p className="mt-2 max-w-md text-sm text-muted-foreground">
+              Tambahkan bank, e-wallet, atau tunai untuk mulai mencatat saldo
+              dan transaksi.
+            </p>
+            {canManage && (
+              <div className="mt-5 w-full max-w-xs">
+                <CreateAccountDialog
+                  workspaceId={workspaceId}
+                  today={todayValue}
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {active.length > 0 && (
+        <section className="accounts-v2-card overflow-hidden rounded-2xl border bg-card shadow-none">
+          <div className="border-b px-4 py-4 sm:px-5">
+            <h2 className="font-semibold sm:text-lg">Daftar akun</h2>
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+              Rekening, e-wallet, dan sumber dana lainnya yang kamu kelola.
+            </p>
+          </div>
+          <ul className="divide-y px-3 sm:px-4">
+            {active.map((account) => {
+              const detail = typeDetails[account.type];
+              const Icon = detail.icon;
+              const latest = account.lastReconciliation;
+              const reconciliationLabel = latest
+                ? latest.needsReview
+                  ? "Perlu diperiksa kembali"
+                  : "Sudah dicocokkan"
+                : "Belum pernah dicocokkan";
+              const tone = latest
+                ? latest.needsReview
+                  ? "warning"
+                  : "ok"
+                : "neutral";
+              return (
+                <li
+                  key={account.id}
+                  className="relative grid min-w-0 gap-4 py-4 lg:grid-cols-[minmax(11rem,1.25fr)_minmax(10rem,.85fr)_minmax(12rem,1fr)_auto_auto] lg:items-center"
+                >
+                  <div className="flex min-w-0 items-center gap-3 pr-14 lg:pr-0">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+                      <Icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold">{account.name}</p>
+                      <Badge variant="outline" className="mt-1.5">
+                        {detail.label}
                       </Badge>
                     </div>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      Saldo belum pernah dicocokkan
-                    </span>
-                  )}
-                </div>
-                <Button asChild variant="secondary" className="w-full">
-                  <Link
-                    href={`/accounts?workspaceId=${encodeURIComponent(workspaceId)}&reconcileAccountId=${account.id}&reconcileDate=${todayValue}`}
-                  >
-                    <CalendarCheck2 />
-                    {canReconcile ? "Cocokkan saldo" : "Lihat rekonsiliasi"}
-                  </Link>
-                </Button>
-                {canManage && (
-                  <div className="flex justify-end border-t pt-4">
-                    <TransactionActions
-                      title={account.name}
-                      heading="Kelola akun"
-                      triggerLabel={`Kelola akun ${account.name}`}
-                    >
-                      <form action={renameAccountAction} className="space-y-3">
-                        <input
-                          type="hidden"
-                          name="workspaceId"
-                          value={workspaceId}
-                        />
-                        <input type="hidden" name="id" value={account.id} />
-                        <input
-                          type="hidden"
-                          name="version"
-                          value={account.version}
-                        />
-                        <input
-                          aria-label={`Nama baru untuk ${account.name}`}
-                          name="name"
-                          required
-                          maxLength={100}
-                          defaultValue={account.name}
-                          className={inputClass}
-                        />
-                        <Button
-                          type="submit"
-                          variant="secondary"
-                          className="w-full"
-                        >
-                          Simpan nama
-                        </Button>
-                      </form>
-                      <ArchiveAccountButton
-                        workspaceId={workspaceId}
-                        id={account.id}
-                        version={account.version}
-                        name={account.name}
-                      />
-                    </TransactionActions>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {active.length === 0 && (
-        <Card className="shadow-none">
-          <CardContent className="flex flex-col items-center py-10 text-center">
-            <Wallet className="mb-3 size-7 text-primary" aria-hidden="true" />
-            <p className="font-medium">Belum ada akun aktif</p>
-            <p className="mt-2 max-w-md text-sm text-muted-foreground">
-              Tambahkan bank, e-wallet, atau tunai untuk mulai mencatat.
-            </p>
-          </CardContent>
-        </Card>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">
+                      Saldo saat ini
+                    </p>
+                    <SensitiveAmount
+                      className={cn(
+                        "accounts-v2-balance mt-1 block break-words text-xl font-semibold tracking-[-0.03em]",
+                        account.balance < 0n && "text-destructive",
+                      )}
+                    >
+                      {rupiah(account.balance)}
+                    </SensitiveAmount>
+                  </div>
+                  <div className="min-w-0 rounded-xl bg-muted/45 p-3 lg:bg-transparent lg:p-0">
+                    <p
+                      className={cn(
+                        "flex items-center gap-2 text-xs font-medium",
+                        tone === "warning" &&
+                          "text-amber-700 dark:text-amber-300",
+                        tone === "ok" && "text-primary",
+                        tone === "neutral" && "text-muted-foreground",
+                      )}
+                    >
+                      {tone === "ok" ? (
+                        <CheckCircle2 className="size-3.5" aria-hidden="true" />
+                      ) : (
+                        <AlertTriangle
+                          className="size-3.5"
+                          aria-hidden="true"
+                        />
+                      )}
+                      {reconciliationLabel}
+                    </p>
+                    {latest && (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Terakhir dicocokkan pada{" "}
+                        {displayDate.format(latest.reconciliationDate)}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="min-h-11 w-full rounded-xl lg:w-auto"
+                  >
+                    <Link
+                      href={`/accounts?workspaceId=${encodeURIComponent(workspaceId)}&reconcileAccountId=${account.id}&reconcileDate=${todayValue}`}
+                    >
+                      <CalendarCheck2 className="size-4" aria-hidden="true" />
+                      {canReconcile ? "Cocokkan saldo" : "Lihat rekonsiliasi"}
+                    </Link>
+                  </Button>
+                  {canManage && (
+                    <div className="absolute right-0 top-4 lg:static">
+                      <ManageAccountSheet
+                        workspaceId={workspaceId}
+                        account={{
+                          id: account.id,
+                          name: account.name,
+                          type: account.type as AccountKind,
+                          balanceLabel: rupiah(account.balance),
+                          balanceNegative: account.balance < 0n,
+                          version: account.version,
+                          reconciliationLabel,
+                          reconciliationTone: tone,
+                        }}
+                      />
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
 
       {archived.length > 0 && (
-        <Card className="shadow-none">
-          <CardHeader>
-            <CardTitle className="text-base">Akun diarsipkan</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="divide-y">
-              {archived.map((account) => (
-                <li
-                  key={account.id}
-                  className="flex justify-between gap-4 py-3 text-sm"
-                >
-                  <span>{account.name}</span>
-                  <span className="text-muted-foreground">
-                    <SensitiveAmount>{rupiah(account.balance)}</SensitiveAmount>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <details className="accounts-v2-card group rounded-2xl border bg-card shadow-none">
+          <summary className="flex min-h-16 cursor-pointer list-none items-center gap-3 px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-5">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+              <Archive className="size-4.5" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold">
+                Akun diarsipkan
+              </span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                {archived.length} akun · Histori tetap tersedia sebagai catatan.
+              </span>
+            </span>
+            <span className="text-xs text-muted-foreground group-open:hidden">
+              Tampilkan
+            </span>
+            <span className="hidden text-xs text-muted-foreground group-open:inline">
+              Sembunyikan
+            </span>
+          </summary>
+          <ul className="divide-y border-t px-4 sm:px-5">
+            {archived.map((account) => (
+              <li
+                key={account.id}
+                className="flex min-w-0 items-center justify-between gap-4 py-3 text-sm"
+              >
+                <span className="min-w-0 truncate">{account.name}</span>
+                <SensitiveAmount className="shrink-0 text-muted-foreground">
+                  {rupiah(account.balance)}
+                </SensitiveAmount>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
+      {reconciliation && (
+        <ReconciliationSheet
+          workspaceId={workspaceId}
+          account={{
+            id: reconciliation.account.id,
+            name: reconciliation.account.name,
+            type: (accounts.find(
+              (account) => account.id === reconciliation.account.id,
+            )?.type ?? "bank") as AccountKind,
+            openingDate: reconciliation.account.openingDate
+              .toISOString()
+              .slice(0, 10),
+            archived: Boolean(reconciliation.account.archivedAt),
+          }}
+          selectedDate={selectedDateValue}
+          selectedDateLabel={displayDate.format(selectedDate)}
+          today={todayValue}
+          recordedBalance={reconciliation.recordedBalance?.toString() ?? null}
+          recordedBalanceLabel={
+            reconciliation.recordedBalance === null
+              ? null
+              : rupiah(reconciliation.recordedBalance)
+          }
+          canReconcile={canReconcile}
+          idempotencyKey={randomUUID()}
+          history={reconciliation.history.map((item) => ({
+            id: item.id,
+            dateLabel: displayDate.format(item.reconciliationDate),
+            recordedBalanceLabel: rupiah(item.recordedBalance),
+            actualBalanceLabel: rupiah(item.actualBalance),
+            differenceLabel: rupiah(item.difference),
+            differenceIsZero: item.difference === 0n,
+            adjustmentLabel:
+              item.adjustmentAmount === 0n
+                ? null
+                : rupiah(item.adjustmentAmount),
+            note: item.note,
+            creatorLabel:
+              item.creator.user.displayName ??
+              item.creator.user.email ??
+              "Anggota",
+            statusLabel: item.needsReview
+              ? "Perlu diperiksa kembali"
+              : item.resolution === "adjusted"
+                ? "Disesuaikan"
+                : "Saldo cocok",
+            needsReview: item.needsReview,
+          }))}
+        />
       )}
     </div>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  icon: Icon,
+  warning = false,
+}: {
+  label: string;
+  value: string;
+  icon: typeof Landmark;
+  warning?: boolean;
+}) {
+  return (
+    <Card className="accounts-v2-card gap-0 rounded-2xl py-0 shadow-none">
+      <CardContent className="min-h-[7.5rem] p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-xs font-medium text-muted-foreground sm:text-sm">
+            {label}
+          </p>
+          <span
+            className={cn(
+              "flex size-9 shrink-0 items-center justify-center rounded-xl sm:size-11",
+              warning
+                ? "bg-amber-500/12 text-amber-600 dark:text-amber-300"
+                : "bg-primary/12 text-primary",
+            )}
+          >
+            <Icon className="size-4.5 sm:size-5" aria-hidden="true" />
+          </span>
+        </div>
+        <p className="mt-2 text-lg font-semibold tracking-[-0.03em] sm:text-2xl">
+          {value}
+        </p>
+      </CardContent>
+    </Card>
   );
 }

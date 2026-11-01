@@ -449,4 +449,14 @@ F11 transaksi berulang diaktifkan melalui D33, F15 rekonsiliasi melalui D37, dan
 - Acceptance yang diuji dan hasilnya; bagian yang belum diuji.
 - Masalah terbuka dan pekerjaan berikutnya, tanpa mengklaim sukses palsu.
 
+## Tahap 54 — Akun V2, 1 November 2026
+
+- Audit data flow akun dan rekonsiliasi terlebih dahulu; pertahankan service saldo, historical balance, snapshot rekonsiliasi, idempotensi, role, serta Server Action existing tanpa perubahan kontrak.
+- Susun halaman dengan header dan KPI data aktual, daftar akun aktif compact, status terakhir dicocokkan, serta daftar akun arsip baca-saja. Jangan membuat threshold rekonsiliasi, unarchive, atau perubahan jenis akun yang belum didukung.
+- Pindahkan tambah akun ke dialog responsif dan pengelolaan akun ke drawer desktop/sheet mobile. Rename dan archive tetap memakai action, validasi, serta konfirmasi existing.
+- Pindahkan rekonsiliasi ke drawer/sheet responsif. Perubahan tanggal membatalkan hasil hitung lama secara presentasional; input saldo aktual, selisih, review, konfirmasi, dan history tetap memakai data/action existing.
+- Terapkan Amount Privacy pada seluruh nominal baca-saja, loading skeleton, safe area, focus/keyboard semantics dari primitive existing, light/dark token, dan reduced motion tanpa dependency baru.
+- Tutup dengan regression contract, unit, integrasi database terisolasi bila tersedia, lint, typecheck, build, format, E2E, dan visual review terautentikasi bila environment memungkinkan. Jangan merge ke `main` sebelum persetujuan pengguna.
+- Final polish: perlebar area nominal drawer tanpa redesign, samakan semantik status akun/history, perjelas dampak adjustment sebelum submit, audit atomicity/idempotency/concurrency, dan jangan menjalankan suite finansial terhadap URL yang sama dengan development/staging.
+
 Fase boleh berubah atas instruksi pengguna. Perbarui rencana dan keputusan, lalu lanjutkan pekerjaan yang sudah diotorisasi; jangan menjadikan dokumen ini alasan meminta konfirmasi berulang.
