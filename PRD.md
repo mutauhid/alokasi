@@ -537,6 +537,8 @@ Jangan memasukkan semua kandidat ke rilis pertama. Prioritaskan bukti kebutuhan 
 
 ## 17. Riwayat revisi
 
+- 1.9 — 1 November 2026: F17 mendapat peningkatan presentasi Anggota & Akses V2 untuk ruang pribadi, dialog buat ruang, ringkasan shared workspace, daftar anggota responsif, serta drawer pengelolaan Owner. Role, invitation link manual, permission, lifecycle ruang, dan isolasi workspace existing tidak berubah.
+
 - 1.8 — 1 November 2026: final polish F03/F15 memperjelas status rekonsiliasi, keterbacaan nominal drawer, dan dampak konfirmasi adjustment tanpa mengubah data model, service, atau rumus finansial.
 
 - 1.7 — 1 November 2026: F03/F15 mendapat peningkatan presentasi Akun V2 dengan KPI data aktual, daftar akun compact, dialog tambah akun, drawer/sheet kelola akun dan rekonsiliasi, serta riwayat privacy-aware. Service, formula saldo, otorisasi, schema, dan kontrak API tidak berubah.

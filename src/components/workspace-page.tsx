@@ -221,6 +221,7 @@ export async function WorkspacePage({
         )}
         <SectionContent
           section={section}
+          workspaceName={context.workspace.name}
           access={{
             workspaceId: context.workspace.id,
             actorId: context.user.id,
