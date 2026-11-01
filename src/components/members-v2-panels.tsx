@@ -3,6 +3,11 @@
 import { useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import {
+  BookOpen,
+  Check,
+  Crown,
+  Eye,
+  Layers3,
   LoaderCircle,
   MailPlus,
   Plus,
@@ -205,6 +210,192 @@ export function CreateSharedWorkspaceDialog() {
           <DialogPrimitive.Close
             className="absolute right-4 top-4 z-20 flex size-11 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Tutup dialog buat ruang bersama"
+          >
+            <X className="size-5" aria-hidden="true" />
+          </DialogPrimitive.Close>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  );
+}
+
+export function LearnSharedWorkspaceDialog() {
+  return (
+    <DialogPrimitive.Root>
+      <DialogPrimitive.Trigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-12 w-full rounded-xl px-6 sm:w-auto"
+        >
+          <BookOpen className="size-4.5" aria-hidden="true" />
+          Pelajari ruang bersama
+        </Button>
+      </DialogPrimitive.Trigger>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[3px] data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:animate-in data-[state=open]:fade-in" />
+        <DialogPrimitive.Content className="members-v2-dialog fixed inset-x-0 bottom-0 z-50 max-h-[94dvh] overflow-y-auto overscroll-contain rounded-t-3xl border bg-card shadow-2xl data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom-4 data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-4 sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:w-[calc(100vw-2rem)] sm:max-w-3xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95">
+          <header className="sticky top-0 z-10 border-b bg-card/95 px-5 py-5 pr-16 backdrop-blur-xl sm:px-7 sm:py-6">
+            <div className="flex items-start gap-3.5">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+                <BookOpen className="size-5.5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <DialogPrimitive.Title className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl">
+                  Cara kerja ruang bersama
+                </DialogPrimitive.Title>
+                <DialogPrimitive.Description className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  Pahami pemisahan data, cara mengundang anggota, dan izin
+                  setiap peran sebelum membuat ruang.
+                </DialogPrimitive.Description>
+              </div>
+            </div>
+          </header>
+
+          <div className="space-y-6 px-5 py-6 sm:px-7">
+            <section className="rounded-2xl border border-primary/25 bg-primary/[0.07] p-4 sm:p-5">
+              <div className="flex gap-3">
+                <Layers3
+                  className="mt-0.5 size-5 shrink-0 text-primary"
+                  aria-hidden="true"
+                />
+                <div>
+                  <h3 className="text-sm font-semibold">
+                    Ruang pribadi dan bersama selalu terpisah
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    Membuat ruang bersama tidak memindahkan akun, transaksi,
+                    budget, atau laporan pribadimu. Data baru dicatat di ruang
+                    yang sedang aktif.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section aria-labelledby="shared-workspace-flow-title">
+              <h3
+                id="shared-workspace-flow-title"
+                className="text-base font-semibold"
+              >
+                Mulai dalam empat langkah
+              </h3>
+              <ol className="mt-3 grid gap-3 sm:grid-cols-2">
+                {[
+                  [
+                    "1",
+                    "Buat dan beri nama ruang",
+                    "Pembuat ruang otomatis menjadi Owner.",
+                  ],
+                  [
+                    "2",
+                    "Siapkan keuangan ruang",
+                    "Tambahkan akun, kategori, dan budget khusus dana bersama.",
+                  ],
+                  [
+                    "3",
+                    "Buat tautan undangan",
+                    "Owner memilih email dan peran, lalu membagikan tautannya secara manual.",
+                  ],
+                  [
+                    "4",
+                    "Anggota menerima undangan",
+                    "Tautan terikat email, berlaku 7 hari, dan baru memberi akses setelah diterima.",
+                  ],
+                ].map(([number, title, description]) => (
+                  <li
+                    key={number}
+                    className="flex gap-3 rounded-2xl border bg-muted/25 p-4"
+                  >
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/12 text-sm font-semibold text-primary">
+                      {number}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold">{title}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                        {description}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+
+            <section aria-labelledby="shared-workspace-roles-title">
+              <h3
+                id="shared-workspace-roles-title"
+                className="text-base font-semibold"
+              >
+                Peran dan akses
+              </h3>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                {[
+                  {
+                    icon: Crown,
+                    title: "Owner",
+                    description:
+                      "Mengelola anggota, akun, kategori, budget, pengaturan, dan seluruh data ruang.",
+                  },
+                  {
+                    icon: ShieldCheck,
+                    title: "Editor",
+                    description:
+                      "Mencatat transaksi, mengelola catatannya sendiri, dan melakukan rekonsiliasi.",
+                  },
+                  {
+                    icon: Eye,
+                    title: "Viewer",
+                    description:
+                      "Melihat dashboard dan data ruang tanpa dapat mengubahnya.",
+                  },
+                ].map(({ icon: Icon, title, description }) => (
+                  <article key={title} className="rounded-2xl border p-4">
+                    <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <Icon className="size-4.5" aria-hidden="true" />
+                    </span>
+                    <h4 className="mt-3 text-sm font-semibold">{title}</h4>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                      {description}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-amber-500/25 bg-amber-500/[0.07] p-4">
+              <div className="flex gap-3">
+                <Eye
+                  className="mt-0.5 size-5 shrink-0 text-amber-500"
+                  aria-hidden="true"
+                />
+                <div>
+                  <h3 className="text-sm font-semibold">
+                    Semua anggota aktif dapat melihat data ruang
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    Akun, transaksi, budget, dan laporan di ruang bersama
+                    terlihat oleh seluruh anggota aktif. Simpan dana yang ingin
+                    tetap privat di ruang pribadimu.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <div className="sticky bottom-0 -mx-5 flex border-t bg-card/95 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-5 backdrop-blur sm:static sm:mx-0 sm:justify-end sm:bg-transparent sm:px-0 sm:pb-0">
+              <DialogPrimitive.Close asChild>
+                <Button
+                  type="button"
+                  className="min-h-11 w-full rounded-xl sm:w-auto sm:min-w-36"
+                >
+                  <Check className="size-4" aria-hidden="true" />
+                  Saya mengerti
+                </Button>
+              </DialogPrimitive.Close>
+            </div>
+          </div>
+
+          <DialogPrimitive.Close
+            className="absolute right-4 top-4 z-20 flex size-11 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Tutup panduan ruang bersama"
           >
             <X className="size-5" aria-hidden="true" />
           </DialogPrimitive.Close>

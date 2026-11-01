@@ -719,7 +719,129 @@
 }
 
 .members-v2-illustration {
+  display: none;
   background-color: color-mix(in srgb, var(--muted) 42%, var(--card));
+}
+
+.members-v2-onboarding-grid,
+.members-v2-onboarding-body {
+  min-width: 0;
+}
+
+.members-v2-art-scene {
+  position: relative;
+  width: 18.5rem;
+  height: 14.5rem;
+}
+
+.members-v2-art-glow {
+  position: absolute;
+  inset: 1.5rem 0.75rem 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  filter: blur(2.5rem);
+}
+
+.members-v2-art-shadow {
+  position: absolute;
+  left: 1.5rem;
+  right: 0.5rem;
+  bottom: 0.15rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  transform: perspective(8rem) rotateX(62deg);
+}
+
+.members-v2-art-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--primary) 44%, var(--border));
+  box-shadow: 0 1.5rem 3rem rgb(0 0 0 / 22%);
+  backdrop-filter: blur(0.75rem);
+}
+
+.members-v2-art-card-back {
+  left: 1.75rem;
+  top: 2.2rem;
+  width: 9.25rem;
+  height: 10rem;
+  border-radius: 1.7rem;
+  color: color-mix(in srgb, var(--muted-foreground) 86%, var(--primary));
+  background: color-mix(in srgb, var(--card) 84%, var(--primary));
+  transform: rotate(-8deg) skewY(-1deg);
+}
+
+.members-v2-art-card-front {
+  right: 1.45rem;
+  top: 4.25rem;
+  width: 10.25rem;
+  height: 8.85rem;
+  border-radius: 1.7rem;
+  color: color-mix(in srgb, var(--primary-foreground) 88%, white);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--primary) 72%, var(--card)),
+    color-mix(in srgb, var(--primary) 48%, var(--card))
+  );
+  transform: rotate(-4deg);
+}
+
+.members-v2-art-spark {
+  position: absolute;
+  display: block;
+  width: 0.25rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: var(--primary);
+  box-shadow: 0 0 1rem color-mix(in srgb, var(--primary) 60%, transparent);
+}
+
+.members-v2-art-spark-one {
+  right: 1rem;
+  top: 3rem;
+}
+
+.members-v2-art-spark-two {
+  right: -0.05rem;
+  top: 3.65rem;
+  transform: rotate(48deg);
+}
+
+.members-v2-art-spark-three {
+  right: 2.2rem;
+  top: 2.7rem;
+  transform: rotate(-45deg);
+}
+
+@media (min-width: 48rem) {
+  .members-v2-onboarding-grid {
+    grid-template-columns: minmax(16rem, 0.62fr) minmax(0, 1.38fr);
+  }
+
+  .members-v2-illustration {
+    display: flex;
+  }
+
+  .members-v2-mobile-icon {
+    display: none;
+  }
+
+  .members-v2-onboarding-body {
+    display: flex;
+    min-height: 25rem;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem;
+  }
+}
+
+@media (min-width: 75rem) {
+  .members-v2-onboarding-body {
+    padding: 2.5rem;
+  }
 }
 
 .members-v2-dialog,

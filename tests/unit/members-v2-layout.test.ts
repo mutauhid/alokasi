@@ -83,4 +83,24 @@ describe("Members & Access V2 presentation contract", () => {
     expect(section).toContain("tidak memberi akses ke ruang pribadi");
     expect(section).toContain("key={access.workspaceId}");
   });
+
+  it("keeps the private workspace onboarding balanced at desktop breakpoints", async () => {
+    const [section, panels, styles] = await Promise.all([
+      componentSource("members-section.tsx"),
+      componentSource("members-v2-panels.tsx"),
+      projectSource("src/app/globals.css"),
+    ]);
+
+    expect(section).toContain("members-v2-onboarding-grid");
+    expect(section).toContain("members-v2-art-card-front");
+    expect(section).toContain("LearnSharedWorkspaceDialog");
+    expect(panels).toContain("Cara kerja ruang bersama");
+    expect(panels).toContain("Tautan terikat email, berlaku 7 hari");
+    expect(panels).toContain("Semua anggota aktif dapat melihat data ruang");
+    expect(panels).toContain("Owner");
+    expect(panels).toContain("Editor");
+    expect(panels).toContain("Viewer");
+    expect(styles).toContain("grid-template-columns: minmax(16rem, 0.62fr)");
+    expect(styles).toContain("@media (min-width: 48rem)");
+  });
 });

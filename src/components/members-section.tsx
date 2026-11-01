@@ -19,6 +19,7 @@ import {
 import { DeleteWorkspaceForm } from "@/components/delete-workspace-form";
 import {
   CreateSharedWorkspaceDialog,
+  LearnSharedWorkspaceDialog,
   ManageMembersSheet,
 } from "@/components/members-v2-panels";
 import { AppSelect } from "@/components/ui/app-select";
@@ -150,48 +151,52 @@ export async function MembersSection({
         </section>
 
         <section className="members-v2-onboarding overflow-hidden rounded-3xl border bg-card">
-          <div className="grid lg:grid-cols-[minmax(16rem,.78fr)_minmax(0,1.22fr)]">
+          <div className="members-v2-onboarding-grid grid">
             <div
-              className="members-v2-illustration relative hidden min-h-[25rem] items-center justify-center overflow-hidden border-r lg:flex"
+              className="members-v2-illustration relative min-h-[25rem] items-center justify-center overflow-hidden border-r"
               aria-hidden="true"
             >
-              <span className="absolute size-56 rounded-full bg-primary/10 blur-3xl" />
-              <div className="relative flex items-end -space-x-10">
-                <span className="flex size-36 -rotate-6 items-center justify-center rounded-[2rem] border border-primary/30 bg-card/80 text-muted-foreground shadow-xl backdrop-blur">
-                  <LockKeyhole className="size-14" />
+              <div className="members-v2-art-scene">
+                <span className="members-v2-art-glow" />
+                <span className="members-v2-art-shadow" />
+                <span className="members-v2-art-card members-v2-art-card-back">
+                  <LockKeyhole className="size-12" />
                 </span>
-                <span className="flex size-40 rotate-3 items-center justify-center rounded-[2rem] border border-primary/40 bg-primary/20 text-primary shadow-2xl backdrop-blur">
-                  <Users className="size-16" />
+                <span className="members-v2-art-card members-v2-art-card-front">
+                  <Users className="size-14" />
                 </span>
+                <span className="members-v2-art-spark members-v2-art-spark-one" />
+                <span className="members-v2-art-spark members-v2-art-spark-two" />
+                <span className="members-v2-art-spark members-v2-art-spark-three" />
               </div>
             </div>
-            <div className="p-5 sm:p-8 lg:p-10">
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/12 text-primary lg:hidden">
+            <div className="members-v2-onboarding-body p-5 sm:p-8">
+              <div className="members-v2-mobile-icon flex size-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
                 <Users className="size-5.5" aria-hidden="true" />
               </div>
               <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">
                 Mulai ruang bersama
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Buat ruang terpisah untuk mengelola keuangan bersama tanpa
-                mencampur catatan pribadi.
+                Transaksi, akun, budget, dan laporan ruang bersama akan terpisah
+                dari data pribadi.
               </p>
               <ul className="mt-7 space-y-4">
                 {[
                   [
                     Layers3,
                     "Pisahkan catatan pribadi dan bersama",
-                    "Akun, transaksi, budget, dan laporan berada dalam konteks ruang masing-masing.",
+                    "Jaga data keuangan tetap rapi dan terorganisir.",
                   ],
                   [
                     UserPlus,
                     "Undang anggota sesuai kebutuhan",
-                    "Bagikan tautan aman yang terikat email sebagai Editor atau Viewer.",
+                    "Ajak pasangan, keluarga, atau tim melalui tautan yang terikat email.",
                   ],
                   [
                     ShieldCheck,
                     "Atur peran dan akses",
-                    "Owner tetap mengendalikan anggota dan pengaturan ruang.",
+                    "Tentukan siapa yang dapat menambah transaksi atau hanya melihat data.",
                   ],
                 ].map(([Icon, title, description]) => (
                   <li key={String(title)} className="flex gap-3.5">
@@ -207,14 +212,18 @@ export async function MembersSection({
                   </li>
                 ))}
               </ul>
-              <div className="mt-8">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <CreateSharedWorkspaceDialog />
+                <LearnSharedWorkspaceDialog />
               </div>
             </div>
           </div>
         </section>
 
-        <section className="flex gap-3 rounded-2xl border border-primary/25 bg-primary/[0.06] p-4 sm:p-5">
+        <section
+          id="members-v2-privacy"
+          className="flex scroll-mt-24 gap-3 rounded-2xl border border-primary/25 bg-primary/[0.06] p-4 sm:p-5"
+        >
           <ShieldCheck
             className="mt-0.5 size-5 shrink-0 text-primary"
             aria-hidden="true"
