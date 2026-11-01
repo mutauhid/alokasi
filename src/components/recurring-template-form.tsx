@@ -1,20 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import { useFormStatus } from "react-dom";
+import { ArrowDownLeft, ArrowUpRight, Check } from "lucide-react";
 import {
   createRecurringTemplateAction,
   updateRecurringTemplateAction,
 } from "@/app/(workspace)/actions";
+import { CategoryRadioGroup } from "@/components/category-radio-group";
+import { AppSelect } from "@/components/ui/app-select";
 import { Button } from "@/components/ui/button";
 import { RupiahInput } from "@/components/ui/rupiah-input";
-import { AppSelect } from "@/components/ui/app-select";
 
 type Option = { id: string; name: string };
 type CategoryOption = Option & { type: "income" | "expense" };
 type RecurringType = "income" | "expense";
 
 const inputClass =
-  "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
+  "mt-2 min-h-12 min-w-0 w-full max-w-full rounded-xl border bg-background px-3.5 text-sm shadow-xs transition-colors focus:border-primary";
+
+const reminderTypes = [
+  {
+    value: "expense" as const,
+    label: "Pengeluaran",
+    description: "Uang keluar",
+    icon: ArrowUpRight,
+  },
+  {
+    value: "income" as const,
+    label: "Pemasukan",
+    description: "Uang masuk",
+    icon: ArrowDownLeft,
+  },
+];
 
 export function RecurringTemplateForm({
   workspaceId,
@@ -39,7 +57,9 @@ export function RecurringTemplateForm({
   };
   compact?: boolean;
 }) {
+  const amountInputId = useId();
   const [type, setType] = useState<RecurringType>(initial?.type ?? "expense");
+  const [categoryId, setCategoryId] = useState(initial?.categoryId ?? "");
   const availableCategories = categories.filter(
     (category) => category.type === type,
   );
@@ -47,11 +67,24 @@ export function RecurringTemplateForm({
     ? updateRecurringTemplateAction
     : createRecurringTemplateAction;
 
+  function changeType(nextType: RecurringType) {
+    setType(nextType);
+    if (
+      !categories.some(
+        (category) => category.id === categoryId && category.type === nextType,
+      )
+    ) {
+      setCategoryId("");
+    }
+  }
+
   return (
     <form
       action={action}
       className={
-        compact ? "grid gap-3" : "grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+        compact
+          ? "grid min-w-0 gap-5"
+          : "grid min-w-0 gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
       }
     >
       <input type="hidden" name="workspaceId" value={workspaceId} />
@@ -61,7 +94,69 @@ export function RecurringTemplateForm({
           <input type="hidden" name="version" value={initial.version} />
         </>
       )}
-      <label className="text-sm font-medium">
+
+      <fieldset className={compact ? "min-w-0" : "min-w-0 md:col-span-2"}>
+        <legend className="text-sm font-semibold">Jenis transaksi</legend>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {reminderTypes.map((item) => {
+            const Icon = item.icon;
+            const selected = type === item.value;
+            return (
+              <label
+                key={item.value}
+                className={`relative flex min-w-0 cursor-pointer flex-col items-center gap-1 rounded-xl border px-2 py-3 text-center transition-[border-color,background-color,box-shadow,transform] motion-safe:hover:-translate-y-0.5 sm:flex-row sm:items-center sm:gap-3 sm:px-3 sm:text-left ${selected ? "border-primary bg-primary/10 shadow-[inset_0_0_0_1px_var(--primary)]" : "bg-background hover:bg-accent/45"}`}
+              >
+                <input
+                  type="radio"
+                  name="type"
+                  value={item.value}
+                  checked={selected}
+                  onChange={() => changeType(item.value)}
+                  className="peer sr-only"
+                />
+                <span
+                  className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${selected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-xs font-semibold sm:text-sm">
+                    {item.label}
+                  </span>
+                  <span className="hidden text-xs text-muted-foreground sm:block">
+                    {item.description}
+                  </span>
+                </span>
+                {selected && (
+                  <Check
+                    className="absolute right-2 top-2 size-3.5 text-primary sm:right-3 sm:top-3"
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="pointer-events-none absolute inset-0 rounded-xl ring-primary ring-offset-2 ring-offset-background peer-focus-visible:ring-2" />
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
+
+      <div className={compact ? "min-w-0" : "min-w-0 md:col-span-2"}>
+        <label className="text-sm font-semibold" htmlFor={amountInputId}>
+          Nominal
+        </label>
+        <RupiahInput
+          id={amountInputId}
+          name="amount"
+          required
+          calculator
+          defaultValue={initial?.amount}
+          className={`${inputClass} h-16 text-xl font-semibold tracking-[-0.02em] sm:text-2xl`}
+        />
+      </div>
+
+      <label
+        className={`min-w-0 text-sm font-semibold ${compact ? "" : "md:col-span-2"}`}
+      >
         Nama pengingat
         <input
           name="name"
@@ -72,33 +167,13 @@ export function RecurringTemplateForm({
           className={inputClass}
         />
       </label>
-      <label className="text-sm font-medium">
-        Jenis
-        <AppSelect
-          name="type"
-          value={type}
-          onValueChange={(value) => setType(value as RecurringType)}
-          className={inputClass}
-          options={[
-            { value: "expense", label: "Pengeluaran" },
-            { value: "income", label: "Pemasukan" },
-          ]}
-        />
-      </label>
-      <label className="text-sm font-medium">
-        Nominal
-        <RupiahInput
-          name="amount"
-          required
-          defaultValue={initial?.amount}
-          className={inputClass}
-        />
-      </label>
-      <label className="text-sm font-medium">
+
+      <label className="min-w-0 text-sm font-semibold">
         Hari setiap bulan
         <input
           name="recurrenceDay"
           type="number"
+          inputMode="numeric"
           min="1"
           max="31"
           step="1"
@@ -106,56 +181,84 @@ export function RecurringTemplateForm({
           defaultValue={initial?.recurrenceDay ?? 1}
           className={inputClass}
         />
+        <span className="mt-1.5 block text-xs font-normal text-muted-foreground">
+          Tanggal 29–31 mengikuti hari terakhir bulan bila diperlukan.
+        </span>
       </label>
-      <label className="text-sm font-medium">
+
+      <label className="min-w-0 text-sm font-semibold">
         Akun
         <AppSelect
           name="accountId"
           required
           defaultValue={initial?.accountId ?? accounts[0]?.id}
           className={inputClass}
+          placeholder="Pilih akun"
           options={accounts.map((account) => ({
             value: account.id,
             label: account.name,
           }))}
         />
       </label>
-      <label className="text-sm font-medium">
-        Kategori
-        <AppSelect
-          key={`${type}-${initial?.categoryId ?? "new"}`}
-          name="categoryId"
-          required
-          defaultValue={initial?.type === type ? initial.categoryId : undefined}
-          className={inputClass}
-          placeholder="Pilih kategori"
-          options={availableCategories.map((category) => ({
-            value: category.id,
-            label: category.name,
-          }))}
+
+      <div className={compact ? "min-w-0" : "min-w-0 md:col-span-2"}>
+        <CategoryRadioGroup
+          categories={availableCategories}
+          value={categoryId}
+          onValueChange={setCategoryId}
+          type={type}
+          hint="Pilih satu kategori yang paling sesuai."
         />
-      </label>
+      </div>
+
       <label
-        className={`text-sm font-medium ${compact ? "" : "md:col-span-2 xl:col-span-2"}`}
+        className={`min-w-0 text-sm font-semibold ${compact ? "" : "md:col-span-2"}`}
       >
-        Catatan transaksi
-        <input
+        Catatan opsional
+        <textarea
           name="note"
           maxLength={1000}
           defaultValue={initial?.note}
-          placeholder="Opsional"
-          className={inputClass}
+          placeholder="Contoh: dibayar melalui autodebet"
+          rows={3}
+          className={`${inputClass} min-h-24 resize-y py-3`}
         />
       </label>
-      <div className="flex items-end">
-        <Button
-          type="submit"
-          disabled={accounts.length === 0 || availableCategories.length === 0}
-          className="min-h-11 w-full"
-        >
-          {initial ? "Simpan template" : "Buat pengingat"}
-        </Button>
-      </div>
+
+      <RecurringSubmitButton
+        editing={Boolean(initial)}
+        disabled={accounts.length === 0 || availableCategories.length === 0}
+        compact={compact}
+      />
     </form>
+  );
+}
+
+function RecurringSubmitButton({
+  editing,
+  disabled,
+  compact,
+}: {
+  editing: boolean;
+  disabled: boolean;
+  compact: boolean;
+}) {
+  const { pending } = useFormStatus();
+  return (
+    <div
+      className={compact ? "flex min-w-0 items-end" : "min-w-0 md:col-span-2"}
+    >
+      <Button
+        type="submit"
+        disabled={disabled || pending}
+        className="min-h-12 w-full rounded-xl"
+      >
+        {pending
+          ? "Menyimpan..."
+          : editing
+            ? "Simpan perubahan"
+            : "Buat pengingat"}
+      </Button>
+    </div>
   );
 }

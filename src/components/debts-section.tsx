@@ -19,17 +19,30 @@ export async function DebtsSection({
 }) {
   if (access.workspaceType !== "personal") {
     return (
-      <Card className="shadow-none">
-        <CardContent className="py-10 text-center">
-          <p className="font-semibold">
-            Utang & piutang tersedia di ruang pribadi
+      <div className="space-y-6">
+        <section>
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Keuangan pribadi
           </p>
+          <h1 className="text-[26px] font-semibold tracking-[-0.04em] sm:text-3xl">
+            Utang & Piutang
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Pindah ke Ruang pribadi agar kewajiban personal tidak tercampur
-            dengan keuangan bersama.
+            Pantau kewajiban, tagihan personal, dan jatuh temponya.
           </p>
-        </CardContent>
-      </Card>
+        </section>
+        <Card className="rounded-2xl shadow-none">
+          <CardContent className="py-10 text-center">
+            <p className="font-semibold">
+              Utang & piutang tersedia di ruang pribadi
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Pindah ke Ruang pribadi agar kewajiban personal tidak tercampur
+              dengan keuangan bersama.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

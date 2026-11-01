@@ -18,6 +18,7 @@ import {
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { Button } from "@/components/ui/button";
 import { sectionHref } from "@/lib/navigation";
+import { cn } from "@/lib/utils";
 
 type GuideKind = "telegram" | "iphone";
 type GuideStep = {
@@ -426,10 +427,12 @@ export function AutomationGuideDialog({
   kind,
   workspaceId,
   triggerLabel = "Cara pakai",
+  triggerClassName,
 }: {
   kind: GuideKind;
   workspaceId: string;
   triggerLabel?: string;
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
@@ -453,7 +456,11 @@ export function AutomationGuideDialog({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={changeOpen}>
       <DialogPrimitive.Trigger asChild>
-        <Button type="button" variant="outline" className="min-h-10">
+        <Button
+          type="button"
+          variant="outline"
+          className={cn("min-h-10", triggerClassName)}
+        >
           <CircleHelp aria-hidden="true" />
           {triggerLabel}
         </Button>

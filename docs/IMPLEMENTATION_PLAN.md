@@ -428,6 +428,15 @@ Perubahan tidak memigrasikan budget masa depan dan tidak menghitung ulang period
 - Pertahankan native selector tema desktop untuk tiga pilihan existing; toggle tema mobile tetap light/dark langsung.
 - Verifikasi lint, typecheck, unit test, build, format/diff, mobile overflow, dan interaksi terautentikasi sesuai ketersediaan environment.
 
+## Tahap 53 — Utang & Piutang V2, 1 November 2026
+
+- Pertahankan `getDebtOverview`, domain status, Server Action create/payment/settlement, idempotency, dan penyesuaian saldo existing; perubahan hanya pada presentasi serta state interaksi.
+- Susun header dan CTA, tiga KPI responsif, alert overdue dinamis, filter existing, daftar compact, outstanding/progress berbasis pokok dan pembayaran aktual, serta empty/loading state.
+- Gunakan right drawer desktop dan bottom sheet mobile existing untuk detail, form pembayaran, serta riwayat; pertahankan focus trap, Escape, backdrop, safe area, dan bottom navigation AppShell.
+- Perbaiki double-prefix Rupiah dengan placeholder angka tanpa prefix pada `RupiahInput`; hidden payload dan parsing nominal tidak berubah.
+- Audit Amount Privacy hingga progress visual/label dan seluruh nominal baca-saja, lalu jalankan contract test, unit/integration test yang tersedia, lint, typecheck, build, format, dan smoke browser sesuai environment.
+- Scope tidak mencakup Prisma, migration, service/domain formula, API, auth, routing finansial, edit/delete catatan, atau dependency baru.
+
 ## Backlog kandidat — bukan komitmen aktif
 
 F11 transaksi berulang diaktifkan melalui D33, F15 rekonsiliasi melalui D37, dan F14 utang/piutang melalui D58. Kandidat yang belum aktif: F12 target tabungan, F13 impor CSV, dan F16 rollover. P2: split bill/settlement, integrasi bank, AI insight, dan fitur eksplorasi lain. Jangan mengimplementasikan kandidat hanya karena tercantum.

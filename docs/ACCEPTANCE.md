@@ -1034,3 +1034,31 @@ Final alignment header mobile: hamburger, sisi bawah tombol workspace, privacy, 
 | SELECT-04 | Selector tema desktop tetap menyediakan Otomatis/Terang/Gelap; toggle tema mobile tetap langsung light/dark tanpa dropdown |
 | DASHM-01 | Hero Dashboard mobile memakai panel compact, heading/deskripsi terbaca, periode selebar panel, serta Tampilkan/Catat transaksi sejajar tanpa horizontal overflow |
 | DASHM-02 | Dashboard desktop, data dinamis, periode, navigation, privacy, service, Server Action, dan business logic tidak berubah |
+
+## Acceptance tahap 53 — Utang & Piutang V2
+
+| ID | Kriteria |
+|---|---|
+| DEBTV2-01 | KPI memakai total outstanding dan overdue dari `getDebtOverview`; jumlah, status, tanggal, serta pembayaran tidak hardcoded |
+| DEBTV2-02 | Alert hanya muncul ketika ada status overdue aktual dan CTA membuka catatan overdue yang valid |
+| DEBTV2-03 | Daftar mempertahankan filter Semua/Utang/Piutang, menampilkan pihak, status, jatuh tempo, outstanding, dan progress aktual tanpa overflow 360 px |
+| DEBTV2-04 | Detail memakai drawer desktop/bottom sheet mobile dengan outstanding sebagai fokus, info terstruktur, history aktual, focus trap, Escape, close label, safe area, dan scroll |
+| DEBTV2-05 | Pembayaran sebagian tetap memakai `createDebtPaymentAction`; pelunasan tetap memakai `settleDebtRecordAction`; akun/tanggal/idempotency/overpayment dan dampak saldo tidak berubah |
+| DEBTV2-06 | Prefix Rupiah hanya tampil sekali; `RupiahInput` tetap mengirim digit integer melalui hidden input dan placeholder tidak menambahkan `Rp` kedua |
+| DEBTV2-07 | Semua nominal baca-saja, label progress, dan progress visual mengikuti Amount Privacy Mode tanpa atribut aksesibel yang membocorkan nilai |
+| DEBTV2-08 | Dark/light mode, reduced motion, keyboard focus, status nonwarna, target sentuh, loading/empty/error/pending state, dan bottom navigation existing tetap berlaku |
+| DEBTV2-09 | Tidak ada schema, migration, dependency, API, auth, atau perubahan formula saldo/outstanding |
+
+Verifikasi lokal tahap 53: typecheck dan lint lulus, production build Next.js lulus, 43 file/208 unit test lulus, serta 14 smoke Playwright Microsoft Edge desktop/mobile lulus. Contract test memastikan data tetap berasal dari `getDebtOverview`, action create/payment/settlement existing tetap dipakai, drawer responsive dan privacy progress terjaga, serta placeholder pembayaran tidak menggandakan prefix Rupiah. Prettier tertarget dan `git diff --check` lulus. Integration test PostgreSQL pembayaran sebagian, overpayment, idempotency, dampak saldo, dan pelunasan existing tidak dijalankan karena `TEST_DATABASE_URL` serta `.env.test.local` khusus test tidak tersedia; database pengguna tidak dipakai sebagai pengganti. Screenshot terautentikasi dan pengujian soft keyboard perangkat nyata belum tersedia pada environment CLI ini.
+
+Final polish tahap 53 mempertahankan hasil di atas: typecheck, lint, 43 file/208 unit test, 8 regression test debt/domain/presentation tertarget, production build, serta 14 smoke E2E Edge desktop/mobile lulus. Mobile menghapus duplikasi KPI overdue dan alert, account placeholder dibedakan menurut arah saldo, pelunasan langsung dijelaskan dan dilindungi pending state, persentase daftar mengikuti privacy mode, serta sheet memakai sticky header, overscroll containment, dan safe-area clearance. Keterbatasan integration database terisolasi, screenshot terautentikasi, perangkat 360/390 px nyata, dan soft keyboard tetap sama.
+
+## Acceptance refinement Transaksi/Pengingat mobile
+
+| ID | Kriteria |
+|---|---|
+| TXMOB-01 | Kartu panduan automasi mobile memakai copy compact dan dua tombol sejajar yang tetap memiliki label, target sentuh, serta dialog Telegram/iPhone existing |
+| TXMOB-02 | Form pengingat memakai pilihan jenis berbentuk tile, nominal Rupiah besar dengan kalkulator, akun custom select, kategori radio berikon, textarea catatan, dan tombol pending seperti transaksi manual |
+| TXMOB-03 | Create/update recurring action, tanggal 1–31, akun/kategori workspace, permission, serta aturan saldo/budget transaksi berulang tidak berubah |
+
+Verifikasi refinement TXMOB: typecheck dan lint lulus, 43 file/209 unit test lulus, 9 regression test transaksi/pengingat tertarget lulus, production build lulus, serta 14 smoke E2E Microsoft Edge desktop/mobile lulus. Pengujian visual halaman terautentikasi pada perangkat fisik tetap memerlukan review pengguna.
