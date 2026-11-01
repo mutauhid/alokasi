@@ -252,3 +252,12 @@ Mockup menunjukkan arah visual dan interaksi, bukan kontrak domain. Jangan menya
 - Cocokkan saldo memakai drawer kanan/sheet bawah dengan urutan tanggal, hitung saldo, bandingkan saldo aktual, review selisih, lalu konfirmasi. Mengubah tanggal setelah perhitungan menandai hasil lama tidak berlaku tanpa memutasi data.
 - Riwayat rekonsiliasi memakai baris compact dari snapshot aktual. Seluruh nominal baca-saja memakai Amount Privacy; tidak ada fixture, unarchive, edit/delete history, atau perubahan jenis akun fiktif.
 - Final polish mempertahankan komposisi existing: nominal pada ringkasan drawer mendapat kolom minimum dan tidak dibungkus untuk nilai normal, sedangkan review rekonsiliasi menyebut nominal adjustment, tanggal efektif, dan dampaknya sebelum tombol konfirmasi.
+
+## Anggota & Akses V2
+
+- Ruang pribadi menampilkan penjelasan privasi, manfaat ruang bersama, dan satu CTA utama yang membuka dialog responsif. Tidak ada daftar anggota atau undangan pada ruang pribadi, dan copy menegaskan data pribadi tidak berpindah otomatis.
+- Dialog buat ruang hanya meminta nama, menjelaskan pemisahan data dan status creator sebagai Owner, lalu memakai action serta validasi existing. Desktop terpusat; mobile menjadi sheet bawah dengan footer safe-area.
+- Ruang bersama menampilkan identitas ruang, jumlah anggota aktif termasuk pengguna, jumlah pending hanya bagi Owner, serta peran pengguna aktual. Daftar memakai semantic table desktop dan rows mobile tanpa data contoh.
+- Role yang ditampilkan hanya Owner/Editor/Viewer. Owner membuka drawer pengelolaan untuk membuat link undangan manual, mengubah role non-Owner, mencabut anggota, dan membatalkan pending invitation. Tidak ada Admin, resend, atau klaim email otomatis.
+- Drawer memakai konfirmasi terpisah untuk pencabutan akses dan pembatalan undangan. Transfer Owner, leave, delete workspace, revoked membership, riwayat undangan, dan aktivitas tetap tersedia di halaman.
+- Overlay pengelolaan di-reset oleh `workspaceId` sehingga state ruang lama tidak bertahan setelah switch; visibility UI tetap bukan pengganti otorisasi Server Action/service.

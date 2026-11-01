@@ -11,7 +11,13 @@ import { AppSelect } from "@/components/ui/app-select";
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-lg border bg-background px-3 text-sm shadow-xs";
 
-export function InvitationForm({ workspaceId }: { workspaceId: string }) {
+export function InvitationForm({
+  workspaceId,
+  compact = false,
+}: {
+  workspaceId: string;
+  compact?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
   const [state, action, pending] = useActionState<
     InvitationActionState,
@@ -21,7 +27,11 @@ export function InvitationForm({ workspaceId }: { workspaceId: string }) {
     <div className="space-y-3">
       <form
         action={action}
-        className="grid gap-3 sm:grid-cols-[1fr_160px_auto]"
+        className={
+          compact
+            ? "grid gap-3 sm:grid-cols-[minmax(0,1fr)_140px]"
+            : "grid gap-3 sm:grid-cols-[1fr_160px_auto]"
+        }
       >
         <input type="hidden" name="workspaceId" value={workspaceId} />
         <label className="text-sm font-medium">
@@ -46,8 +56,18 @@ export function InvitationForm({ workspaceId }: { workspaceId: string }) {
             ]}
           />
         </label>
-        <div className="flex items-end">
-          <Button type="submit" disabled={pending} className="min-h-11 w-full">
+        <div
+          className={
+            compact
+              ? "flex items-end sm:col-span-2 sm:justify-end"
+              : "flex items-end"
+          }
+        >
+          <Button
+            type="submit"
+            disabled={pending}
+            className="min-h-11 w-full rounded-xl sm:w-auto"
+          >
             {pending ? "Membuat…" : "Buat undangan"}
           </Button>
         </div>

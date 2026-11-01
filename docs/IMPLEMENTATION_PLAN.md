@@ -459,4 +459,13 @@ F11 transaksi berulang diaktifkan melalui D33, F15 rekonsiliasi melalui D37, dan
 - Tutup dengan regression contract, unit, integrasi database terisolasi bila tersedia, lint, typecheck, build, format, E2E, dan visual review terautentikasi bila environment memungkinkan. Jangan merge ke `main` sebelum persetujuan pengguna.
 - Final polish: perlebar area nominal drawer tanpa redesign, samakan semantik status akun/history, perjelas dampak adjustment sebelum submit, audit atomicity/idempotency/concurrency, dan jangan menjalankan suite finansial terhadap URL yang sama dengan development/staging.
 
+## Tahap 55 — Anggota & Akses V2, 1 November 2026
+
+- Pertahankan ruang personal/shared, workspace switcher, role Owner/Editor/Viewer, invitation token terikat email, ACL, optimistic version, transfer ownership, leave, delete workspace, dan audit activity existing.
+- Ruang pribadi memakai banner privasi, onboarding compact, serta dialog buat ruang responsif. Tidak ada anggota atau undangan pada ruang personal dan data pribadi tidak dipindahkan.
+- Ruang bersama memakai banner identitas, KPI aktual, semantic member table/rows mobile, pending invitation Owner-only, serta ringkasan role yang sesuai matriks PRD.
+- Pengelolaan Owner memakai drawer kanan desktop/sheet mobile: membuat link undangan manual, role Editor/Viewer, konfirmasi cabut member, dan konfirmasi batalkan invitation. Resend dan email otomatis tidak dibuat karena backend tidak mendukungnya.
+- Lifecycle transfer/accept/cancel ownership, Editor/Viewer leave, revoked member history, invitation history, delete workspace, dan activity tetap tersedia. Overlay keyed per workspace mencegah stale state lintas ruang.
+- Scope tidak mencakup Prisma, migration, role baru, permission baru, email service, invitation mechanism baru, API/service contract, auth, financial logic, AppShell, atau dependency.
+
 Fase boleh berubah atas instruksi pengguna. Perbarui rencana dan keputusan, lalu lanjutkan pekerjaan yang sudah diotorisasi; jangan menjadikan dokumen ini alasan meminta konfirmasi berulang.

@@ -14,6 +14,7 @@ import type { TransactionPagination } from "@/modules/transactions/pagination";
 export function SectionContent({
   section,
   access,
+  workspaceName,
   today,
   error,
   success,
@@ -29,6 +30,7 @@ export function SectionContent({
 }: {
   section: Section;
   access: WorkspaceAccess;
+  workspaceName: string;
   today: Date;
   error?: string;
   success?: string;
@@ -102,7 +104,14 @@ export function SectionContent({
         />
       );
     case "members":
-      return <MembersSection access={access} error={error} success={success} />;
+      return (
+        <MembersSection
+          access={access}
+          workspaceName={workspaceName}
+          error={error}
+          success={success}
+        />
+      );
     case "settings":
       return (
         <SettingsSection

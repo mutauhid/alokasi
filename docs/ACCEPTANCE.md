@@ -1087,3 +1087,19 @@ Verifikasi lokal tahap 54: lint dan typecheck lulus, production build Next.js lu
 - Verifikasi final polish: lint lulus, typecheck lulus, build produksi lulus, 44 file/218 unit test lulus, dan 21 regression test Akun/rekonsiliasi/workspace/privacy lulus. Prettier tertarget dan `git diff --check` lulus. `format:check` global masih gagal pada 191 file baseline line-ending/format di luar scope.
 - Playwright Edge menjalankan seluruh 14 case desktop/mobile sampai case terakhir tanpa failure yang dicetak, tetapi runner kembali tidak menutup atau menghasilkan summary setelah teardown dan harus dihentikan; hasil ini tidak diklaim sebagai run exit-code 0. Tidak ada smoke terautentikasi halaman Akun atau screenshot baru.
 - Suite PostgreSQL tidak dijalankan: `TEST_DATABASE_URL` pada `.env.local` identik dengan `DATABASE_URL`/`DIRECT_URL`, sedangkan nilai test pada `.env.staging.local` kosong. Menjalankannya berisiko memutasi data non-test dan melanggar guard repository. Create saldo awal nol/nonnol, rename, archive, rekonsiliasi positif/negatif/nol/historis, double submit, rollback error, dan workspace isolation tetap memerlukan database test terpisah yang sudah dimigrasi.
+
+## Acceptance tahap 55 — Anggota & Akses V2
+
+| ID | Kriteria |
+|---|---|
+| MEMV2-01 | Ruang pribadi menjelaskan bahwa hanya Owner yang memiliki akses, tidak merender member/invitation palsu, dan membuka pembuatan ruang melalui dialog responsif |
+| MEMV2-02 | Pembuatan ruang tetap memakai `createSharedWorkspaceAction`, normalisasi nama existing, pending state, redirect ke workspace hasil server, dan tidak memindahkan data pribadi |
+| MEMV2-03 | Ruang bersama membaca `getMembersOverview`; KPI anggota aktif, pending invitation Owner-only, role pengguna, tabel desktop, dan rows mobile berasal dari data aktual |
+| MEMV2-04 | UI hanya memakai Owner/Editor/Viewer dan tidak menambahkan Admin/Anggota, resend invitation, atau klaim email otomatis |
+| MEMV2-05 | Drawer Owner memakai `createInvitationAction`, `changeMemberRoleAction`, `revokeMemberAction`, serta `revokeInvitationAction` existing; pencabutan dan pembatalan memerlukan konfirmasi UI |
+| MEMV2-06 | Transfer ownership, accept/cancel, leave, delete workspace, revoked member history, invitation history, serta audit activity existing tetap tersedia |
+| MEMV2-07 | Server Action tetap mengambil identitas terverifikasi, membaca membership workspace, membatasi mutasi Owner-only, dan memakai version check; hidden control bukan satu-satunya authorization |
+| MEMV2-08 | Overlay keyed dengan `workspaceId`, memakai dialog/sheet focus semantics, Escape, focus restoration, safe area, responsive scroll, dan tidak mempertahankan state ruang lama setelah switch |
+| MEMV2-09 | Tidak ada schema, migration, dependency, API/service contract, auth, RBAC, AppShell, atau business logic finansial baru |
+
+Verifikasi lokal tahap 55: typecheck, lint, dan production build Next.js lulus; 45 file/223 unit test serta 8 regression test domain/presentation tertarget lulus. Contract test memastikan data tetap berasal dari service workspace, seluruh lifecycle action existing dipertahankan, role tambahan/resend tidak dibuat, serta dialog/sheet/table/konfirmasi dan reset workspace terpasang. Prettier tertarget dan `git diff --check` lulus; `format:check` global tetap gagal pada 196 file baseline di luar scope. Empat belas smoke Playwright Microsoft Edge desktop/mobile seluruhnya melaporkan lulus, tetapi runner kembali tidak menutup setelah teardown sehingga run tidak diklaim memiliki exit code 0. Suite PostgreSQL tidak dijalankan karena `TEST_DATABASE_URL` pada `.env.local` identik dengan `DATABASE_URL`/`DIRECT_URL`; database development tidak dipakai sebagai pengganti. Smoke dan screenshot halaman Members terautentikasi, role multi-user, soft keyboard, serta perangkat 360/390/430 px nyata masih memerlukan sesi/database test terisolasi atau visual review pengguna.
