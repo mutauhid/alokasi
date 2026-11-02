@@ -1,6 +1,6 @@
 # Rencana implementasi dan status
 
-Diperbarui 30 Oktober 2026. Setup UI dan fondasi database telah dibangun; status di bawah membedakan fondasi dari implementasi fitur.
+Diperbarui 2 November 2026. Setup UI dan fondasi database telah dibangun; status di bawah membedakan fondasi dari implementasi fitur.
 
 ## Status nyata
 
@@ -53,6 +53,7 @@ Diperbarui 30 Oktober 2026. Setup UI dan fondasi database telah dibangun; status
 | Tahap 48 percakapan: Budget V2 | Dikerjakan pada `feat/budget-v2`: header dan KPI premium, ringkasan penggunaan, kartu kategori responsif, dialog create, drawer copy selektif, action drawer edit/hapus, loading skeleton, privacy nominal, serta state historis/role tanpa mengubah service atau schema |
 | Tahap 49 percakapan: final polish Budget V2 | Dikerjakan pada branch yang sama: hierarchy KPI, label status yang eksplisit, kartu kategori lebih compact, target sentuh 44 px, empty/disabled state copy yang informatif, pending/focus form, audit amount privacy, serta regression QA tanpa perubahan domain |
 | Tahap 50 percakapan: Laporan V2 | Dikerjakan pada `feat/reports-v2`: header analytics, filter toolbar desktop dan bottom sheet mobile berikon, KPI responsif dengan pembanding periode lalu/sparkline, chart berskala dinamis, donut kategori, Budget vs Aktual, transaksi progressive disclosure, loading skeleton, privacy, dan styling terisolasi; service hanya menambah pembacaan pembanding tanpa perubahan API/schema/dependency |
+| Tahap 56 percakapan: pusat notifikasi | Dikerjakan pada `feat/in-app-notifications`: inbox persisten per pengguna/ruang, badge belum dibaca pada lonceng, popover desktop/sheet mobile, tandai satu/semua, deep link, Amount Privacy, pengingat utang/piutang D-3/hari-H, serta pilihan jam per template pengeluaran/pemasukan; cron Vercel harian dipertahankan sebagai fallback dan GitHub Actions per jam tersedia untuk ketepatan waktu |
 | Optimasi navigasi, 25 September | Provisioning tidak lagi dijalankan pada setiap halaman; periode dideduplikasi per render dan create transaksi menghapus pre-read pada jalur normal |
 | Email undangan otomatis, retry cleanup Auth, backup/pemulihan, serta konfigurasi deployment | Belum diimplementasikan/difinalisasi |
 | Storage bukti permanen/provider OCR eksternal | Belum diimplementasikan; preview Shortcut sementara memakai database draf dengan retensi 24 jam, sedangkan consent, biaya, callback, data residency, dan lifecycle lampiran permanen masih terbuka |

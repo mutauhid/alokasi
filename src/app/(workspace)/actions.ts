@@ -501,6 +501,8 @@ export async function deleteTransactionAction(form: FormData) {
 }
 
 function recurringFields(form: FormData) {
+  const reminderTime = text(form, "reminderTime");
+  const [hours, minutes] = reminderTime.split(":").map(Number);
   return {
     name: text(form, "name"),
     type: text(form, "type"),
@@ -509,6 +511,10 @@ function recurringFields(form: FormData) {
     categoryId: text(form, "categoryId"),
     note: text(form, "note"),
     recurrenceDay: text(form, "recurrenceDay"),
+    reminderMinute:
+      Number.isInteger(hours) && Number.isInteger(minutes)
+        ? hours * 60 + minutes
+        : -1,
   };
 }
 

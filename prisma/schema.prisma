@@ -125,6 +125,7 @@ model User {
   personalWorkspace    Workspace?
   telegramConnections  TelegramConnection[]
   webPushSubscriptions WebPushSubscription[]
+  inAppNotifications   InAppNotification[]
 
   @@map("users")
   @@schema("app")
@@ -161,6 +162,7 @@ model Workspace {
   webPushPreferences              WebPushPreference[]
   webPushDeliveries               WebPushDelivery[]
   webPushLowBalanceStates         WebPushLowBalanceState[]
+  inAppNotifications              InAppNotification[]
   debtRecords                     DebtRecord[]
   debtPayments                    DebtPayment[]
 
@@ -211,6 +213,7 @@ model Membership {
   webPushPreference         WebPushPreference?
   webPushDeliveries         WebPushDelivery[]
   webPushLowBalanceStates   WebPushLowBalanceState[]
+  inAppNotifications        InAppNotification[]
   createdDebtRecords        DebtRecord[]                   @relation("DebtRecordCreator")
   createdDebtPayments       DebtPayment[]                  @relation("DebtPaymentCreator")
 
@@ -310,6 +313,27 @@ model WebPushLowBalanceState {
   @@unique([workspaceId, userId, accountId])
   @@index([workspaceId, accountId])
   @@map("web_push_low_balance_states")
+  @@schema("app")
+}
+
+model InAppNotification {
+  id          String                  @id @default(uuid()) @db.Uuid
+  workspaceId String                  @map("workspace_id") @db.Uuid
+  userId      String                  @map("user_id") @db.Uuid
+  type        WebPushNotificationType
+  dedupeKey   String                  @map("dedupe_key") @db.VarChar(220)
+  title       String                  @db.VarChar(120)
+  body        String                  @db.VarChar(300)
+  url         String                  @db.VarChar(500)
+  readAt      DateTime?               @map("read_at") @db.Timestamptz(3)
+  createdAt   DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  workspace   Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  membership  Membership              @relation(fields: [workspaceId, userId], references: [workspaceId, userId], onDelete: Restrict, onUpdate: Restrict)
+  user        User                    @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([workspaceId, userId, dedupeKey])
+  @@index([workspaceId, userId, readAt, createdAt])
+  @@map("in_app_notifications")
   @@schema("app")
 }
 
@@ -648,6 +672,7 @@ model RecurringTransactionTemplate {
   categoryId        String                      @map("category_id") @db.Uuid
   note              String?                     @db.VarChar(1000)
   recurrenceDay     Int                         @map("recurrence_day") @db.SmallInt
+  reminderMinute    Int                         @default(540) @map("reminder_minute") @db.SmallInt
   nextDueDate       DateTime                    @map("next_due_date") @db.Date
   archivedAt        DateTime?                   @map("archived_at") @db.Timestamptz(3)
   version           Int                         @default(1)

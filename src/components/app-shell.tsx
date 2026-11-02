@@ -29,6 +29,10 @@ import { MobileBottomNavigation } from "@/components/mobile-bottom-navigation";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { AmountPrivacyToggle } from "@/components/amount-privacy";
 import {
+  NotificationCenter,
+  type NotificationItem,
+} from "@/components/notification-center";
+import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -48,11 +52,23 @@ const icons = {
   settings: Settings2,
 };
 
-function Brand() {
+function Brand({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="flex items-center gap-2.5 text-[26px] font-semibold tracking-[-1.4px]">
-      <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-        <Layers className="size-5" aria-hidden="true" />
+    <div
+      className={cn(
+        "flex items-center font-semibold",
+        compact
+          ? "gap-2 text-xl tracking-[-.8px]"
+          : "gap-2.5 text-[26px] tracking-[-1.4px]",
+      )}
+    >
+      <span
+        className={cn(
+          "flex items-center justify-center rounded-xl bg-primary text-primary-foreground",
+          compact ? "size-8" : "size-9",
+        )}
+      >
+        <Layers className={compact ? "size-4" : "size-5"} aria-hidden="true" />
       </span>
       alokasi<span className="-ml-2 text-primary">.</span>
     </div>
@@ -103,6 +119,8 @@ export function AppShell({
   workspaces,
   userLabel,
   userEmail,
+  timeZone,
+  notificationInbox,
 }: {
   children: React.ReactNode;
   section: Section;
@@ -110,6 +128,12 @@ export function AppShell({
   workspaces: WorkspaceSummary[];
   userLabel: string;
   userEmail: string;
+  timeZone: string;
+  notificationInbox: {
+    items: NotificationItem[];
+    unreadCount: number;
+    limit: number;
+  };
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -157,54 +181,74 @@ export function AppShell({
       <div className="min-w-0 lg:pl-56">
         <header className="relative z-40 border-b bg-card/95 backdrop-blur-lg">
           <div className="mx-auto max-w-[1440px] px-4 py-3 sm:flex sm:min-h-[77px] sm:items-center sm:justify-between sm:gap-3 sm:px-7 lg:px-9">
-            <div className="flex min-h-[52px] items-end gap-2 sm:hidden">
-              <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="size-11 shrink-0 rounded-xl"
-                    aria-label="Buka navigasi"
+            <div className="space-y-2 sm:hidden">
+              <div className="flex min-h-11 items-center gap-2">
+                <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="size-11 shrink-0 rounded-xl"
+                      aria-label="Buka navigasi"
+                    >
+                      <Menu className="size-5" aria-hidden="true" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="left"
+                    className="w-72 overflow-y-auto bg-card p-5"
                   >
-                    <Menu className="size-5" aria-hidden="true" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent
-                  side="left"
-                  className="w-72 overflow-y-auto bg-card p-5"
-                >
-                  <SheetHeader className="mb-5 p-0">
-                    <SheetTitle asChild>
-                      <div>
-                        <Brand />
-                      </div>
-                    </SheetTitle>
-                    <SheetDescription>Navigasi ruang keuangan</SheetDescription>
-                  </SheetHeader>
-                  <Navigation
-                    section={section}
-                    workspaceId={workspace.id}
-                    onNavigate={() => setMenuOpen(false)}
-                  />
-                  <div className="mt-8">
-                    <AccountMenu
-                      workspace={workspace}
-                      userLabel={userLabel}
-                      userEmail={userEmail}
+                    <SheetHeader className="mb-5 p-0">
+                      <SheetTitle asChild>
+                        <div>
+                          <Brand />
+                        </div>
+                      </SheetTitle>
+                      <SheetDescription>
+                        Navigasi ruang keuangan
+                      </SheetDescription>
+                    </SheetHeader>
+                    <Navigation
+                      section={section}
+                      workspaceId={workspace.id}
                       onNavigate={() => setMenuOpen(false)}
                     />
-                  </div>
-                </SheetContent>
-              </Sheet>
-              <WorkspaceSwitcher
-                compact
-                section={section}
-                workspace={workspace}
-                workspaces={workspaces}
-              />
-              <AmountPrivacyToggle className="size-11 shrink-0 rounded-xl" />
-              <ThemeSwitcher compact />
+                    <div className="mt-8">
+                      <AccountMenu
+                        workspace={workspace}
+                        userLabel={userLabel}
+                        userEmail={userEmail}
+                        onNavigate={() => setMenuOpen(false)}
+                      />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+                <Link
+                  href={sectionHref("dashboard", workspace.id)}
+                  aria-label="Alokasi — Dashboard"
+                  className="flex min-w-0 flex-1 justify-center"
+                >
+                  <Brand compact />
+                </Link>
+                <NotificationCenter
+                  key={`mobile-${workspace.id}-${notificationInbox.items[0]?.id ?? "empty"}-${notificationInbox.unreadCount}`}
+                  workspaceId={workspace.id}
+                  workspaceName={workspace.name}
+                  timeZone={timeZone}
+                  initial={notificationInbox}
+                />
+              </div>
+              <div className="flex items-end gap-2">
+                <WorkspaceSwitcher
+                  compact
+                  section={section}
+                  workspace={workspace}
+                  workspaces={workspaces}
+                />
+                <AmountPrivacyToggle className="size-11 shrink-0 rounded-xl" />
+                <ThemeSwitcher compact />
+              </div>
             </div>
             <div className="hidden min-w-0 items-center sm:flex sm:w-auto">
               <WorkspaceSwitcher
@@ -216,6 +260,13 @@ export function AppShell({
             <div className="hidden w-full items-center gap-2 sm:flex sm:w-auto sm:gap-3">
               <AmountPrivacyToggle />
               <ThemeSwitcher />
+              <NotificationCenter
+                key={`desktop-${workspace.id}-${notificationInbox.items[0]?.id ?? "empty"}-${notificationInbox.unreadCount}`}
+                workspaceId={workspace.id}
+                workspaceName={workspace.name}
+                timeZone={timeZone}
+                initial={notificationInbox}
+              />
             </div>
           </div>
         </header>

@@ -13,6 +13,8 @@ import { ensurePeriod, getPeriodSelection } from "@/modules/periods/service";
 import { parseTransactionPagination } from "@/modules/transactions/pagination";
 import { ActionSuccessToast } from "@/components/action-success-toast";
 import { PeriodSelect } from "@/components/period-select";
+import { getNotificationInbox } from "@/modules/web-push/in-app";
+import { ensureWebPushPreference } from "@/modules/web-push/service";
 
 export type WorkspaceSearchParams = Promise<{
   workspaceId?: string | string[];
@@ -59,6 +61,15 @@ export async function WorkspacePage({
     throw error;
   }
   await connection();
+  const access = {
+    workspaceId: context.workspace.id,
+    actorId: context.user.id,
+    role: context.membership.role,
+    timezone: context.workspace.timezone,
+    workspaceType: context.workspace.type,
+  } as const;
+  await ensureWebPushPreference(access);
+  const notificationInbox = await getNotificationInbox(access);
   const todayValue = new Intl.DateTimeFormat("en-CA", {
     year: "numeric",
     month: "2-digit",
@@ -103,6 +114,16 @@ export async function WorkspacePage({
       workspaces={context.workspaces}
       userLabel={context.user.displayName ?? identity.email}
       userEmail={identity.email}
+      timeZone={context.workspace.timezone}
+      notificationInbox={{
+        items: notificationInbox.items.map((item) => ({
+          ...item,
+          readAt: item.readAt?.toISOString() ?? null,
+          createdAt: item.createdAt.toISOString(),
+        })),
+        unreadCount: notificationInbox.unreadCount,
+        limit: notificationInbox.limit,
+      }}
     >
       <ActionSuccessToast code={success} />
       <div className="workspace-page-motion">
@@ -222,13 +243,7 @@ export async function WorkspacePage({
         <SectionContent
           section={section}
           workspaceName={context.workspace.name}
-          access={{
-            workspaceId: context.workspace.id,
-            actorId: context.user.id,
-            role: context.membership.role,
-            timezone: context.workspace.timezone,
-            workspaceType: context.workspace.type,
-          }}
+          access={access}
           today={today}
           error={typeof query.error === "string" ? query.error : undefined}
           reportQuery={{

@@ -68,7 +68,7 @@ describe("mobile bottom navigation contract", () => {
     expect(navigation).toContain("focus-visible:ring-2");
   });
 
-  it("keeps the mobile workspace and appearance controls aligned", async () => {
+  it("keeps mobile navigation, notifications, workspace, and appearance controls aligned", async () => {
     const [shell, switcher, theme] = await Promise.all([
       componentSource("app-shell.tsx"),
       componentSource("workspace-switcher.tsx"),
@@ -76,9 +76,12 @@ describe("mobile bottom navigation contract", () => {
     ]);
 
     expect(shell).toContain("relative z-40 border-b");
-    expect(shell).toContain("flex min-h-[52px] items-end gap-2 sm:hidden");
+    expect(shell).toContain('className="space-y-2 sm:hidden"');
+    expect(shell).toContain("flex min-h-11 items-center gap-2");
+    expect(shell).toContain("flex items-end gap-2");
     expect(shell).toContain('aria-label="Buka navigasi"');
-    expect(shell).not.toContain('aria-label="Buka pengaturan notifikasi"');
+    expect(shell).toContain("<NotificationCenter");
+    expect(shell).toContain("<Brand compact />");
     expect(shell).not.toContain("<ConnectionStatusBadge />");
     expect(shell).toContain("<ThemeSwitcher compact />");
     expect(shell).toMatch(/<WorkspaceSwitcher\s+compact/);

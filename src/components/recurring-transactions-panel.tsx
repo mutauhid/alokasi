@@ -35,6 +35,10 @@ function displayDate(date: Date) {
   }).format(date);
 }
 
+function displayClock(value: number) {
+  return `${String(Math.floor(value / 60)).padStart(2, "0")}.${String(value % 60).padStart(2, "0")}`;
+}
+
 function dueLabel(today: Date, dueDate: Date) {
   const difference = calendarDayDifference(today, dueDate);
   if (difference < 0) return `Terlambat ${Math.abs(difference)} hari`;
@@ -188,6 +192,7 @@ export function RecurringTransactionsPanel({
                             categoryId: template.categoryId,
                             note: template.note ?? "",
                             recurrenceDay: template.recurrenceDay,
+                            reminderMinute: template.reminderMinute,
                           }}
                         />
                       ) : undefined
@@ -238,7 +243,8 @@ export function RecurringTransactionsPanel({
                         </p>
                         <p className="mt-1.5 font-medium">
                           {displayDate(template.nextDueDate)} · tanggal{" "}
-                          {template.recurrenceDay} setiap bulan
+                          {template.recurrenceDay} setiap bulan · pukul{" "}
+                          {displayClock(template.reminderMinute)}
                         </p>
                       </div>
                       <div>

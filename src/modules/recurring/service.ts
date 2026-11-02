@@ -25,6 +25,7 @@ type RecurringFields = {
   categoryId: string;
   note: string | null;
   recurrenceDay: number;
+  reminderMinute?: number;
 };
 
 function requireWriter(context: RecurringContext) {
@@ -123,7 +124,14 @@ export async function createRecurringTemplate(
       data: {
         workspaceId: context.workspaceId,
         createdBy: context.actorId,
-        ...input,
+        name: input.name,
+        type: input.type,
+        amount: input.amount,
+        accountId: input.accountId,
+        categoryId: input.categoryId,
+        note: input.note,
+        recurrenceDay: input.recurrenceDay,
+        reminderMinute: input.reminderMinute ?? 540,
         nextDueDate: occurrenceOnOrAfter(context.today, input.recurrenceDay),
       },
     });
@@ -142,6 +150,7 @@ export async function createRecurringTemplate(
           "category_id",
           "note",
           "recurrence_day",
+          "reminder_minute",
           "next_due_date",
         ],
       },
@@ -175,6 +184,7 @@ export async function updateRecurringTemplate(
         categoryId: input.categoryId,
         note: input.note,
         recurrenceDay: input.recurrenceDay,
+        reminderMinute: input.reminderMinute ?? existing.reminderMinute,
         nextDueDate,
         version: { increment: 1 },
       },
@@ -197,6 +207,7 @@ export async function updateRecurringTemplate(
           "category_id",
           "note",
           "recurrence_day",
+          "reminder_minute",
           "next_due_date",
           "version",
         ],

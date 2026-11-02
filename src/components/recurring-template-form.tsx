@@ -54,6 +54,7 @@ export function RecurringTemplateForm({
     categoryId: string;
     note: string;
     recurrenceDay: number;
+    reminderMinute: number;
   };
   compact?: boolean;
 }) {
@@ -187,6 +188,22 @@ export function RecurringTemplateForm({
       </label>
 
       <label className="min-w-0 text-sm font-semibold">
+        Jam notifikasi
+        <input
+          name="reminderTime"
+          type="time"
+          step="3600"
+          required
+          defaultValue={clockValue(initial?.reminderMinute ?? 540)}
+          className={inputClass}
+        />
+        <span className="mt-1.5 block text-xs font-normal text-muted-foreground">
+          Pilih jam bulat sesuai zona waktu ruang aktif. Pengingat tidak
+          mencatat transaksi otomatis.
+        </span>
+      </label>
+
+      <label className="min-w-0 text-sm font-semibold">
         Akun
         <AppSelect
           name="accountId"
@@ -232,6 +249,10 @@ export function RecurringTemplateForm({
       />
     </form>
   );
+}
+
+function clockValue(value: number) {
+  return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
 }
 
 function RecurringSubmitButton({
