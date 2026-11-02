@@ -18,7 +18,7 @@ export function formatClockMinutes(value: number | null) {
   return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
 }
 
-function localMinuteOfDay(now: Date, timezone: string) {
+export function localMinuteOfDay(now: Date, timezone: string) {
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: timezone,
     hour: "2-digit",

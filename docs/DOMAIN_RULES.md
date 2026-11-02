@@ -217,6 +217,10 @@ Menghitung ulang periode yang telah ditutup dengan sengaja, periode per akun, ga
 - Aktivitas ruang bersama dikirim kepada anggota aktif lain yang opt-in ketika transaksi dibuat, diubah, atau dihapus. Ruang pribadi dan pelaku transaksi tidak menerima aktivitasnya sendiri.
 - Jam tenang mengikuti zona waktu workspace dan menunda outbox sampai periode berakhir. Opsi privasi mengganti judul/isi dengan pesan generik sebelum payload disimpan dan dikirim.
 - URL notifikasi wajib path lokal. Halaman tujuan tetap memvalidasi sesi, user aktif, membership, role, dan workspace; notifikasi tidak memberi hak akses baru.
+- Setiap event yang lolos preferensi notifikasi membuat satu catatan inbox persisten untuk pengguna dan workspace terkait, terlepas dari ada/tidaknya subscription Web Push aktif. Deduplikasi berlaku per `workspace + user + dedupeKey` agar retry scheduler tidak menggandakan item.
+- Status dibaca adalah state per pengguna, bukan per perangkat. Menandai satu item atau seluruh inbox sebagai dibaca tidak mengubah event domain, saldo, budget, template, utang/piutang, ataupun status delivery Web Push.
+- Badge header menghitung seluruh item belum dibaca dalam workspace aktif. Daftar inbox dibatasi ke item terbaru untuk rendering, tetapi operasi tandai-semua berlaku pada seluruh item belum dibaca milik pengguna di workspace tersebut.
+- Template transaksi berulang menyimpan jam pengingat per template sebagai menit lokal workspace dengan presisi satu jam. Jam ini hanya menentukan waktu pengingat; template tetap tidak membuat transaksi otomatis. Pengingat utang/piutang tetap memakai D-3 dan hari-H menurut zona waktu workspace.
 - Logout mencabut subscription perangkat yang dipakai. Pencabutan/keluar membership menghapus preferensi, state, dan delivery ruang; penghapusan akun juga membersihkan seluruh subscription pengguna.
 
 ### F26 — mode privasi nominal

@@ -6,6 +6,7 @@ import { getDatabase } from "@/server/db/client";
 import { queueWebPush, deliverPendingWebPush } from "./service";
 import { refreshLowBalanceWebPush } from "./events";
 import { debtReminderPhase } from "@/modules/debts/domain";
+import { localMinuteOfDay } from "./domain";
 
 function rupiah(value: bigint) {
   return `Rp${new Intl.NumberFormat("id-ID").format(value)}`;
@@ -71,16 +72,27 @@ export async function runScheduledWebPush(now = new Date()) {
           preference.membership.role === "editor")
       ) {
         const today = localCalendarDate(now, preference.workspace.timezone);
+        const currentMinute = localMinuteOfDay(
+          now,
+          preference.workspace.timezone,
+        );
         const templates = await tx.recurringTransactionTemplate.findMany({
           where: {
             workspaceId: preference.workspaceId,
             archivedAt: null,
             nextDueDate: { lte: today },
+            reminderMinute: { lte: currentMinute },
             ...(preference.membership.role === "editor"
               ? { createdBy: preference.userId }
               : {}),
           },
-          select: { id: true, name: true, amount: true, nextDueDate: true },
+          select: {
+            id: true,
+            name: true,
+            amount: true,
+            nextDueDate: true,
+            reminderMinute: true,
+          },
         });
         for (const template of templates) {
           queued += await queueWebPush(tx, {

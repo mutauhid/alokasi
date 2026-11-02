@@ -186,8 +186,8 @@ export function WebPushNotificationCard({
         <BellRing className="mb-2 size-5 text-primary" aria-hidden="true" />
         <CardTitle>Notifikasi perangkat</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Terima informasi yang perlu ditindaklanjuti saat Alokasi sedang tidak
-          dibuka. Setiap perangkat perlu diaktifkan secara terpisah.
+          Semua notifikasi tersimpan pada lonceng di aplikasi. Aktifkan Web Push
+          bila kamu juga ingin menerimanya saat Alokasi tidak sedang dibuka.
         </p>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -263,7 +263,7 @@ export function WebPushNotificationCard({
           )}
           <fieldset className="grid gap-3 sm:grid-cols-2">
             <legend className="mb-3 text-sm font-semibold">
-              Jenis notifikasi Web Push
+              Jenis notifikasi
             </legend>
             {notificationOptions.map(([name, label, description]) => (
               <label

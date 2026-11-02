@@ -21,6 +21,7 @@ describe("recurring transaction domain", () => {
       amount: 2_500_000n,
       note: "Transfer bulanan",
       recurrenceDay: 25,
+      reminderMinute: 540,
     });
   });
 
@@ -33,6 +34,7 @@ describe("recurring transaction domain", () => {
       categoryId: "22222222-2222-4222-8222-222222222222",
       note: "",
       recurrenceDay: "1",
+      reminderMinute: "540",
     };
     expect(
       createRecurringTemplateInput.safeParse({ ...base, type: "transfer" })
@@ -44,6 +46,10 @@ describe("recurring transaction domain", () => {
     ).toBe(false);
     expect(
       createRecurringTemplateInput.safeParse({ ...base, recurrenceDay: "32" })
+        .success,
+    ).toBe(false);
+    expect(
+      createRecurringTemplateInput.safeParse({ ...base, reminderMinute: "570" })
         .success,
     ).toBe(false);
   });

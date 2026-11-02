@@ -59,6 +59,23 @@ const defaultPreference: PreferenceInput = {
   hideSensitiveContent: true,
 };
 
+export async function ensureWebPushPreference(access: WorkspaceAccess) {
+  await getDatabase().webPushPreference.upsert({
+    where: {
+      workspaceId_userId: {
+        workspaceId: access.workspaceId,
+        userId: access.actorId,
+      },
+    },
+    create: {
+      workspaceId: access.workspaceId,
+      userId: access.actorId,
+      ...defaultPreference,
+    },
+    update: {},
+  });
+}
+
 function endpointHash(endpoint: string) {
   return createHash("sha256").update(endpoint).digest("hex");
 }
@@ -256,6 +273,21 @@ export async function queueWebPush(
   ) {
     return 0;
   }
+  const notificationUrl = safeLocalNotificationUrl(message.url);
+  await tx.inAppNotification.createMany({
+    data: [
+      {
+        workspaceId: message.workspaceId,
+        userId: message.userId,
+        type: message.type,
+        dedupeKey: message.dedupeKey.slice(0, 220),
+        title: message.title.slice(0, 120),
+        body: message.body.slice(0, 300),
+        url: notificationUrl,
+      },
+    ],
+    skipDuplicates: true,
+  });
   const subscriptions = await tx.webPushSubscription.findMany({
     where: { userId: message.userId, revokedAt: null },
     select: { id: true },
@@ -282,7 +314,7 @@ export async function queueWebPush(
       dedupeKey: message.dedupeKey.slice(0, 220),
       title: content.title,
       body: content.body,
-      url: safeLocalNotificationUrl(message.url),
+      url: notificationUrl,
       tag: message.tag.slice(0, 120),
       availableAt,
     })),

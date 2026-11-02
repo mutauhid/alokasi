@@ -1,0 +1,26 @@
+name: Hourly notifications
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Run notification scheduler
+        env:
+          ALOKASI_CRON_URL: ${{ secrets.ALOKASI_CRON_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$ALOKASI_CRON_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "ALOKASI_CRON_URL/CRON_SECRET belum disetel; scheduler hourly dilewati."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error \
+            --retry 2 \
+            --max-time 90 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$ALOKASI_CRON_URL/api/cron/web-push-notifications"

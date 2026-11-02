@@ -61,7 +61,7 @@ export async function webPushPreferenceAction(
       hideSensitiveContent: checked(form, "hideSensitiveContent"),
     });
     revalidatePath("/settings");
-    return { message: "Pengaturan notifikasi Web Push berhasil disimpan." };
+    return { message: "Pengaturan notifikasi berhasil disimpan." };
   } catch {
     return { error: "Pengaturan notifikasi belum dapat disimpan." };
   }

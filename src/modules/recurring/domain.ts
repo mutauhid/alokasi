@@ -23,6 +23,13 @@ const recurringFields = z.object({
     .max(1000)
     .transform((value) => value || null),
   recurrenceDay: z.coerce.number().int().min(1).max(31),
+  reminderMinute: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(1439)
+    .refine((value) => value % 60 === 0)
+    .default(540),
 });
 
 export const createRecurringTemplateInput = recurringFields;

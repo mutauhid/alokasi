@@ -1018,7 +1018,7 @@ Verifikasi lokal tahap 51: targeted Prettier check, `git diff --check`, lint, ty
 
 Refinement header mobile: pemilih ruang memakai lebar kontainer pada layar sempit, kontrol privasi dan tema disusun pada grid yang sejajar di bawahnya, lalu seluruh komponen kembali ke tata letak satu baris existing mulai breakpoint `sm`. Perilaku pemilihan workspace, privacy mode, dan theme preference tidak berubah.
 
-Refinement referensi header terbaru: mobile memakai satu baris hamburger, workspace compact, privacy, dan theme icon; brand, notifikasi, serta status koneksi tidak dirender. Dropdown workspace memakai panel fixed dengan inset aman sehingga berada di atas konten tanpa overflow. Desktop mempertahankan selector dan kontrol lengkap existing; bottom navigation, role, preference, serta business logic tidak berubah.
+Refinement referensi header sebelum tahap 56: mobile memakai satu baris hamburger, workspace compact, privacy, dan theme icon; brand serta notifikasi saat itu belum dirender. Tahap 56 menggantikannya dengan dua baris ringkas: hamburger/brand/lonceng di atas dan workspace/privacy/theme di bawah. Status koneksi tetap tidak dirender. Dropdown workspace memakai panel fixed dengan inset aman sehingga berada di atas konten tanpa overflow; bottom navigation, role, preference, serta business logic tidak berubah.
 
 Refinement theme mobile: kontrol compact menjadi tombol light/dark langsung tanpa native dropdown. Ikon matahari menunjukkan mode terang dan ikon bulan menunjukkan mode gelap; klik menyimpan preference eksplisit kebalikannya. Selector Otomatis/Terang/Gelap desktop dan sinkronisasi system theme existing tetap dipertahankan.
 
@@ -1103,5 +1103,21 @@ Verifikasi lokal tahap 54: lint dan typecheck lulus, production build Next.js lu
 | MEMV2-09 | Tidak ada schema, migration, dependency, API/service contract, auth, RBAC, AppShell, atau business logic finansial baru |
 
 Verifikasi lokal tahap 55: typecheck, lint, dan production build Next.js lulus; 45 file/223 unit test serta 8 regression test domain/presentation tertarget lulus. Contract test memastikan data tetap berasal dari service workspace, seluruh lifecycle action existing dipertahankan, role tambahan/resend tidak dibuat, serta dialog/sheet/table/konfirmasi dan reset workspace terpasang. Prettier tertarget dan `git diff --check` lulus; `format:check` global tetap gagal pada 196 file baseline di luar scope. Empat belas smoke Playwright Microsoft Edge desktop/mobile seluruhnya melaporkan lulus, tetapi runner kembali tidak menutup setelah teardown sehingga run tidak diklaim memiliki exit code 0. Suite PostgreSQL tidak dijalankan karena `TEST_DATABASE_URL` pada `.env.local` identik dengan `DATABASE_URL`/`DIRECT_URL`; database development tidak dipakai sebagai pengganti. Smoke dan screenshot halaman Members terautentikasi, role multi-user, soft keyboard, serta perangkat 360/390/430 px nyata masih memerlukan sesi/database test terisolasi atau visual review pengguna.
+
+## Acceptance tahap 56 — pusat notifikasi aplikasi
+
+| ID | Kriteria |
+|---|---|
+| NOTIF-01 | Lonceng tersedia pada header desktop dan mobile; badge tersembunyi untuk nol, menampilkan jumlah belum dibaca, dan membatasi label visual di `99+` tanpa mengubah hitungan server |
+| NOTIF-02 | Desktop memakai popover dan mobile memakai sheet; tab Semua/Belum dibaca, empty state, focus state, Escape, scroll, dan deep link lokal dapat digunakan |
+| NOTIF-03 | Item tersimpan per user/workspace walau tidak ada subscription push, retry tidak menggandakan `dedupeKey`, dan membership yang dicabut tidak dapat membaca atau mengubah inbox |
+| NOTIF-04 | Tandai satu dan tandai semua hanya mengubah `readAt`; event domain, saldo, budget, status template, utang/piutang, dan delivery push tidak berubah |
+| NOTIF-05 | Budget, ringkasan mingguan, transaksi berulang, utang/piutang D-3/hari-H, saldo menipis, draf tertunda, dan aktivitas ruang bersama memakai preferensi existing dan masuk ke inbox |
+| NOTIF-06 | Template pengingat menerima jam bulat lokal workspace, menolak menit di luar rentang/presisi, dan tetap memerlukan Catat sekarang untuk membuat transaksi |
+| NOTIF-07 | Amount Privacy menyamarkan isi inbox yang berpotensi memuat nominal; kontrol privasi payload Web Push tetap independen |
+| NOTIF-08 | Scheduler per jam memakai endpoint terautentikasi `CRON_SECRET`; cron harian Vercel tetap fallback dan tidak membuat event duplikat |
+| NOTIF-09 | Cleanup workspace, membership, dan pengguna menghapus inbox terkait; URL eksternal tidak dapat menjadi tujuan notifikasi |
+
+Verifikasi lokal tahap 56: typecheck, lint, validasi Prisma, production build Next.js, targeted Prettier, dan `git diff --check` lulus; 45 file/224 unit test lulus. Integration test baru mencakup inbox tanpa subscription, deduplikasi retry, hitungan unread, dan tandai dibaca, tetapi belum dijalankan karena `.env.test.local` terisolasi tidak tersedia. `format:check` global tetap gagal pada 257 file baseline di luar scope; tidak ada file implementasi tahap 56 dalam daftar warning. Smoke terautentikasi, Web Push perangkat nyata, workflow GitHub setelah merge ke default branch, dan screenshot light/dark mobile/desktop tetap memerlukan environment preview yang sudah dimigrasi.
 
 Refinement visual ruang pribadi: mulai viewport 48rem, kartu onboarding harus tetap dua kolom dengan ilustrasi proporsional, konten terpusat vertikal, dan CTA primer/sekunder yang memiliki aksi. CTA Pelajari membuka dialog/sheet aksesibel berisi pemisahan data, empat langkah bergabung, izin Owner/Editor/Viewer, masa berlaku tautan tujuh hari, dan peringatan visibilitas data bersama tanpa klaim email otomatis. Di bawah breakpoint tersebut, ilustrasi besar disembunyikan dan konten kembali satu kolom tanpa overflow. Pemeriksaan kontrak menjaga breakpoint, isi panduan, serta struktur ilustrasi agar regresi tata letak pada desktop tidak kembali.

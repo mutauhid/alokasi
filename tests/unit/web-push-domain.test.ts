@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isQuietTime,
+  localMinuteOfDay,
   nextAllowedPushTime,
   parseClockMinutes,
   preferenceField,
@@ -13,6 +14,9 @@ describe("Web Push domain", () => {
     expect(parseClockMinutes("22:00")).toBe(1320);
     expect(parseClockMinutes("07:00")).toBe(420);
     expect(parseClockMinutes("25:00")).toBeNull();
+    expect(
+      localMinuteOfDay(new Date("2026-10-26T02:00:00.000Z"), "Asia/Jakarta"),
+    ).toBe(540);
     expect(
       isQuietTime(
         new Date("2026-10-26T16:00:00.000Z"),
